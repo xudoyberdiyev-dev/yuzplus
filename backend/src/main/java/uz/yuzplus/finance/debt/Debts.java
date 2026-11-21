@@ -88,7 +88,7 @@ class Debts {
      * maʼlumotlarisiz (S1: bosh sahifalar faqat jami va top-N uchun toʻliq hisobotni — kontragent maʼlumoti soʻrovi bilan — chaqirardi).
      */
     @Transactional(readOnly = true)
-    Map<Long, Aging.Result> aging(Actor actor, Side side, Long branchId, LocalDate today) {
+    Map<Long, Map<Long, Aging.Result>> agingByBranch(Actor actor, Side side, Long branchId, LocalDate today) {
         if (branchId == null ? !actor.allBranches() : !actor.canAccessBranch(branchId)) {
             throw YuzplusException.notFound("error.notFound");
         }
@@ -108,8 +108,7 @@ class Debts {
         List<Open> open = q.query((rs, n) -> new Open(rs.getLong("branch_id"), rs.getLong("counterparty_id"),
                         rs.getDate("due") == null ? null : rs.getDate("due").toLocalDate(), new Money(rs.getBigDecimal("open"))))
                 .list();
-        // (filial, kontragent) bo'yicha guruh — hisob har filialda alohida, keyin kontragent bo'yicha qo'shiladi
-        Map<Long, Aging.Result> byParty = new LinkedHashMap<>();
+        Map<Long, Map<Long, Aging.Result>> byBranch = new LinkedHashMap<>();
         int i = 0;
         while (i < open.size()) {
             Open first = open.get(i);
@@ -118,8 +117,17 @@ class Debts {
                 docs.add(new Aging.Doc(open.get(i).due(), open.get(i).open()));
                 i++;
             }
-            byParty.merge(first.counterpartyId(), Aging.of(docs, today), Aging.Result::plus);
+            byBranch.computeIfAbsent(first.branchId(), k -> new LinkedHashMap<>()).put(first.counterpartyId(), Aging.of(docs, today));
         }
+        return byBranch;
+    }
+
+    /** Kontragent boʻyicha qarz yoshi: filiallardagi natijalar qoʻshiladi (filial tartibida). */
+    @Transactional(readOnly = true)
+    Map<Long, Aging.Result> aging(Actor actor, Side side, Long branchId, LocalDate today) {
+        Map<Long, Aging.Result> byParty = new LinkedHashMap<>();
+        agingByBranch(actor, side, branchId, today).values()
+                .forEach(m -> m.forEach((party, r) -> byParty.merge(party, r, Aging.Result::plus)));
         return byParty;
     }
 
