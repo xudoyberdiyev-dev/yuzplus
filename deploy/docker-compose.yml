@@ -55,6 +55,8 @@ services:
       YUZPLUS_DB_USER: yuzplus
       YUZPLUS_DB_PASSWORD: ${YUZPLUS_DB_PASSWORD}
       YUZPLUS_COOKIE_SECURE: "true"
+      # API tavsifi (/api/openapi, /api/docs) production'da yopiq
+      YUZPLUS_API_DOCS: "false"
       # Caddy ortida: mijoz IP (audit) va https sxemasi X-Forwarded-* dan
       YUZPLUS_FORWARD_HEADERS: native
       YUZPLUS_BOOTSTRAP_LOGIN: ${YUZPLUS_BOOTSTRAP_LOGIN:-}

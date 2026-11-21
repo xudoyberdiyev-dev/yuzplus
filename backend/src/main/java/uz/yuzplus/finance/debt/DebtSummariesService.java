@@ -32,13 +32,42 @@ class DebtSummariesService implements DebtSummaries {
     @Override
     @Transactional(readOnly = true)
     public Summary summary(Actor actor, Side side, Long branchId, int top) {
-        Debts.DebtReport r = debts.report(actor, side, branchId);
-        Debts.Buckets t = r.totals();
-        List<Top> rows = r.rows().stream()
-                .filter(x -> Money.of(x.buckets().debt()).isPositive())
-                .sorted(Comparator.comparing((Debts.DebtRow x) -> Money.of(x.buckets().debt())).reversed())
+        // S1: toʻliq hisobot (kontragent maʼlumoti soʻrovi bilan) oʻrniga faqat qarz yoshi; nom — faqat top-N uchun
+        return toSummary(debts.aging(actor, side, branchId, debts.today()), top);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Summary> summaryByBranch(Actor actor, Side side, java.util.Collection<Long> branchIds) {
+        Map<Long, Map<Long, Aging.Result>> by = debts.agingByBranch(actor, side, null, debts.today());
+        Map<Long, Summary> out = new LinkedHashMap<>();
+        for (Long b : branchIds) {
+            out.put(b, toSummary(by.getOrDefault(b, Map.of()), 0));
+        }
+        return out;
+    }
+
+    private Summary toSummary(Map<Long, Aging.Result> by, int top) {
+        Aging.Result total = by.values().stream().reduce(Aging.Result.EMPTY, Aging.Result::plus);
+        Debts.Buckets t = Debts.Buckets.of(total);
+        record P(long id, Debts.Buckets b, int maxOverdueDays) {}
+        List<P> best = by.entrySet().stream()
+                .map(e -> new P(e.getKey(), Debts.Buckets.of(e.getValue()), e.getValue().maxOverdueDays()))
+                .filter(x -> Money.of(x.b().debt()).isPositive())
+                // Debts.report tartibi (muddati oʻtgan, keyin qarz) ustidan barqaror saralash — avvalgi natija bilan bir xil
+                .sorted(Comparator.comparing((P x) -> Money.of(x.b().debt())).reversed()
+                        .thenComparing((P x) -> Money.of(x.b().overdue()), Comparator.reverseOrder()))
                 .limit(Math.max(0, top))
-                .map(x -> new Top(x.counterpartyId(), x.name(), x.buckets().debt(), x.buckets().overdue(), x.maxOverdueDays()))
+                .toList();
+        Map<Long, String> names = new LinkedHashMap<>();
+        if (!best.isEmpty()) {
+            jdbc.sql("SELECT id, name FROM counterparty WHERE id IN (:ids)")
+                    .param("ids", best.stream().map(P::id).toList())
+                    .query((rs, n) -> names.put(rs.getLong("id"), rs.getString("name")))
+                    .list();
+        }
+        List<Top> rows = best.stream()
+                .map(x -> new Top(x.id(), names.get(x.id()), x.b().debt(), x.b().overdue(), x.maxOverdueDays()))
                 .toList();
         return new Summary(t.debt(), t.advance(), t.overdue(), t.d1to30(), t.d31to60(), t.d61to90(), t.d90plus(), rows);
     }
@@ -47,9 +76,10 @@ class DebtSummariesService implements DebtSummaries {
     @Transactional(readOnly = true)
     public Map<Long, PartyDebt> byParty(Actor actor, Side side, Long branchId) {
         Map<Long, PartyDebt> out = new LinkedHashMap<>();
-        for (Debts.DebtRow x : debts.report(actor, side, branchId).rows()) {
-            Debts.Buckets b = x.buckets();
-            out.put(x.counterpartyId(), new PartyDebt(b.debt(), b.advance(), b.overdue(), b.d1to30(), b.d31to60(), b.d61to90(), b.d90plus(), x.maxOverdueDays()));
+        for (Map.Entry<Long, Aging.Result> e : debts.aging(actor, side, branchId, debts.today()).entrySet()) {
+            Debts.Buckets b = Debts.Buckets.of(e.getValue());
+            out.put(e.getKey(), new PartyDebt(b.debt(), b.advance(), b.overdue(), b.d1to30(), b.d31to60(), b.d61to90(), b.d90plus(),
+                    e.getValue().maxOverdueDays()));
         }
         return out;
     }
@@ -61,18 +91,11 @@ class DebtSummariesService implements DebtSummaries {
             throw YuzplusException.notFound("error.notFound");
         }
         // Ochiq hujjatlar (qarz > 0: kirim — YB, sotuv — mijoz) to'lov kuni bo'yicha; Debts.report dagi own/app qoidasi bilan bir xil
+        // (S1: hosila jadval party_doc_balance, V107)
         record Row(BigDecimal overdue, BigDecimal today, BigDecimal soon) {}
         Row row = jdbc.sql("""
-                WITH own AS (SELECT branch_id, counterparty_id, doc_type, doc_id, min(due_date) AS due, sum(amount) AS amt
-                             FROM party_ledger WHERE side = :side AND applies_doc_type IS NULL AND (CAST(:b AS BIGINT) IS NULL OR branch_id = :b)
-                             GROUP BY branch_id, counterparty_id, doc_type, doc_id),
-                     app AS (SELECT branch_id, counterparty_id, applies_doc_type AS t, applies_doc_id AS i, sum(amount) AS amt
-                             FROM party_ledger WHERE side = :side AND applies_doc_type IS NOT NULL
-                                                 AND (CAST(:b AS BIGINT) IS NULL OR branch_id = :b)
-                             GROUP BY branch_id, counterparty_id, applies_doc_type, applies_doc_id),
-                     open AS (SELECT own.due, own.amt + coalesce(app.amt, 0) AS open
-                              FROM own LEFT JOIN app ON app.branch_id = own.branch_id AND app.counterparty_id = own.counterparty_id
-                                                    AND app.t = own.doc_type AND app.i = own.doc_id)
+                WITH open AS (SELECT due_date AS due, open_amount AS open FROM party_doc_balance
+                              WHERE side = :side AND own_rows > 0 AND open_amount <> 0 AND (CAST(:b AS BIGINT) IS NULL OR branch_id = :b))
                 SELECT sum(open) FILTER (WHERE due < :d) AS overdue,
                        sum(open) FILTER (WHERE due = :d) AS today,
                        sum(open) FILTER (WHERE due > :d AND due <= :d3) AS soon

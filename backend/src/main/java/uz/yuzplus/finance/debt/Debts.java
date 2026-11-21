@@ -77,38 +77,38 @@ class Debts {
         this.clock = clock;
     }
 
-    private LocalDate today() {
+    LocalDate today() {
         return LocalDate.now(clock.withZone(TASHKENT));
     }
 
     private record Open(long branchId, long counterpartyId, LocalDate due, Money open) {}
 
+    /**
+     * Kontragent boʻyicha qarz yoshi (ochiq hujjatlar, avans FIFO bilan) — hisobot va bosh sahifa xulosalari uchun; kontragent
+     * maʼlumotlarisiz (S1: bosh sahifalar faqat jami va top-N uchun toʻliq hisobotni — kontragent maʼlumoti soʻrovi bilan — chaqirardi).
+     */
     @Transactional(readOnly = true)
-    DebtReport report(Actor actor, Side side, Long branchId) {
+    Map<Long, Map<Long, Aging.Result>> agingByBranch(Actor actor, Side side, Long branchId, LocalDate today) {
         if (branchId == null ? !actor.allBranches() : !actor.canAccessBranch(branchId)) {
             throw YuzplusException.notFound("error.notFound");
         }
-        LocalDate today = today();
-        // PartyLedger.openDocs bilan bir xil qoida, lekin filialdagi barcha kontragentlar uchun bitta so'rovda
-        List<Open> open = jdbc.sql("""
-                WITH own AS (SELECT branch_id, counterparty_id, doc_type, doc_id, min(due_date) AS due, min(occurred_at) AS at, sum(amount) AS amt
-                             FROM party_ledger WHERE side = :s AND applies_doc_type IS NULL AND (CAST(:b AS BIGINT) IS NULL OR branch_id = :b)
-                             GROUP BY branch_id, counterparty_id, doc_type, doc_id),
-                     app AS (SELECT branch_id, counterparty_id, applies_doc_type AS t, applies_doc_id AS i, sum(amount) AS amt
-                             FROM party_ledger WHERE side = :s AND applies_doc_type IS NOT NULL AND (CAST(:b AS BIGINT) IS NULL OR branch_id = :b)
-                             GROUP BY branch_id, counterparty_id, applies_doc_type, applies_doc_id)
-                SELECT own.branch_id, own.counterparty_id, own.due, own.amt + coalesce(app.amt, 0) AS open
-                FROM own LEFT JOIN app ON app.branch_id = own.branch_id AND app.counterparty_id = own.counterparty_id AND app.t = own.doc_type
-                                      AND app.i = own.doc_id
-                WHERE own.amt + coalesce(app.amt, 0) <> 0
-                ORDER BY own.branch_id, own.counterparty_id, coalesce(own.due, (own.at AT TIME ZONE 'Asia/Tashkent')::date), own.at, own.doc_id""")
-                .param("s", side.name())
-                .param("b", branchId)
-                .query((rs, n) -> new Open(rs.getLong("branch_id"), rs.getLong("counterparty_id"),
+        // PartyLedger.openDocs bilan bir xil qoida, lekin filialdagi barcha kontragentlar uchun bitta so'rovda.
+        // S1: jurnalni guruhlash oʻrniga hosila jadval party_doc_balance (V107: jurnal bilan bitta tranzaksiyada, trigger)
+        // Filial sharti alohida matn: «(:b IS NULL OR branch_id = :b)» umumiy (generic) rejada indekssiz boʻlib qolardi (S1 yuklama)
+        var q = jdbc.sql("""
+                SELECT branch_id, counterparty_id, due_date AS due, open_amount AS open
+                FROM party_doc_balance
+                WHERE side = :s AND own_rows > 0 AND open_amount <> 0%s
+                ORDER BY branch_id, counterparty_id, coalesce(due_date, (first_at AT TIME ZONE 'Asia/Tashkent')::date), first_at, doc_id"""
+                        .formatted(branchId == null ? "" : " AND branch_id = :b"))
+                .param("s", side.name());
+        if (branchId != null) {
+            q = q.param("b", branchId);
+        }
+        List<Open> open = q.query((rs, n) -> new Open(rs.getLong("branch_id"), rs.getLong("counterparty_id"),
                         rs.getDate("due") == null ? null : rs.getDate("due").toLocalDate(), new Money(rs.getBigDecimal("open"))))
                 .list();
-        // (filial, kontragent) bo'yicha guruh — hisob har filialda alohida, keyin kontragent bo'yicha qo'shiladi
-        Map<Long, Aging.Result> byParty = new LinkedHashMap<>();
+        Map<Long, Map<Long, Aging.Result>> byBranch = new LinkedHashMap<>();
         int i = 0;
         while (i < open.size()) {
             Open first = open.get(i);
@@ -117,8 +117,24 @@ class Debts {
                 docs.add(new Aging.Doc(open.get(i).due(), open.get(i).open()));
                 i++;
             }
-            byParty.merge(first.counterpartyId(), Aging.of(docs, today), Aging.Result::plus);
+            byBranch.computeIfAbsent(first.branchId(), k -> new LinkedHashMap<>()).put(first.counterpartyId(), Aging.of(docs, today));
         }
+        return byBranch;
+    }
+
+    /** Kontragent boʻyicha qarz yoshi: filiallardagi natijalar qoʻshiladi (filial tartibida). */
+    @Transactional(readOnly = true)
+    Map<Long, Aging.Result> aging(Actor actor, Side side, Long branchId, LocalDate today) {
+        Map<Long, Aging.Result> byParty = new LinkedHashMap<>();
+        agingByBranch(actor, side, branchId, today).values()
+                .forEach(m -> m.forEach((party, r) -> byParty.merge(party, r, Aging.Result::plus)));
+        return byParty;
+    }
+
+    @Transactional(readOnly = true)
+    DebtReport report(Actor actor, Side side, Long branchId) {
+        LocalDate today = today();
+        Map<Long, Aging.Result> byParty = aging(actor, side, branchId, today);
         if (byParty.isEmpty()) {
             List<GroupDebtRow> group = groupRows(side, branchId);
             return new DebtReport(branchId, today, Buckets.of(Aging.Result.EMPTY), List.of(), groupSum(group), group);
@@ -201,18 +217,15 @@ class Debts {
         }
         LocalDate today = today();
         List<SupplierInvoice> rows = jdbc.sql("""
-                WITH own AS (SELECT doc_id, sum(amount) AS amt FROM party_ledger
-                             WHERE side = 'SUPPLIER' AND doc_type = 'KR' AND applies_doc_type IS NULL AND (CAST(:b AS BIGINT) IS NULL OR branch_id = :b)
-                             GROUP BY doc_id),
-                     app AS (SELECT applies_doc_id AS i, sum(amount) AS amt FROM party_ledger
-                             WHERE side = 'SUPPLIER' AND applies_doc_type = 'KR' AND (CAST(:b AS BIGINT) IS NULL OR branch_id = :b)
-                             GROUP BY applies_doc_id)
+                WITH d AS (SELECT doc_id, sum(own_amount) AS own_amt, sum(applied_amount) AS app_amt FROM party_doc_balance
+                           WHERE side = 'SUPPLIER' AND doc_type = 'KR' AND own_rows > 0 AND (CAST(:b AS BIGINT) IS NULL OR branch_id = :b)
+                           GROUP BY doc_id)
                 SELECT r.id, r.number, r.branch_id, b.name AS bname, c.id AS cid, c.name AS cname,
                        coalesce(r.invoice_date, r.receipt_date) AS doc_date, r.payment_type, e.full_name,
-                       r.due_date, r.prepaid, own.amt AS total, -coalesce(app.amt, 0) AS paid, own.amt + coalesce(app.amt, 0) AS left_amt
-                FROM own JOIN receipt r ON r.id = own.doc_id JOIN branch b ON b.id = r.branch_id JOIN counterparty c ON c.id = r.supplier_id
-                     LEFT JOIN employee e ON e.id = r.owner_id LEFT JOIN app ON app.i = own.doc_id
-                WHERE own.amt + coalesce(app.amt, 0) > 0 OR (r.prepaid AND r.receipt_date >= :since)
+                       r.due_date, r.prepaid, d.own_amt AS total, -d.app_amt AS paid, d.own_amt + d.app_amt AS left_amt
+                FROM d JOIN receipt r ON r.id = d.doc_id JOIN branch b ON b.id = r.branch_id JOIN counterparty c ON c.id = r.supplier_id
+                     LEFT JOIN employee e ON e.id = r.owner_id
+                WHERE d.own_amt + d.app_amt > 0 OR (r.prepaid AND r.receipt_date >= :since)
                 ORDER BY r.due_date NULLS LAST, r.receipt_date, r.id
                 LIMIT 2000""")
                 .param("b", branchId)

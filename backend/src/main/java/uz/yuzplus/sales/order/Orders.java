@@ -449,8 +449,10 @@ class Orders {
         }
         String from = " FROM sales_order o JOIN counterparty c ON c.id = o.customer_id JOIN warehouse w ON w.id = o.warehouse_id"
                 + " JOIN employee e ON e.id = o.created_by";
+        // S1: yigʻindi soʻrovlarida faqat kerakli JOIN (mijoz — hudud filtri yoki qidiruvda); jadvalni oʻqimasdan (index-only) hisoblanadi
+        String countFrom = " FROM sales_order o" + (filter.regionIds().isEmpty() && nq.isEmpty() ? "" : " JOIN counterparty c ON c.id = o.customer_id");
         // Holat yorliqlari — holat filtrisiz (SPEC 5.2: «raqamlar filtrga bog'liq»)
-        List<StatusCount> statuses = jdbc.sql("SELECT o.status, count(*) AS cnt, coalesce(sum(o.total), 0) AS total" + from + where
+        List<StatusCount> statuses = jdbc.sql("SELECT o.status, count(*) AS cnt, coalesce(sum(o.total), 0) AS total" + countFrom + where
                         + " GROUP BY o.status")
                 .params(params)
                 .query((rs, n) -> new StatusCount(OrderStatus.valueOf(rs.getString("status")), rs.getLong("cnt"),
@@ -460,7 +462,8 @@ class Orders {
             where.append(" AND o.status = :s");
             params.put("s", status.name());
         }
-        long total = jdbc.sql("SELECT count(*)" + from + where).params(params).query(Long.class).single();
+        // S1: jami soni holat yorliqlaridan (alohida count(*) soʻrovi butun tarixni qayta oʻqirdi)
+        long total = statuses.stream().filter(sc -> status == null || sc.status() == status).mapToLong(StatusCount::count).sum();
         List<OrderSummary> items = jdbc.sql("""
                 SELECT o.id, o.number, o.branch_id, w.name AS warehouse, o.customer_id, c.name AS customer, o.order_date, o.delivery_type,
                        o.delivery_date, o.payment_type, o.status, o.approval_level, (SELECT count(*) FROM sales_order_line l WHERE l.order_id = o.id) AS lines,
@@ -487,16 +490,25 @@ class Orders {
                         instant(rs.getTimestamp("pick_finished_at")), null))
                 .list();
         items = items.stream().map(this::withCreditFlag).toList();
-        String fromScope = from + scope;
-        List<FilterOption> customers = jdbc.sql("SELECT c.id, c.name, count(*) AS cnt" + fromScope
-                        + " GROUP BY c.id, c.name ORDER BY c.name LIMIT 300")
-                .params(scopeParams).query((rs, n) -> new FilterOption(rs.getLong("id"), rs.getString("name"), rs.getLong("cnt"))).list();
-        List<FilterOption> operators = jdbc.sql("SELECT e.id, e.full_name AS name, count(*) AS cnt" + fromScope
-                        + " GROUP BY e.id, e.full_name ORDER BY e.full_name LIMIT 300")
-                .params(scopeParams).query((rs, n) -> new FilterOption(rs.getLong("id"), rs.getString("name"), rs.getLong("cnt"))).list();
-        List<FilterOption> regions = jdbc.sql("SELECT r.id, r.name, count(*) AS cnt" + from + " JOIN region r ON r.id = c.region_id" + scope
-                        + " GROUP BY r.id, r.name ORDER BY r.name LIMIT 300")
-                .params(scopeParams).query((rs, n) -> new FilterOption(rs.getLong("id"), rs.getString("name"), rs.getLong("cnt"))).list();
+        // S1: filtr variantlari bitta oʻqishda (mijoz × operator boʻyicha guruh, keyin uchta roʻyxat) — avval uchta toʻliq skan edi
+        record Facet(String kind, FilterOption option) {}
+        List<Facet> facets = jdbc.sql("""
+                WITH cc AS MATERIALIZED (SELECT o.customer_id, o.created_by, count(*) AS n FROM sales_order o""" + scope + """
+                 GROUP BY 1, 2)
+                (SELECT 'C' AS kind, c.id, c.name, sum(cc.n) AS cnt FROM cc JOIN counterparty c ON c.id = cc.customer_id
+                 GROUP BY c.id, c.name ORDER BY c.name LIMIT 300)
+                UNION ALL
+                (SELECT 'O', e.id, e.full_name, sum(cc.n) FROM cc JOIN employee e ON e.id = cc.created_by
+                 GROUP BY e.id, e.full_name ORDER BY e.full_name LIMIT 300)
+                UNION ALL
+                (SELECT 'R', r.id, r.name, sum(cc.n) FROM cc JOIN counterparty c ON c.id = cc.customer_id JOIN region r ON r.id = c.region_id
+                 GROUP BY r.id, r.name ORDER BY r.name LIMIT 300)""")
+                .params(scopeParams)
+                .query((rs, n) -> new Facet(rs.getString("kind"), new FilterOption(rs.getLong("id"), rs.getString("name"), rs.getLong("cnt"))))
+                .list();
+        List<FilterOption> customers = facets.stream().filter(x -> "C".equals(x.kind())).map(Facet::option).toList();
+        List<FilterOption> operators = facets.stream().filter(x -> "O".equals(x.kind())).map(Facet::option).toList();
+        List<FilterOption> regions = facets.stream().filter(x -> "R".equals(x.kind())).map(Facet::option).toList();
         return new OrderPage(items, total, page, size, statusTabs(statuses), new OrderFacets(customers, operators, regions));
     }
 
@@ -808,17 +820,13 @@ class Orders {
                            WHERE s.warehouse_id = :w AND s.qty > coalesce(r.qty, 0) AND z.sellable AND z.active AND b.expiry_date >= :min
                            GROUP BY s.product_id) a ON a.product_id = p.id
                 """;
-        // Filtr variantlari — qidiruv va «Faqat bor» bo'yicha (filtrlarning o'zisiz), soni bilan
+        // Filtr variantlari — qidiruv va «Faqat bor» bo'yicha (filtrlarning o'zisiz), soni bilan.
+        // S1 (22.11): bitta GROUPING SETS soʻrovi (avval 4 ta alohida skan + jami soni — har biri qoldiq agregati bilan)
         String base = from + where;
-        OrderModels.CatalogFacets facets = new OrderModels.CatalogFacets(
-                facet("manufacturer", "p.manufacturer_id", base, params),
-                facet("category", "p.category_id", base, params),
-                facet("country", "p.country_id", base, params),
-                jdbc.sql("SELECT count(*) FILTER (WHERE p.marked) AS marked, count(*) FILTER (WHERE p.controlled) AS controlled,"
-                                + " count(*) FILTER (WHERE p.prescription) AS prescription" + base)
-                        .params(params)
-                        .query(OrderModels.CatalogFlagCounts.class)
-                        .single());
+        FacetResult fr = facets(base, params);
+        OrderModels.CatalogFacets facets = fr.facets();
+        boolean facetFilter = !filter.manufacturerIds().isEmpty() || !filter.categoryIds().isEmpty() || !filter.countryIds().isEmpty()
+                || !filter.flags().isEmpty();
         if (!filter.manufacturerIds().isEmpty()) {
             where.append(" AND p.manufacturer_id IN (:fm)");
             params.put("fm", filter.manufacturerIds());
@@ -842,7 +850,7 @@ class Orders {
             }
             where.append(")");
         }
-        long total = jdbc.sql("SELECT count(*)" + from + where).params(params).query(Long.class).single();
+        long total = facetFilter ? jdbc.sql("SELECT count(*)" + from + where).params(params).query(Long.class).single() : fr.total();
         record Row(long id, String code, String name, String manufacturer, Integer qty, Date nearest, Integer minQty, Integer maxQty,
                 boolean controlled, boolean marked) {}
         List<Row> rows = jdbc.sql("SELECT p.id, p.code, p.name, mf.name AS manufacturer, a.qty, a.nearest, p.min_qty, p.max_qty, p.controlled, p.marked"
@@ -859,12 +867,42 @@ class Orders {
         return new OrderModels.CatalogPage(items, total, page, size, facets);
     }
 
-    private List<OrderModels.CatalogFacet> facet(String table, String column, String base, Map<String, Object> params) {
-        return jdbc.sql("SELECT d.id, d.name, count(*) AS count" + base.replaceFirst("(?s) WHERE p\\.active", " JOIN " + table + " d ON d.id = " + column
-                        + " WHERE p.active") + " GROUP BY d.id, d.name ORDER BY lower(d.name), d.id")
+    private record FacetResult(OrderModels.CatalogFacets facets, long total) {}
+
+    /**
+     * Katalog filtr variantlari (ishlab chiqaruvchi / kategoriya / mamlakat — soni bilan, nom boʻyicha), belgilar soni va jami — bitta
+     * skan: {@code GROUPING SETS} (har toʻplam alohida guruhlanadi, {@code ()} — umumiy qator; boʻsh natijada ham bitta qator).
+     */
+    private FacetResult facets(String base, Map<String, Object> params) {
+        record G(String kind, Long id, String name, long n, long marked, long controlled, long prescription) {}
+        List<G> rows = jdbc.sql("WITH g AS MATERIALIZED (SELECT GROUPING(p.manufacturer_id) AS gm, GROUPING(p.category_id) AS gc,"
+                        + " GROUPING(p.country_id) AS gk, p.manufacturer_id AS m, p.category_id AS c, p.country_id AS k, count(*) AS n,"
+                        + " count(*) FILTER (WHERE p.marked) AS marked, count(*) FILTER (WHERE p.controlled) AS controlled,"
+                        + " count(*) FILTER (WHERE p.prescription) AS prescription" + base
+                        + " GROUP BY GROUPING SETS ((p.manufacturer_id), (p.category_id), (p.country_id), ())) " + """
+                        SELECT 'a' AS kind, NULL::bigint AS id, NULL AS name, NULL AS sort_name, n, marked, controlled, prescription
+                        FROM g WHERE gm = 1 AND gc = 1 AND gk = 1
+                        UNION ALL SELECT 'm', d.id, d.name, lower(d.name), g.n, 0, 0, 0 FROM g JOIN manufacturer d ON d.id = g.m WHERE g.gm = 0
+                        UNION ALL SELECT 'c', d.id, d.name, lower(d.name), g.n, 0, 0, 0 FROM g JOIN category d ON d.id = g.c WHERE g.gc = 0
+                        UNION ALL SELECT 'k', d.id, d.name, lower(d.name), g.n, 0, 0, 0 FROM g JOIN country d ON d.id = g.k WHERE g.gk = 0
+                        ORDER BY kind, sort_name, id""")
                 .params(params)
-                .query(OrderModels.CatalogFacet.class)
+                .query(G.class)
                 .list();
+        List<OrderModels.CatalogFacet> m = new java.util.ArrayList<>();
+        List<OrderModels.CatalogFacet> c = new java.util.ArrayList<>();
+        List<OrderModels.CatalogFacet> k = new java.util.ArrayList<>();
+        G all = new G("a", null, null, 0, 0, 0, 0);
+        for (G g : rows) {
+            switch (g.kind()) {
+                case "m" -> m.add(new OrderModels.CatalogFacet(g.id(), g.name(), g.n()));
+                case "c" -> c.add(new OrderModels.CatalogFacet(g.id(), g.name(), g.n()));
+                case "k" -> k.add(new OrderModels.CatalogFacet(g.id(), g.name(), g.n()));
+                default -> all = g;
+            }
+        }
+        return new FacetResult(new OrderModels.CatalogFacets(m, c, k, new OrderModels.CatalogFlagCounts(all.marked(), all.controlled(),
+                all.prescription())), all.n());
     }
 
     /** Mijozning oxirgi 5 ta buyurtmasi («Oldingi buyurtmani takrorlash»). */

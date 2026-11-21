@@ -285,6 +285,27 @@ class OrderIT {
         mvc.perform(get("/api/orders/catalog").param("warehouseId", String.valueOf(p.warehouseId())).param("q", "by aspirin")
                         .param("inStockOnly", "false").param("manufacturerIds", "-1").cookie(operator))
                 .andExpect(jsonPath("$.total").value(0));
+        // S1: variantlar bitta GROUPING SETS soʻrovida — ishlab chiqaruvchi soni, «hammasi» jami, filtr bilan jami
+        long mf = jdbc.sql("INSERT INTO manufacturer (name) VALUES ('BY Bayer ' || gen_random_uuid()) RETURNING id").query(Long.class).single();
+        jdbc.sql("UPDATE product SET manufacturer_id = :m WHERE id = :p").param("m", mf).param("p", a).update();
+        mvc.perform(get("/api/orders/catalog").param("warehouseId", String.valueOf(p.warehouseId())).param("q", "by aspirin")
+                        .param("inStockOnly", "false").cookie(operator))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(2))
+                .andExpect(jsonPath("$.facets.manufacturers.length()").value(1))
+                .andExpect(jsonPath("$.facets.manufacturers[0].id").value((int) mf))
+                .andExpect(jsonPath("$.facets.manufacturers[0].count").value(1))
+                .andExpect(jsonPath("$.facets.flags.controlled").value(0));
+        mvc.perform(get("/api/orders/catalog").param("warehouseId", String.valueOf(p.warehouseId())).param("q", "by aspirin")
+                        .param("inStockOnly", "false").param("manufacturerIds", String.valueOf(mf)).cookie(operator))
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].productId").value((int) a))
+                .andExpect(jsonPath("$.facets.manufacturers[0].count").value(1));
+        mvc.perform(get("/api/orders/catalog").param("warehouseId", String.valueOf(p.warehouseId())).param("q", "yoʻq-mahsulot-xyz")
+                        .cookie(operator))
+                .andExpect(jsonPath("$.total").value(0))
+                .andExpect(jsonPath("$.facets.manufacturers.length()").value(0))
+                .andExpect(jsonPath("$.facets.flags.marked").value(0));
         // U11: tanlangan mahsulotlar boʻyicha (qidiruvsiz) — qoldiq va muddat qatorlar uchun
         mvc.perform(get("/api/orders/catalog").param("warehouseId", String.valueOf(p.warehouseId())).param("inStockOnly", "false")
                         .param("productIds", String.valueOf(a), String.valueOf(empty)).cookie(operator))
@@ -1640,6 +1661,35 @@ class OrderIT {
         send(post("/api/trips/" + t + "/orders"), keeper, "{\"orderIds\":[" + o3 + "]}").andExpect(jsonPath("$.code").value("trip.notEditable"));
     }
 
+    /** S1: berilgan chegirma (E7) sotuv oʻtkazilganda sale.discount_total ga yoziladi (savdo hisoboti shundan oʻqiydi). */
+    @Test
+    void salePostingStoresDiscountTotal() throws Exception {
+        Place p = place();
+        long c = customer(p.branchId(), null);
+        // E8: mijozning standart chegirmasi 5% (tasdiqsiz) — 1000 → 950, 2 dona: chegirma 100,00
+        jdbc.sql("UPDATE counterparty_branch_terms SET discount_pct = 5 WHERE counterparty_id = :c").param("c", c).update();
+        Cookie operator = loginAs("OPERATOR", p.branchId());
+        Cookie keeper = loginAs("WAREHOUSE_MANAGER", p.branchId());
+        Cookie picker = loginAs("PICKER", p.branchId());
+        Cookie driverSession = loginAs("DRIVER", p.branchId());
+        long driver = jdbc.sql("SELECT max(id) FROM employee WHERE full_name = 'Sinov DRIVER' AND branch_id = :b").param("b", p.branchId())
+                .query(Long.class).single();
+        long prod = product(p, "BY Chegirma sotuv", "1000", 20, null, null);
+        long o1 = documenting(p, c, prod, 2, 2, "DELIVERY", operator, keeper, picker);
+        long vehicle = jdbc.sql("INSERT INTO vehicle (branch_id, plate_number, model) VALUES (:b, :p, 'Labo') RETURNING id")
+                .param("b", p.branchId()).param("p", "10" + ThreadLocalRandom.current().nextInt(100_000, 999_999)).query(Long.class).single();
+        MvcResult t = send(post("/api/trips"), keeper, "{\"vehicleId\":" + vehicle + ",\"driverId\":" + driver + ",\"tripDate\":\"" + today()
+                + "\",\"orderIds\":[" + o1 + "]}").andExpect(status().isCreated()).andReturn();
+        long trip = id(t);
+        long stop = ((Number) JsonPath.read(t.getResponse().getContentAsString(), "$.stops[0].id")).longValue();
+        send(post("/api/trips/" + trip + "/stops/" + stop + "/load"), driverSession, "{\"places\":2}").andExpect(status().isOk());
+        send(post("/api/trips/" + trip + "/start"), driverSession, "").andExpect(status().isOk());
+        var sale = jdbc.sql("SELECT total::text AS total, discount_total::text AS discount FROM sale WHERE order_id = :o")
+                .param("o", o1).query().singleRow();
+        assertThat(sale.get("total")).isEqualTo("1900.00");
+        assertThat(sale.get("discount")).isEqualTo("100.00");
+    }
+
     @Test
     void driverLoadsStartsTripAndSaleWritesStockDebtAndInvoice() throws Exception {
         Place p = place();
@@ -2197,6 +2247,11 @@ class OrderIT {
                 .andReturn();
         long task = ((Number) JsonPath.read(q.getResponse().getContentAsString(), "$.items[0].id")).longValue();
         mvc.perform(get("/api/invoice-tasks").param("q", cashNumber).cookie(accountant)).andExpect(jsonPath("$.total").value(0));
+        // S1: qidiruvsiz (yengil soʻrov) va holat filtri bilan — jami soni yorliqlardan
+        mvc.perform(get("/api/invoice-tasks").cookie(accountant)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id").exists());
+        mvc.perform(get("/api/invoice-tasks").param("status", "PENDING").cookie(accountant)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[?(@.status == 'SENT')]").isEmpty());
         // Naqd buyurtma egasi «Mijoz nomiga» ga o'zgarsa — vazifa ochiladi
         send(post("/api/orders/" + cash + "/codes-owner"), keeper, "{\"owner\":\"CUSTOMER\"}").andExpect(status().isOk());
         mvc.perform(get("/api/invoice-tasks").param("q", cashNumber).cookie(accountant)).andExpect(jsonPath("$.total").value(1));

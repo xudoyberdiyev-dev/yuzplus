@@ -17,6 +17,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import uz.yuzplus.shared.error.YuzplusException;
+import uz.yuzplus.shared.excel.ExcelUploadGuard;
 
 /**
  * Markirovka kodlari fayli (egasi 13.11, O5): .xlsx yoki .csv/.txt. Kod ustuni sarlavha bo'yicha topiladi («Markirovka kodi»,
@@ -125,7 +126,7 @@ final class MarkingImport {
     }
 
     private static List<List<String>> readExcel(InputStream in) {
-        try (Workbook wb = WorkbookFactory.create(in)) {
+        try (Workbook wb = WorkbookFactory.create(ExcelUploadGuard.check(in))) {
             DataFormatter fmt = new DataFormatter(Locale.ROOT);
             Sheet sheet = wb.getSheetAt(0);
             List<List<String>> rows = new ArrayList<>();
@@ -146,6 +147,9 @@ final class MarkingImport {
             }
             return rows;
         } catch (IOException | RuntimeException e) {
+            if (e instanceof YuzplusException me) {
+                throw me;
+            }
             throw YuzplusException.badRequest("marking.import.unreadable");
         }
     }

@@ -99,13 +99,11 @@ class AuditController {
               ELSE 'CHANGE'
             END""";
 
-    private static final String CONTROLLED = """
-            ((a.entity_type = 'product' AND EXISTS (SELECT 1 FROM product p WHERE CAST(p.id AS text) = a.entity_id AND p.controlled))
-             OR (a.entity_type = 'zone' AND EXISTS (SELECT 1 FROM zone z WHERE CAST(z.id AS text) = a.entity_id AND z.controlled))
-             OR (a.entity_type = 'sales_order' AND EXISTS (SELECT 1 FROM sales_order_line l JOIN product p ON p.id = l.product_id
-                    WHERE CAST(l.order_id AS text) = a.entity_id AND p.controlled))
-             OR (a.entity_type = 'receipt' AND EXISTS (SELECT 1 FROM receipt_line l JOIN product p ON p.id = l.product_id
-                    WHERE CAST(l.receipt_id AS text) = a.entity_id AND p.controlled)))""";
+    /**
+     * «Nazoratdagi» belgisi — yozuv paytida audit_log.controlled ga yoziladi (V109, trigger). S1: avval har soʻrovda har yozuv uchun
+     * mahsulot / buyurtma qatorlari tekshirilardi (sintetik hajmda «oxirgi 7 kun»: 37 s).
+     */
+    private static final String CONTROLLED = "a.controlled";
 
     /** Filial doirasidagi audit, harakat turi va nazoratdagi belgisi bilan. */
     private static final String BASE = "(SELECT a.*, " + CATEGORY + " AS category, " + CONTROLLED

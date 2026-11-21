@@ -31,6 +31,7 @@ import uz.yuzplus.catalog.product.ProductModels.ProductRow;
 import uz.yuzplus.shared.audit.AuditEntry;
 import uz.yuzplus.shared.audit.AuditLog;
 import uz.yuzplus.shared.error.YuzplusException;
+import uz.yuzplus.shared.excel.ExcelUploadGuard;
 
 /**
  * Mahsulotlar .xlsx: eksport (jadval filtrlari bilan) va import (100+ shabloni bo'yicha; SmartUp ustunlari namunasi
@@ -294,7 +295,7 @@ class ProductExcel {
     }
 
     private static List<Map<String, String>> read(InputStream in) {
-        try (Workbook wb = WorkbookFactory.create(in)) {
+        try (Workbook wb = WorkbookFactory.create(ExcelUploadGuard.check(in))) {
             Sheet sheet = wb.getSheetAt(0);
             DataFormatter fmt = new DataFormatter(Locale.ROOT);
             Row header = sheet.getRow(sheet.getFirstRowNum());

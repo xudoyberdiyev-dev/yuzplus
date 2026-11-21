@@ -25,6 +25,12 @@ public interface DebtSummaries {
     /** branchId = null — barcha filiallar (faqat barcha filiallarni ko'radiganlarga). top — nechta eng katta qarzdor qaytarilsin. */
     Summary summary(Actor actor, Side side, Long branchId, int top);
 
+    /**
+     * Har filial uchun {@link #summary} (top-N siz) — bitta soʻrov bilan (S1: Direktor bosh sahifasi har filialga alohida chaqirardi).
+     * Faqat barcha filiallarni koʻradiganlarga; soʻralgan har filial natijada bor (qarzi yoʻq — nol).
+     */
+    Map<Long, Summary> summaryByBranch(Actor actor, Side side, java.util.Collection<Long> branchIds);
+
     /** Kompaniyaning YB oldidagi ochiq qarzi to'lov kuni bo'yicha. */
     default DueSoon supplierDue(Actor actor, Long branchId, LocalDate today) {
         return due(actor, Side.SUPPLIER, branchId, today);
