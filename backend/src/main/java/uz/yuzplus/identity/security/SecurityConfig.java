@@ -64,6 +64,9 @@ class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/actuator/health/**", "/actuator/info")
                         .permitAll()
+                        // S1: qolgan actuator (indeks, metrikalar) — faqat tizim xavfsizligi ruxsati bilan
+                        .requestMatchers("/actuator/**")
+                        .hasAuthority("settings.security")
                         .requestMatchers("/api/openapi/**", "/api/docs/**", "/swagger-ui/**")
                         .permitAll()
                         .requestMatchers("/error")

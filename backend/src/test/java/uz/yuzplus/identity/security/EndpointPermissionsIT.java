@@ -40,7 +40,7 @@ class EndpointPermissionsIT {
             "/api/dictionaries/MANUFACTURER", "/api/vehicles", "/api/expense-items", "/api/employee-lookup", "/api/branches/stats",
             "/api/stock/product-card/1", "/api/warehouses/overview", "/api/price-types", "/api/prices/history?productId=1",
             "/api/prices?branchId=1", "/api/prices/export?branchId=1", "/api/price-changes", "/api/price-changes/1",
-            "/api/price-changes/1/pdf", "/api/setup-checklist", "/api/settings/system-status");
+            "/api/price-changes/1/pdf", "/api/setup-checklist", "/api/settings/system-status", "/actuator");
 
     /** Qobiq (har rol): filiallar, omborlar, profil, bildirishnomalar, qidiruv, o'zim. */
     private static final List<String> OPEN = List.of("/api/branches", "/api/warehouses", "/api/profile", "/api/notifications",
