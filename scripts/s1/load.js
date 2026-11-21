@@ -62,12 +62,17 @@ function headers(extra) {
 }
 
 let me = null;
+const warned = {};
 
 function req(name, method, path, body) {
   const params = { headers: headers(), tags: { name } };
   const url = `${BASE}${path}`;
   const r = method === "GET" ? http.get(url, params) : http.request(method, url, body ? JSON.stringify(body) : null, params);
   if (r.status === 409) conflicts.add(1, { name });
+  if (r.status >= 400 && !warned[name]) {
+    warned[name] = true;
+    console.warn(`${name} ${r.status} ${String(r.body).slice(0, 200)}`);
+  }
   // VU raqami 50/150/300 bosqichda qoʻshiladi: __VU ≤ 50 — birinchi bosqichdan, ammo keyingi bosqichlarda ham ishlaydi;
   // shuning uchun bosqich — hozirgi faol VU soni boʻyicha (exec.instance.vusActive)
   const active = exec.instance.vusActive;
@@ -151,7 +156,7 @@ function accountant() {
   group("accountant", () => {
     req("home.accountant", "GET", `/api/home/accountant?branchId=${me.branchId}`);
     req("debts.customers", "GET", `/api/debts/customers?branchId=${me.branchId}`);
-    req("orders.list.branch", "GET", `/api/orders?branchId=${me.branchId}&page=0&size=50`);
+    // Buxgalterda buyurtmalar roʻyxati ruxsati yoʻq (403) — ssenariyda yoʻq
     req("reports.sales.month", "GET", `/api/reports/sales?branchId=${me.branchId}&from=${today(-30)}&to=${today(0)}&groupBy=CUSTOMER`);
   });
 }

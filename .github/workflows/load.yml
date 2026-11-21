@@ -80,7 +80,7 @@ jobs:
           psql -U yuzplus -d yuzplus -qc "SELECT pg_stat_statements_reset(); SELECT pg_stat_reset();" > /dev/null
           nohup scripts/s1/sampler.sh > /tmp/sampler.log 2>&1 &
       - name: Yuklama (50 → 150 → 300)
-        run: k6 run --quiet scripts/s1/load.js 2>&1 | tail -150 | tee /tmp/k6.txt
+        run: k6 run --quiet scripts/s1/load.js > /tmp/k6.txt 2>&1 || true; tail -40 /tmp/k6.txt
       - name: Natija (baza va backend)
         if: always()
         run: |
@@ -106,6 +106,9 @@ jobs:
           docker logs pg 2>&1 | grep -E "deadlock detected|still waiting for" | head -5 | cut -c1-300
           echo "--- backend xatolari ---"
           grep -E " ERROR | WARN " backend.log | sed -E 's/^[^ ]+ +//' | cut -c1-220 | sort | uniq -c | sort -rn | head -20
+          grep -A4 "Kutilmagan xato" backend.log | grep -vE "^\s+at (org|java|jdk)\." | head -12 | cut -c1-250
+          echo "--- k6 xato namunalari ---"
+          grep -oE 'msg="[a-zA-Z.]+ [0-9]{3} [^"]{0,160}' /tmp/k6.txt | sort | uniq -c | sort -rn | head -8
           echo "S1-DB-END"
           echo "--- k6 (takror, log oxirida oʻqish uchun) ---"
           sed -n '/S1-LOAD-BEGIN/,/S1-LOAD-END/p' /tmp/k6.txt || true
