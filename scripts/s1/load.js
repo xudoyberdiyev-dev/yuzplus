@@ -156,7 +156,7 @@ function accountant() {
   group("accountant", () => {
     req("home.accountant", "GET", `/api/home/accountant?branchId=${me.branchId}`);
     req("debts.customers", "GET", `/api/debts/customers?branchId=${me.branchId}`);
-    req("orders.list.branch", "GET", `/api/orders?branchId=${me.branchId}&page=0&size=50`);
+    // Buxgalterda buyurtmalar roʻyxati ruxsati yoʻq (403) — ssenariyda yoʻq
     req("reports.sales.month", "GET", `/api/reports/sales?branchId=${me.branchId}&from=${today(-30)}&to=${today(0)}&groupBy=CUSTOMER`);
   });
 }
