@@ -62,8 +62,14 @@ hisobot testlari (bosh sahifa xulosalari endi aynan bir xil FIFO qarz yoshidan).
 | Hikari kutish → 500 xato | bor (30 s) | yoʻq |
 | Deadlock, qulf kutish > 200 ms | 0 / 1 | 0 / 0 |
 
-Qolgan xatolar (~1,7 %, barcha oʻlchovlarda bir xil) — ssenariy/rol bilan bogʻliq 4xx (keyingi oʻlchovda namunasi chiqariladi),
-yuklama bilan bogʻliq emas.
+Qolgan xatolar (~1,7 %, barcha oʻlchovlarda bir xil) — ssenariy xatosi: Buxgalterda buyurtmalar roʻyxatiga ruxsat yoʻq (403,
+toʻgʻri xatti-harakat); ssenariydan olib tashlandi. 300 foydalanuvchida bir nechta 500 — ulanish 30 s kutib berilmagani va
+mijoz (k6) 60 s da uzgani (Broken pipe) — toʻyinish belgisi, kod xatosi emas.
+
+**Ehtiyot:** GitHub runner'lari tezligi har xil — bir xil kodda 6-oʻlchov 16 soʻrov/s (5-oʻlchov 28,9). Shuning uchun
+tuzatishlar foydasining ishonchli dalili — `pg_stat_statements` (olib tashlangan soʻrovlar va ularning ulushi), umumiy
+soʻrov/s esa ±2× oraligʻida. Aniq solishtirish uchun keyingi qadam: bitta runner'da eski va yangi versiyani ketma-ket
+ishga tushirish (workflow'ga `compare_ref`).
 
 ## Xulosa: qancha foydalanuvchi
 
