@@ -75,7 +75,10 @@ springdoc:
   default-produces-media-type: application/json
   writer-with-default-pretty-printer: true
   writer-with-order-by-keys: true
+  # S1 xavfsizlik: production'da API tavsifi va Swagger UI ochiq boʻlmasin (YUZPLUS_API_DOCS=false; CI/e2e uchun standart yoqilgan)
   api-docs:
     path: /api/openapi
+    enabled: ${YUZPLUS_API_DOCS:true}
   swagger-ui:
     path: /api/docs
+    enabled: ${YUZPLUS_API_DOCS:true}
