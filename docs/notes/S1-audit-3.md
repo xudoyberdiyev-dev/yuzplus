@@ -4,7 +4,7 @@
 
 - **CI workflow** `.github/workflows/load.yml` (`s1-load` branch'iga push yoki qoʻlda ishga tushirish): GitHub runner'da
   PostgreSQL 18 (`shared_buffers=1GB`, `pg_stat_statements`), backend jar (`-Xmx1536m`, Hikari standart 10 ulanish),
-  k6 — hammasi **bitta mashinada** (runner: 4 vCPU, 16 GB). Shuning uchun raqamlar production'dan **yomonroq** (k6 va
+  k6 — hammasi **bitta mashinada** (GitHub standart runner). Shuning uchun raqamlar production'dan **yomonroq** (k6 va
   backend PostgreSQL bilan bitta CPU'ni boʻlishadi) — farqlarni solishtirish uchun ishonchli, mutlaq qiymat — taxminiy.
 - **Maʼlumot:** `scripts/s1/gen.sql` — 180 kun × 1 500 buyurtma/kun × 15 qator (270 ming buyurtma, 4 mln qator, 15 000
   mahsulot, 5 000 mijoz, 4 filial, 8 ombor), `scripts/s1/load-fixup.sql` — narxlar, ketma-ketliklar, `party_doc_balance`,
