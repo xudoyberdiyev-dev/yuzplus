@@ -80,7 +80,7 @@ jobs:
           psql -U yuzplus -d yuzplus -qc "SELECT pg_stat_statements_reset(); SELECT pg_stat_reset();" > /dev/null
           nohup scripts/s1/sampler.sh > /tmp/sampler.log 2>&1 &
       - name: Yuklama (50 → 150 → 300)
-        run: k6 run --quiet scripts/s1/load.js 2>&1 | tail -150
+        run: k6 run --quiet scripts/s1/load.js 2>&1 | tail -150 | tee /tmp/k6.txt
       - name: Natija (baza va backend)
         if: always()
         run: |
@@ -97,9 +97,9 @@ jobs:
           for k in sorted(mx): print(f"{k}: {mx[k]:g}")
           PY
           echo "--- pg_stat_statements: umumiy vaqt boʻyicha top 15 ---"
-          psql -U yuzplus -d yuzplus -Atc "SELECT round(total_exec_time)::text || ' ms | n=' || calls || ' | mean=' || round(mean_exec_time::numeric, 1) || ' | max=' || round(max_exec_time::numeric) || ' | ' || left(regexp_replace(query, '\s+', ' ', 'g'), 160) FROM pg_stat_statements WHERE dbid = (SELECT oid FROM pg_database WHERE datname = 'yuzplus') ORDER BY total_exec_time DESC LIMIT 15"
+          psql -U yuzplus -d yuzplus -Atc "SELECT round(total_exec_time)::text || ' ms | n=' || calls || ' | mean=' || round(mean_exec_time::numeric, 1) || ' | max=' || round(max_exec_time::numeric) || ' | ' || left(regexp_replace(query, '\s+', ' ', 'g'), 160) FROM pg_stat_statements WHERE dbid = (SELECT oid FROM pg_database WHERE datname = 'yuzplus') ORDER BY total_exec_time DESC LIMIT 10"
           echo "--- pg_stat_statements: oʻrtacha > 50 ms ---"
-          psql -U yuzplus -d yuzplus -Atc "SELECT round(mean_exec_time::numeric, 1) || ' ms | n=' || calls || ' | ' || left(regexp_replace(query, '\s+', ' ', 'g'), 160) FROM pg_stat_statements WHERE calls > 5 AND mean_exec_time > 50 ORDER BY mean_exec_time DESC LIMIT 15"
+          psql -U yuzplus -d yuzplus -Atc "SELECT round(mean_exec_time::numeric, 1) || ' ms | n=' || calls || ' | ' || left(regexp_replace(query, '\s+', ' ', 'g'), 160) FROM pg_stat_statements WHERE calls > 5 AND mean_exec_time > 50 ORDER BY mean_exec_time DESC LIMIT 8"
           echo "--- deadlock / qulf kutish ---"
           psql -U yuzplus -d yuzplus -Atc "SELECT 'deadlocks=' || deadlocks || ' commits=' || xact_commit || ' rollbacks=' || xact_rollback FROM pg_stat_database WHERE datname = 'yuzplus'"
           docker logs pg 2>&1 | grep -cE "still waiting for|deadlock detected" || true
@@ -107,3 +107,5 @@ jobs:
           echo "--- backend xatolari ---"
           grep -E " ERROR | WARN " backend.log | sed -E 's/^[^ ]+ +//' | cut -c1-220 | sort | uniq -c | sort -rn | head -20
           echo "S1-DB-END"
+          echo "--- k6 (takror, log oxirida oʻqish uchun) ---"
+          sed -n '/S1-LOAD-BEGIN/,/S1-LOAD-END/p' /tmp/k6.txt || true

@@ -33,7 +33,21 @@ class DebtSummariesService implements DebtSummaries {
     @Transactional(readOnly = true)
     public Summary summary(Actor actor, Side side, Long branchId, int top) {
         // S1: toʻliq hisobot (kontragent maʼlumoti soʻrovi bilan) oʻrniga faqat qarz yoshi; nom — faqat top-N uchun
-        Map<Long, Aging.Result> by = debts.aging(actor, side, branchId, debts.today());
+        return toSummary(debts.aging(actor, side, branchId, debts.today()), top);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Summary> summaryByBranch(Actor actor, Side side, java.util.Collection<Long> branchIds) {
+        Map<Long, Map<Long, Aging.Result>> by = debts.agingByBranch(actor, side, null, debts.today());
+        Map<Long, Summary> out = new LinkedHashMap<>();
+        for (Long b : branchIds) {
+            out.put(b, toSummary(by.getOrDefault(b, Map.of()), 0));
+        }
+        return out;
+    }
+
+    private Summary toSummary(Map<Long, Aging.Result> by, int top) {
         Aging.Result total = by.values().stream().reduce(Aging.Result.EMPTY, Aging.Result::plus);
         Debts.Buckets t = Debts.Buckets.of(total);
         record P(long id, Debts.Buckets b, int maxOverdueDays) {}

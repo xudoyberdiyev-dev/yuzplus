@@ -162,9 +162,13 @@ class DirectorHome {
                 SELECT id, name FROM branch WHERE (CAST(:b AS BIGINT) IS NULL AND active) OR id = :b ORDER BY name""")
                 .param("b", branchId).query(Branch.class).list();
         List<BranchRow> rows = new ArrayList<>();
+        // S1: barcha filiallar — har tomon uchun bitta soʻrov (avval har filialga alohida: 2 × filiallar soni)
+        List<Long> ids = branchList.stream().map(Branch::id).toList();
+        Map<Long, DebtSummaries.Summary> cBy = branchId == null ? debts.summaryByBranch(actor, Side.CUSTOMER, ids) : Map.of();
+        Map<Long, DebtSummaries.Summary> sBy = branchId == null ? debts.summaryByBranch(actor, Side.SUPPLIER, ids) : Map.of();
         for (Branch b : branchList) {
-            DebtSummaries.Summary c = branchId == null ? debts.summary(actor, Side.CUSTOMER, b.id(), 0) : customers;
-            DebtSummaries.Summary s = branchId == null ? debts.summary(actor, Side.SUPPLIER, b.id(), 0) : suppliers;
+            DebtSummaries.Summary c = branchId == null ? cBy.get(b.id()) : customers;
+            DebtSummaries.Summary s = branchId == null ? sBy.get(b.id()) : suppliers;
             rows.add(new BranchRow(b.id(), b.name(), sum(sales, b.id()).toString(), c.debt(), s.debt(), sum(expenses, b.id()).toString(),
                     byPayment(only(sales, b.id())), byPayment(only(customerOpen, b.id())), byPayment(only(supplierOpen, b.id())),
                     byPayment(only(expenses, b.id())), c.overdue(), canSeeCost ? m(stock.get(b.id())).toString() : null,
