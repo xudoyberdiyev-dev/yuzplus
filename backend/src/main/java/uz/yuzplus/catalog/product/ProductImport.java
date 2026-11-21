@@ -28,6 +28,7 @@ import uz.yuzplus.catalog.product.ProductModels.ProductRequest;
 import uz.yuzplus.shared.audit.AuditEntry;
 import uz.yuzplus.shared.audit.AuditLog;
 import uz.yuzplus.shared.error.YuzplusException;
+import uz.yuzplus.shared.excel.ExcelUploadGuard;
 import uz.yuzplus.shared.security.CurrentActor;
 
 /**
@@ -99,7 +100,7 @@ public class ProductImport {
         if (name.toLowerCase(Locale.ROOT).endsWith(".csv")) {
             return new ImportFile(name, size, List.of(new ImportSheet(name.replaceAll("(?i)\\.csv$", ""), readCsv(in))));
         }
-        try (Workbook wb = WorkbookFactory.create(in)) {
+        try (Workbook wb = WorkbookFactory.create(ExcelUploadGuard.check(in))) {
             DataFormatter fmt = new DataFormatter(Locale.ROOT);
             List<ImportSheet> sheets = new ArrayList<>();
             for (int s = 0; s < Math.min(wb.getNumberOfSheets(), MAX_SHEETS); s++) {

@@ -35,6 +35,7 @@ import uz.yuzplus.inventory.opening.OpeningModels.OpeningImportError;
 import uz.yuzplus.inventory.opening.OpeningModels.OpeningLineRequest;
 import uz.yuzplus.inventory.opening.OpeningModels.Status;
 import uz.yuzplus.shared.error.YuzplusException;
+import uz.yuzplus.shared.excel.ExcelUploadGuard;
 import uz.yuzplus.shared.security.Actor;
 
 /**
@@ -253,7 +254,7 @@ class OpeningExcel {
 
     /** Sarlavha bo'yicha ustunlar; sana kataklari {@link LocalDate}, qolganlari matn. Oxiridagi bo'sh qatorlar tashlanadi. */
     private static List<Map<String, Object>> read(InputStream in) {
-        try (Workbook wb = WorkbookFactory.create(in)) {
+        try (Workbook wb = WorkbookFactory.create(ExcelUploadGuard.check(in))) {
             Sheet sheet = wb.getSheetAt(0);
             DataFormatter fmt = new DataFormatter(Locale.ROOT);
             Row header = sheet.getRow(sheet.getFirstRowNum());

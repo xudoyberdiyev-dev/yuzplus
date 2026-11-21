@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.yuzplus.pricing.change.PriceChangeModels.PricePage;
 import uz.yuzplus.pricing.change.PriceChangeModels.PriceRow;
 import uz.yuzplus.shared.error.YuzplusException;
+import uz.yuzplus.shared.excel.ExcelUploadGuard;
 import uz.yuzplus.shared.money.Money;
 
 /**
@@ -157,7 +158,7 @@ class PriceExcel {
     SetImportResult importSet(InputStream in) throws IOException {
         DataFormatter fmt = new DataFormatter(Locale.ROOT);
         List<String[]> cells = new ArrayList<>();
-        try (Workbook wb = WorkbookFactory.create(in)) {
+        try (Workbook wb = WorkbookFactory.create(ExcelUploadGuard.check(in))) {
             Sheet sheet = wb.getSheetAt(0);
             for (int i = 0; i <= Math.min(sheet.getLastRowNum(), MAX_IMPORT_ROWS + 10); i++) {
                 Row row = sheet.getRow(i);
@@ -173,6 +174,9 @@ class PriceExcel {
                 cells.add(v);
             }
         } catch (IOException | RuntimeException e) {
+            if (e instanceof YuzplusException me) {
+                throw me;
+            }
             throw YuzplusException.badRequest("prices.import.badFile");
         }
         int head = -1;

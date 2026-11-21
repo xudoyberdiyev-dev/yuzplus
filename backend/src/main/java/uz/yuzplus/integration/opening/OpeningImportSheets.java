@@ -28,6 +28,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellRangeAddress;
 import uz.yuzplus.integration.opening.OpeningImportModels.Section;
 import uz.yuzplus.shared.error.YuzplusException;
+import uz.yuzplus.shared.excel.ExcelUploadGuard;
 
 /**
  * SmartUp / 100+ shablonidagi ko'p varaqli Excel'ni o'qish (BQ1). Varaq turi sarlavhalar (uz-Latn, uz-Cyrl, ru sinonimlari) va
@@ -124,7 +125,7 @@ final class OpeningImportSheets {
     record Parsed(List<ParsedSheet> sheets, List<SkippedSheet> skipped) {}
 
     static Parsed read(InputStream in) {
-        try (Workbook wb = WorkbookFactory.create(in)) {
+        try (Workbook wb = WorkbookFactory.create(ExcelUploadGuard.check(in))) {
             List<ParsedSheet> sheets = new ArrayList<>();
             List<SkippedSheet> skipped = new ArrayList<>();
             DataFormatter fmt = new DataFormatter(Locale.ROOT);

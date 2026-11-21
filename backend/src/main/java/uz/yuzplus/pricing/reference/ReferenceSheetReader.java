@@ -19,6 +19,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import uz.yuzplus.pricing.reference.ReferenceModels.RefFile;
 import uz.yuzplus.pricing.reference.ReferenceModels.RefSheet;
 import uz.yuzplus.shared.error.YuzplusException;
+import uz.yuzplus.shared.excel.ExcelUploadGuard;
 
 /** Referent narxlar fayli (.xlsx/.xls/.csv) → varaqlar va katakchalar (matn). Katalog import ustasidagi o'qish bilan bir xil. */
 public final class ReferenceSheetReader {
@@ -44,7 +45,7 @@ public final class ReferenceSheetReader {
         if (name.toLowerCase(Locale.ROOT).endsWith(".csv")) {
             return new RefFile(name, size, List.of(new RefSheet(name.replaceAll("(?i)\\.csv$", ""), readCsv(in))));
         }
-        try (Workbook wb = WorkbookFactory.create(in)) {
+        try (Workbook wb = WorkbookFactory.create(ExcelUploadGuard.check(in))) {
             DataFormatter fmt = new DataFormatter(Locale.ROOT);
             List<RefSheet> sheets = new ArrayList<>();
             for (int s = 0; s < Math.min(wb.getNumberOfSheets(), MAX_SHEETS); s++) {
