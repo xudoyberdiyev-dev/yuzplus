@@ -54,3 +54,15 @@ Diqqat: mahalliy bazada `fsync=off` — production diskida tiklash sekinroq boʻ
   ishga tushmaydi. Egasi Railway Postgres sozlamasida yoqishi mumkin (1000 ms).
 - `/actuator/prometheus` roʻyxatda bor, lekin `micrometer-registry-prometheus` bogʻliqligi yoʻq — metrika tizimi ulanmagan.
   Monitoring xizmati tanlansa (Grafana Cloud bepul tarif va h.k.) — qoʻshiladi.
+
+## 4. Real vaqt yangilanishlari — «poda» yuklamasi (frontend)
+- Topildi: har buyurtma holati oʻzgarishi (kuniga ~1 500 buyurtma × ~8 holat ≈ 12 000 hodisa, ish vaqtida ~0,4/s) SSE orqali
+  filialdagi **barcha ochiq oynalarga** keladi va har biri darhol roʻyxatlarni qayta soʻraydi — jumladan **yashirin varaqlar**.
+  Buyurtmalar roʻyxati (Direktor, filtrsiz) 2 yillik hajmda bitta ochilishda ~310 ms DB (holat yorliqlari 128 ms + filtr
+  variantlari 182 ms, 3 ta parallel ishchi). 30 ta ochiq oynada har hodisa → bir soniyada 30 ta shunday soʻrov.
+  k6 yuklama sinovi (3-qism) SSE ni modellamagan — shuning uchun koʻrinmagan.
+- Tuzatildi (`lib/live.ts` → `coalesceLive`, `components/shell/live-sync.tsx`): hodisalar **1–2,5 s** ichida bitta
+  yangilanishga birlashadi (tasodifiy kechikish — oynalar bir vaqtda soʻramaydi), **yashirin varaqda soʻrov yuborilmaydi** —
+  varaq ochilganda bir marta. Natija: hodisa oqimi qancha boʻlmasin, har oyna ≤ 1 yangilanish / ~1,75 s, fondagi varaqlar — 0.
+  Unit: `lib/live-coalesce.test.ts`.
+- Keyingi qadam (kerak boʻlsa): buyurtmalar roʻyxati filtr variantlarini faqat filtr menyusi ochilganda olish.
