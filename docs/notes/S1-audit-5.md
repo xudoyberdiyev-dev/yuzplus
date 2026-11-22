@@ -9,8 +9,13 @@ Lugʻatlar oʻsib borgani sari bu boʻlak ham kattalashardi (telefon panellari, 
 ## Tuzatish
 - `pnpm i18n:cyrl` endi har til uchun alohida modul yasaydi: `i18n/dict/<til>.generated.ts`;
   `i18n/messages.generated.ts` — ularni qayta eksport qiladi (testlar va tiplar uchun).
-- `i18n/intl-loader.tsx` — tanlangan til lugʻati dinamik import bilan (`use()` + bitta promise kesh);
-  har til alohida bundle boʻlagi, brauzer keshlaydi. `LocaleProvider` (server) cookie'dan tilni oʻqib uzatadi.
+- `i18n/intl-dynamic.tsx` — har til uchun `next/dynamic` (SSR bilan) komponent (`intl-uz-latn.tsx`, `intl-uz-cyrl.tsx`,
+  `intl-ru.tsx`); server render qilgan til boʻlagi HTML'da `<link rel="preload">` bilan keladi, brauzer keshlaydi.
+  `LocaleProvider` (server) cookie'dan tilni oʻqib uzatadi.
+- Sinab koʻrilgan va rad etilgan: (a) `use()` + dinamik import — hydration lugʻatni kutib kechikdi, e2e da kirish formasi
+  maydoni oʻchdi; (b) lugʻatni serverdan prop — har HTML ga +500 KB (keshlanmaydi).
+- Kirish formasi: gidratsiyagacha yozilgan yoki brauzer avtomatik toʻldirgan login/parol endi holatga olinadi
+  (oldin boʻsh holat ularni oʻchirib yuborishi mumkin edi; sekin tarmoqda 24/24 sinovda saqlandi).
 - `i18n/intl-shell.tsx` — umumiy `NextIntlClientProvider`; `IntlProvider` (uch til birga) faqat testlar uchun qoldi.
 - Til almashtirish (`router.refresh()`) — yangi til boʻlagi yuklanadi, oʻtish (transition) davomida eski matn turadi.
 

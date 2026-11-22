@@ -7,7 +7,7 @@ import { MESSAGES } from "./messages";
 
 /**
  * Uch til lugʻati birga — faqat testlar uchun (`test/render.tsx`).
- * Ilovada `LocaleProvider` → `IntlLoader` faqat tanlangan til lugʻatini yuklaydi.
+ * Ilovada `LocaleProvider` (server) faqat tanlangan til lugʻatini uzatadi.
  */
 export function IntlProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
   return (

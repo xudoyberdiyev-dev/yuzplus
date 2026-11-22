@@ -105,7 +105,14 @@ export function LoginForm() {
 
   // Faqat birinchi ochilishda: eslab qolingan login (brauzer xotirasidan — gidratsiyadan keyin)
   useEffect(() => {
+    // Gidratsiyagacha yozilgan yoki brauzer avtomatik toʻldirgan qiymat holatga olinadi (aks holda boʻsh holat uni oʻchiradi)
+    const typedLogin = loginRef.current?.value ?? "";
+    const typedPassword = passRef.current?.value ?? "";
+    if (typedLogin || typedPassword) {
+      setValues((v) => ({ login: v.login || typedLogin, password: v.password || typedPassword }));
+    }
     const id = window.setTimeout(() => {
+      if (typedLogin) return;
       const saved = readRemembered();
       if (saved) {
         setValues((v) => (v.login ? v : { ...v, login: saved }));

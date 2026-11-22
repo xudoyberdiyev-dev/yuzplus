@@ -5,7 +5,7 @@ import { useEffect, type ReactNode } from "react";
 import { TIME_ZONE, type Locale } from "./config";
 import type { uzLatn } from "./messages.generated";
 
-/** Tarjimalar konteksti — lugʻat tashqaridan keladi (til boʻyicha alohida modul, `intl-loader.tsx`). */
+/** Tarjimalar konteksti — lugʻat tashqaridan keladi (serverdan — `locale-provider.tsx`). */
 export function IntlShell({ locale, messages, children }: { locale: Locale; messages: typeof uzLatn; children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = locale;
