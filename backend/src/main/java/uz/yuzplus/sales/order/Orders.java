@@ -16,9 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uz.yuzplus.finance.PartyLedger.CreditState;
 import uz.yuzplus.finance.PartyLedger.Side;
 import uz.yuzplus.finance.PartyLedger;
@@ -490,6 +494,50 @@ class Orders {
                         instant(rs.getTimestamp("pick_finished_at")), null))
                 .list();
         items = items.stream().map(this::withCreditFlag).toList();
+        OrderFacets facets = facets(scope, scopeParams);
+        return new OrderPage(items, total, page, size, statusTabs(statuses), facets);
+    }
+
+    /** S1 6-qism: filtr variantlari keshi — faqat filial doirasiga bogʻliq, holat oʻzgarishi ularga taʼsir qilmaydi. */
+    private static final long FACETS_TTL_NANOS = java.util.concurrent.TimeUnit.SECONDS.toNanos(60);
+
+    private record CachedFacets(long generation, long at, OrderFacets value) {}
+
+    private final Map<String, CachedFacets> facetCache = new ConcurrentHashMap<>();
+    /** Buyurtma yaratilgan / mijozi oʻzgargan tranzaksiya yakunlanganda oshadi — kesh darhol eskiradi. */
+    private final AtomicLong facetGeneration = new AtomicLong();
+
+    /** Yaratish/tahrirdan keyin (tranzaksiya yakunlangach) filtr variantlari qayta hisoblansin. */
+    private void facetsChanged() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    facetGeneration.incrementAndGet();
+                }
+            });
+        } else {
+            facetGeneration.incrementAndGet();
+        }
+    }
+
+    private OrderFacets facets(String scope, Map<String, Object> scopeParams) {
+        String key = scope + new java.util.TreeMap<>(scopeParams);
+        long generation = facetGeneration.get(); // soʻrovdan OLDIN oʻqiladi: soʻrov paytida commit boʻlsa — yozuv eskirgan hisoblanadi
+        long now = System.nanoTime();
+        CachedFacets hit = facetCache.get(key);
+        if (hit != null && hit.generation() == generation && now - hit.at() < FACETS_TTL_NANOS) {
+            return hit.value();
+        }
+        OrderFacets value = loadFacets(scope, scopeParams);
+        if (facetCache.size() > 200) {
+            facetCache.clear();
+        }
+        facetCache.put(key, new CachedFacets(generation, now, value));
+        return value;
+    }
+
+    private OrderFacets loadFacets(String scope, Map<String, Object> scopeParams) {
         // S1: filtr variantlari bitta oʻqishda (mijoz × operator boʻyicha guruh, keyin uchta roʻyxat) — avval uchta toʻliq skan edi
         record Facet(String kind, FilterOption option) {}
         List<Facet> facets = jdbc.sql("""
@@ -509,7 +557,7 @@ class Orders {
         List<FilterOption> customers = facets.stream().filter(x -> "C".equals(x.kind())).map(Facet::option).toList();
         List<FilterOption> operators = facets.stream().filter(x -> "O".equals(x.kind())).map(Facet::option).toList();
         List<FilterOption> regions = facets.stream().filter(x -> "R".equals(x.kind())).map(Facet::option).toList();
-        return new OrderPage(items, total, page, size, statusTabs(statuses), new OrderFacets(customers, operators, regions));
+        return new OrderFacets(customers, operators, regions);
     }
 
     /** Ochiq buyurtmalar uchun kredit ogohlantirishi (faqat qoralama va tasdiqlashda — sahifadagi qatorlar). */
@@ -952,6 +1000,7 @@ class Orders {
             throw YuzplusException.badRequest(c.blocked() ? "order.customerBlocked" : "order.customerInactive");
         }
         String number = numbers.next(DocumentPrefix.BY, place.branchCode()).toString();
+        facetsChanged();
         long id = jdbc.sql("""
                 INSERT INTO sales_order (number, branch_id, warehouse_id, customer_id, order_date, delivery_type, delivery_date, address,
                                          payment_type, note, created_by)
@@ -979,6 +1028,7 @@ class Orders {
         Head h = lock(id, actor);
         requireStatus(h, OrderStatus.DRAFT);
         Place place = place(actor, r.warehouseId());
+        facetsChanged();
         jdbc.sql("""
                 UPDATE sales_order SET branch_id = :b, warehouse_id = :w, customer_id = :c, delivery_type = :dt, delivery_date = :dd, address = :a,
                        payment_type = :pt, note = :note, updated_at = now(), version = version + 1 WHERE id = :id""")
