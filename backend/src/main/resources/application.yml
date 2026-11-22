@@ -44,6 +44,8 @@ server:
       timeout: 10h
 
 yuzplus:
+  # S1: shundan uzoq davom etgan API soʻrovlari WARN «slow-request» bilan loglanadi (0 — oʻchiq)
+  slow-request-ms: ${YUZPLUS_SLOW_REQUEST_MS:1000}
   session:
     cookie-secure: ${YUZPLUS_COOKIE_SECURE:${MEDIX_COOKIE_SECURE:true}}
   bootstrap:

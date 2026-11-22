@@ -21,7 +21,8 @@ jobs:
   backup:
     if: ${{ github.event.repository.private }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # S1 6-qism: 2 yillik hajmda nusxa ~1 GB, tiklash 3–5 daq (mahalliy) + tarmoq — 30 daq chegarasi tor edi
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
       - name: Sirlar bormi

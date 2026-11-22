@@ -16,7 +16,10 @@ echo "== shifr ochildi: $(du -h "$work/db.dump" | cut -f1)"
 docker run -d --name "$name" -e POSTGRES_PASSWORD=restore -e POSTGRES_USER=yuzplus -e POSTGRES_DB=yuzplus \
   -v "$work:/backup:ro" postgres:18 >/dev/null
 for _ in $(seq 1 60); do docker exec "$name" pg_isready -U yuzplus -q && break; sleep 1; done
-docker exec "$name" pg_restore -U yuzplus -d yuzplus --no-owner --no-acl --exit-on-error /backup/db.dump
+# S1 6-qism: parallel tiklash (indekslar bir vaqtda quriladi) — 2 yillik hajmda 2 CPU bilan 273 → 193 s
+start=$(date +%s)
+docker exec "$name" pg_restore -U yuzplus -d yuzplus --no-owner --no-acl --exit-on-error -j "$(nproc)" /backup/db.dump
+echo "== tiklash: $(( $(date +%s) - start )) s"
 
 check() { docker exec "$name" psql -U yuzplus -d yuzplus -tAc "$1"; }
 migr="$(check 'SELECT max(installed_rank) FROM flyway_schema_history WHERE success')"
