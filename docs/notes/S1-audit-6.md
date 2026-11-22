@@ -66,5 +66,5 @@ Diqqat: mahalliy bazada `fsync=off` — production diskida tiklash sekinroq boʻ
   varaq ochilganda bir marta. Natija: hodisa oqimi qancha boʻlmasin, har oyna ≤ 1 yangilanish / ~1,75 s, fondagi varaqlar — 0.
   Unit: `lib/live-coalesce.test.ts`.
 - Backend: buyurtmalar roʻyxati **filtr variantlari** (mijoz/operator/hudud) faqat filial doirasiga bogʻliq va holat
-  oʻzgarishidan oʻzgarmaydi → 60 s kesh (`Orders.facets`), buyurtma yaratish/tahrir tranzaksiyasi yakunlanganda darhol
+  oʻzgarishidan oʻzgarmaydi → 60 s kesh (`Orders.cachedFacets`), buyurtma yaratish/tahrir tranzaksiyasi yakunlanganda darhol
   eskiradi (avlod hisoblagichi, commit'dan keyin). Direktor roʻyxati har yangilanishda ~310 → ~130 ms (2 yil).

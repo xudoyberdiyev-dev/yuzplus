@@ -494,7 +494,7 @@ class Orders {
                         instant(rs.getTimestamp("pick_finished_at")), null))
                 .list();
         items = items.stream().map(this::withCreditFlag).toList();
-        OrderFacets facets = facets(scope, scopeParams);
+        OrderFacets facets = cachedFacets(scope, scopeParams);
         return new OrderPage(items, total, page, size, statusTabs(statuses), facets);
     }
 
@@ -521,7 +521,7 @@ class Orders {
         }
     }
 
-    private OrderFacets facets(String scope, Map<String, Object> scopeParams) {
+    private OrderFacets cachedFacets(String scope, Map<String, Object> scopeParams) {
         String key = scope + new java.util.TreeMap<>(scopeParams);
         long generation = facetGeneration.get(); // soʻrovdan OLDIN oʻqiladi: soʻrov paytida commit boʻlsa — yozuv eskirgan hisoblanadi
         long now = System.nanoTime();
