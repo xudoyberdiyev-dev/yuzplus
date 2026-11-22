@@ -86,6 +86,17 @@ class DebtSummariesService implements DebtSummaries {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<PartyDebt> ofParty(Actor actor, Side side, long branchId, long counterpartyId) {
+        Map<Long, Aging.Result> one = debts.agingByBranch(actor, side, branchId, counterpartyId, debts.today())
+                .getOrDefault(branchId, Map.of());
+        return Optional.ofNullable(one.get(counterpartyId)).map(r -> {
+            Debts.Buckets b = Debts.Buckets.of(r);
+            return new PartyDebt(b.debt(), b.advance(), b.overdue(), b.d1to30(), b.d31to60(), b.d61to90(), b.d90plus(), r.maxOverdueDays());
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public DueSoon due(Actor actor, Side side, Long branchId, LocalDate today) {
         if (branchId == null ? !actor.allBranches() : !actor.canAccessBranch(branchId)) {
             throw YuzplusException.notFound("error.notFound");

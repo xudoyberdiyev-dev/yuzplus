@@ -135,6 +135,23 @@ class CounterpartyOverviewIT {
                 .andExpect(jsonPath(row + ".status").value(contains("ACTIVE")))
                 .andExpect(jsonPath("$.branches[*].code").value(hasItem(code1)));
 
+        // Shu filialdagi boshqa mijoz qarzi kartochkaga aralashmasin (S1: kartochka faqat shu kontragent qarzini hisoblaydi)
+        String tin2 = tin();
+        long other = jdbc.sql("INSERT INTO counterparty (tin, name, is_customer, is_supplier) VALUES (:t, :n, true, false) RETURNING id")
+                .param("t", tin2)
+                .param("n", "Boshqa Klinika " + tin2)
+                .query(Long.class)
+                .single();
+        jdbc.sql("""
+                INSERT INTO party_ledger (branch_id, counterparty_id, side, amount, due_date, doc_type, doc_id, doc_number)
+                VALUES (:b, :c, 'CUSTOMER', 700000.00, :d, 'SV', :i, :n)""")
+                .param("b", b1)
+                .param("c", other)
+                .param("d", today.minusDays(5))
+                .param("i", 800_000_000L + other)
+                .param("n", "SV-OV-" + other)
+                .update();
+
         // Kartochka o'ng paneli: filial bo'yicha qarz, qolgan limit, narx turi
         mvc.perform(get("/api/counterparties/" + c + "/summary").param("role", "CUSTOMER").cookie(director))
                 .andExpect(status().isOk())

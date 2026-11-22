@@ -40,6 +40,8 @@ public interface DebtSummaries {
     record PartyDebt(String debt, String advance, String overdue, String d1to30, String d31to60, String d61to90, String d90plus, int maxOverdueDays) {}
     /** Kontragentlar bo'yicha ochiq qarz (faqat qarzi/avansi borlar). branchId = null — barcha filiallar (faqat barcha filiallarni ko'radiganlarga). */
     Map<Long, PartyDebt> byParty(Actor actor, Side side, Long branchId);
+    /** Bitta kontragentning bitta filialdagi qarzi ({@link #byParty} bilan bir xil hisob; qarzi/avansi yoʻq — boʻsh). */
+    Optional<PartyDebt> ofParty(Actor actor, Side side, long branchId, long counterpartyId);
     /** Ochiq qarz (mijozlar yoki YB) hujjatdagi to'lov kuni bo'yicha: kechikkan / bugun / 3 kun ichida. */
     DueSoon due(Actor actor, Side side, Long branchId, LocalDate today);
     /** Eng yaqin to'lov kuni (kechikkan bo'lsa ham): ochiq hujjatlar bo'yicha sana, shu kundagi ochiq summa va eng kichik hujjat raqami. */
