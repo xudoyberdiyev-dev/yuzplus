@@ -29,3 +29,16 @@ sahifa xatolari yoʻq; frontend 625 unit, lint, typecheck, format — yashil.
 React DOM (229 KB), Next router (164 KB), polyfill (113 KB) — framework, kamaytirib boʻlmaydi.
 Keyingi imkoniyat (shart emas): lugʻatni nomlar fazosi boʻyicha sahifalarga boʻlish (hozir bitta til ~300–440 KB) —
 murakkablik oshadi, foyda ~100 KB siqilgan; hozircha kerak emas.
+
+## N+1 koʻrigi (backend, statik)
+Skript bilan sikl (`for`/`forEach`) ichidagi `jdbc.sql(...)` chaqiruvlari qidirildi — 123 joy.
+- **Deyarli hammasi — hujjat oʻtkazishdagi qator yozuvlari** (sotuv/kirim/koʻchirish qatorlari, zahira, jurnal):
+  hujjat qatorlari soni bilan chegaralangan (odatda 5–100), bitta tranzaksiyada; yuklama sinovi (3-qism) bu yoʻlda
+  muammo koʻrsatmadi. Ommaviy `batchUpdate` ga oʻtkazish — kelajakdagi kichik yutuq (~10–40 ms / 100 qator), hozir shart emas.
+- **Oʻqish yoʻlida topildi va tuzatildi:** mijoz/YB kartochkasi (`CounterpartyOverview.summary`) har filial uchun
+  `DebtSummaries.byParty` — filialdagi **barcha** kontragentlarning qarz yoshini hisoblab, bittasini olardi
+  (5 000 mijoz × 4 filialda — har kartochka ochilishida ~4 ta toʻliq skan). Endi `DebtSummaries.ofParty` —
+  `party_doc_balance` dan faqat shu kontragent (`party_doc_balance_open_idx` indeksi). IT: shu filialdagi boshqa
+  mijoz qarzi kartochkaga aralashmaydi (`CounterpartyOverviewIT`).
+- Qolgan oʻqish sikllari (audit yorligʻi — tur boʻyicha `IN (...)`, qarz tafsiloti — filial boʻyicha) — filial/tur soni bilan
+  chegaralangan, muammo emas.
