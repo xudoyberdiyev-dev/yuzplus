@@ -1,18 +1,18 @@
 "use client";
 
-import { NextIntlClientProvider } from "next-intl";
-import { useEffect, type ReactNode } from "react";
-import { TIME_ZONE, type Locale } from "./config";
+import type { ReactNode } from "react";
+import type { Locale } from "./config";
+import { IntlShell } from "./intl-shell";
 import { MESSAGES } from "./messages";
 
-/** Tarjimalar konteksti. Tilni server cookie'dan aniqlaydi (`LocaleProvider`), bu yerda faqat lugʻat ulanadi. */
+/**
+ * Uch til lugʻati birga — faqat testlar uchun (`test/render.tsx`).
+ * Ilovada `LocaleProvider` (server) faqat tanlangan til lugʻatini uzatadi.
+ */
 export function IntlProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
-  useEffect(() => {
-    document.documentElement.lang = locale;
-  }, [locale]);
   return (
-    <NextIntlClientProvider locale={locale} messages={MESSAGES[locale]} timeZone={TIME_ZONE}>
+    <IntlShell locale={locale} messages={MESSAGES[locale]}>
       {children}
-    </NextIntlClientProvider>
+    </IntlShell>
   );
 }

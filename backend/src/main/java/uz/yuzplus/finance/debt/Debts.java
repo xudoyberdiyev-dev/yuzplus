@@ -89,6 +89,12 @@ class Debts {
      */
     @Transactional(readOnly = true)
     Map<Long, Map<Long, Aging.Result>> agingByBranch(Actor actor, Side side, Long branchId, LocalDate today) {
+        return agingByBranch(actor, side, branchId, null, today);
+    }
+
+    /** {@link #agingByBranch} — bitta kontragent uchun (counterpartyId ≠ null): kartochka filialdagi hammasini hisoblamasin (S1). */
+    @Transactional(readOnly = true)
+    Map<Long, Map<Long, Aging.Result>> agingByBranch(Actor actor, Side side, Long branchId, Long counterpartyId, LocalDate today) {
         if (branchId == null ? !actor.allBranches() : !actor.canAccessBranch(branchId)) {
             throw YuzplusException.notFound("error.notFound");
         }
@@ -100,10 +106,13 @@ class Debts {
                 FROM party_doc_balance
                 WHERE side = :s AND own_rows > 0 AND open_amount <> 0%s
                 ORDER BY branch_id, counterparty_id, coalesce(due_date, (first_at AT TIME ZONE 'Asia/Tashkent')::date), first_at, doc_id"""
-                        .formatted(branchId == null ? "" : " AND branch_id = :b"))
+                        .formatted((branchId == null ? "" : " AND branch_id = :b") + (counterpartyId == null ? "" : " AND counterparty_id = :c")))
                 .param("s", side.name());
         if (branchId != null) {
             q = q.param("b", branchId);
+        }
+        if (counterpartyId != null) {
+            q = q.param("c", counterpartyId);
         }
         List<Open> open = q.query((rs, n) -> new Open(rs.getLong("branch_id"), rs.getLong("counterparty_id"),
                         rs.getDate("due") == null ? null : rs.getDate("due").toLocalDate(), new Money(rs.getBigDecimal("open"))))

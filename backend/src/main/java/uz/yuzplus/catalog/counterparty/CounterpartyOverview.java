@@ -199,7 +199,7 @@ class CounterpartyOverview {
                 .toList();
         List<BranchSummary> out = new java.util.ArrayList<>();
         for (Br b : brs) {
-            DebtSummaries.PartyDebt d = debts.byParty(actor, side, b.id()).get(id);
+            DebtSummaries.PartyDebt d = debts.ofParty(actor, side, b.id(), id).orElse(null);
             Money debt = d == null ? Money.ZERO : Money.of(d.debt());
             Money left = null;
             if (b.creditLimit() != null) {
