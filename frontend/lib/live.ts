@@ -156,3 +156,65 @@ export const LIVE_INVALIDATES: Record<Exclude<LiveEvent, "notifications">, reado
     ["zone-transfers", "list"],
   ],
 };
+
+/** S1: bir xil hodisalar shu oraliqda bitta yangilanishga birlashadi (kuniga minglab holat oʻzgarishi — har biriga soʻrov emas). */
+export const LIVE_COALESCE_MS = 1_000;
+/** S1: tasodifiy kechikish — barcha ochiq oynalar bir soniyada birdan soʻrov yubormasin («podaning yugurishi»). */
+export const LIVE_JITTER_MS = 1_500;
+
+export interface LiveCoalescer {
+  /** Hodisa keldi: yashirin varaqda — kutadi; aks holda oraliq tugagach bir marta `run`. */
+  trigger(): void;
+  /** Varaq koʻrinadigan boʻldi — yashirin paytda kelgan hodisa boʻlsa, yangilanadi. */
+  visible(): void;
+  cancel(): void;
+}
+
+/**
+ * Hodisalarni birlashtirish: birinchi hodisadan `delay + random × jitter` ms keyin bitta `run` (oraliqdagi qolganlari shunga
+ * qoʻshiladi — eng koʻp kechikish chegaralangan). Yashirin varaqda soʻrov yuborilmaydi — koʻrinadigan boʻlganda bir marta.
+ */
+export function coalesceLive(
+  run: () => void,
+  opts: { delayMs?: number; jitterMs?: number; random?: () => number; hidden?: () => boolean } = {},
+): LiveCoalescer {
+  const delayMs = opts.delayMs ?? LIVE_COALESCE_MS;
+  const jitterMs = opts.jitterMs ?? LIVE_JITTER_MS;
+  const random = opts.random ?? Math.random;
+  const hidden = opts.hidden ?? (() => typeof document !== "undefined" && document.visibilityState === "hidden");
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let pending = false;
+  const schedule = () => {
+    if (timer) return;
+    timer = setTimeout(
+      () => {
+        timer = null;
+        if (hidden()) {
+          pending = true;
+          return;
+        }
+        run();
+      },
+      delayMs + Math.round(random() * jitterMs),
+    );
+  };
+  return {
+    trigger() {
+      if (hidden()) {
+        pending = true;
+        return;
+      }
+      schedule();
+    },
+    visible() {
+      if (!pending || hidden()) return;
+      pending = false;
+      schedule();
+    },
+    cancel() {
+      if (timer) clearTimeout(timer);
+      timer = null;
+      pending = false;
+    },
+  };
+}
