@@ -20,6 +20,7 @@ import m_inventoryCounts from "@/messages/ru/inventoryCounts.json";
 import m_invoices from "@/messages/ru/invoices.json";
 import m_language from "@/messages/ru/language.json";
 import m_login from "@/messages/ru/login.json";
+import m_mobileApp from "@/messages/ru/mobileApp.json";
 import m_nav from "@/messages/ru/nav.json";
 import m_navGroups from "@/messages/ru/navGroups.json";
 import m_notifications from "@/messages/ru/notifications.json";
@@ -75,6 +76,7 @@ export const ru = {
   invoices: m_invoices,
   language: m_language,
   login: m_login,
+  mobileApp: m_mobileApp,
   nav: m_nav,
   navGroups: m_navGroups,
   notifications: m_notifications,

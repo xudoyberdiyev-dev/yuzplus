@@ -9,6 +9,8 @@ import {
   CircleX,
   Flag,
   History,
+  MapPin,
+  Navigation,
   PackageCheck,
   PackageMinus,
   Phone,
@@ -16,6 +18,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { DriverExpenses } from "@/features/trip-expenses/driver-expenses";
 import { useState } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +38,7 @@ import type { components } from "@/lib/api/schema";
 import { cn } from "@/lib/cn";
 import { formatMoney, formatQuantity } from "@/lib/format";
 import { partialTotals } from "./partial";
+import { arrivedPoint, nextStopId, roadUrl, tripHandover } from "./driver-model";
 import { SignatureModal } from "./signature-modal";
 import { TRIP_STATUS } from "./shipments-model";
 
@@ -209,6 +213,8 @@ function TripView(props: {
   const loadedN = t.stops.filter((s) => s.loadedAt).length;
   const resN = t.stops.filter((s) => s.outcome).length;
   const cashHeld = sumMoney(t.stops.map((s) => s.cashCollected));
+  const nextId = transit ? nextStopId(t.stops) : null;
+  const [arrived, setArrived] = useState<Record<number, string>>({});
   const [loadForm, setLoadForm] = useState<{ stopId: number; cnt: string } | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -340,7 +346,8 @@ function TripView(props: {
         const lf = loadForm?.stopId === s.id ? loadForm : null;
         const cnt = lf && lf.cnt !== "" ? Number(lf.cnt) : null;
         const diff = cnt !== null && cnt !== s.places;
-        const mark = res ? res.mark : planned && s.loadedAt ? "border-l-success" : "border-l-border";
+        const mark = res ? res.mark : planned && s.loadedAt ? "border-l-success" : s.id === nextId ? "border-l-primary" : "border-l-border";
+        const isNext = s.id === nextId;
         return (
           <article
             key={s.id}
@@ -364,8 +371,42 @@ function TripView(props: {
                 <Badge tone={res.tone} icon={res.icon}>
                   {tr(res.label)}
                 </Badge>
+              ) : isNext ? (
+                <Badge tone="info" icon={MapPin}>
+                  {tr("driver.next")}
+                </Badge>
               ) : null}
             </div>
+            {isNext ? (
+              <div className="flex flex-wrap gap-2">
+                {roadUrl(s.address) ? (
+                  <a
+                    href={roadUrl(s.address) ?? undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-12 items-center gap-2 rounded-control border border-border px-3.5 font-semibold text-link"
+                  >
+                    <Navigation size={18} strokeWidth={1.5} aria-hidden />
+                    {tr("driver.road")}
+                  </a>
+                ) : null}
+                {arrived[s.id] ? (
+                  <span className="inline-flex min-h-12 items-center gap-2 font-semibold text-success">
+                    <CircleCheck size={18} strokeWidth={1.5} aria-hidden />
+                    {tr("driver.arrivedAt", { t: arrived[s.id] ?? "" })}
+                  </span>
+                ) : (
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    icon={MapPin}
+                    onClick={() => void arrivedPoint(t.id, s.id).then((time) => setArrived((m) => ({ ...m, [s.id]: time })))}
+                  >
+                    {tr("driver.arrived")}
+                  </Button>
+                )}
+              </div>
+            ) : null}
             {s.phone ? (
               <a
                 href={`tel:${s.phone.replace(/[^\d+]/g, "")}`}
@@ -503,6 +544,8 @@ function TripView(props: {
           </article>
         );
       })}
+      {t.status === "RETURN_WAIT" || t.status === "DONE" ? <Handover t={t} /> : null}
+      {planned || transit || t.status === "RETURN_WAIT" ? <DriverExpenses tripId={t.id} /> : null}
       {planned || transit ? (
         <div className="sticky bottom-0 z-[5] -mx-1 flex flex-col gap-1.5 border-t border-border bg-background px-1 pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom))]">
           <span className="text-center text-caption text-text-secondary">
@@ -608,6 +651,44 @@ const RESULT = {
     button: "border-danger/30 bg-danger-bg text-danger",
   },
 } as const;
+
+/** H5: raqamli topshirish (kodsiz) — kassirga naqd va omborga qaytadigan tovar holati. */
+function Handover({ t }: { t: TripDetail }) {
+  const tr = useTranslations("orders");
+  const h = tripHandover(t.stops, t.status);
+  return (
+    <section aria-label={tr("driver.handTitle")} className="flex flex-col gap-2 rounded-card border border-border bg-surface px-4 py-3.5">
+      <span className="font-semibold">{tr("driver.handTitle")}</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-table">
+        <span className="flex items-center gap-1.5">
+          <Banknote size={16} strokeWidth={1.5} aria-hidden />
+          {tr("driver.handCash", { due: formatMoney(h.due), got: formatMoney(h.got) })}
+        </span>
+        <Badge tone={h.cashDone ? "success" : "warning"} icon={h.cashDone ? CircleCheck : History}>
+          {tr(h.cashDone ? "driver.handCashDone" : "driver.handCashWait")}
+        </Badge>
+      </div>
+      {h.returns.length > 0 ? (
+        <div className="flex flex-col gap-1 text-table">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5">
+              <PackageMinus size={16} strokeWidth={1.5} aria-hidden />
+              {tr("driver.handGoods", { n: h.returns.length })}
+            </span>
+            <Badge tone={h.goodsDone ? "success" : "warning"} icon={h.goodsDone ? CircleCheck : History}>
+              {tr(h.goodsDone ? "driver.handGoodsDone" : "driver.handGoodsWait")}
+            </Badge>
+          </div>
+          <ul className="text-text-secondary">
+            {h.returns.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+}
 
 function Cell(props: { label: string; children: React.ReactNode; big?: boolean; warn?: boolean }) {
   return (

@@ -87,12 +87,23 @@ final class TripModels {
             @Schema(nullable = true) String driverPhone,
             String plateNumber,
             @Schema(nullable = true) String vehicleModel,
-            boolean refrigerator) {}
+            boolean refrigerator,
+            @Schema(description = "HD1: GPS nuqtalar (bir martalik — «Yetib keldim» va natija), vaqt boʻyicha") List<TripPoint> points) {}
+
+    enum PointKind { ARRIVED, DELIVERED, PARTIAL, UNDELIVERED }
+
+    record TripPoint(@Schema(nullable = true) Long stopId, PointKind kind, String lat, String lng,
+            @Schema(nullable = true, description = "Aniqlik, metr") Integer accuracy, Instant recordedAt) {}
 
     /** Haydovchidagi pul (SPEC 5.4): Kassir qabul qilguncha. */
     record DriverCash(long stopId, long tripId, String tripNumber, String driver, String orderNumber, long customerId, String customer, String amount,
             Instant collectedAt, TripStatus tripStatus) {}
 
     /** Reys bo'yicha qabul natijasi: kutilgan, sanalgan, farq (sanalgan − kutilgan) va yozilgan MT raqamlari. */
-    record TripCashAccepted(String expected, String received, String diff, List<String> payments) {}
+    record TripCashAccepted(String expected, String received, String diff, List<String> payments,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "«Mijoz toʻlamagan» jami") String unpaid,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "«Haydovchi kamomadi»") String shortage,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "Qaytgan avans (HD2)") String advance,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "Tasdiqlangan yoʻl xarajatlari (HD2)") String expenses,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "Avans/xarajat KO raqamlari") List<String> cashOps) {}
 }

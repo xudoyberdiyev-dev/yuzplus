@@ -218,5 +218,52 @@
     "vehicle": "Mashina",
     "queue": "Oflayn navbat",
     "queueCount": "{count} ta kutmoqda"
+  },
+  "exp": {
+    "title": "Yoʻl xarajatlari",
+    "advance": "Avans",
+    "advanceGiven": "Berilgan avans",
+    "advanceLeft": "Avans qoldigʻi",
+    "hint": "Xarajatni darhol yozing. Kassir naqdni qabul qilganda chekni koʻrib tasdiqlaydi. Rad etilgan xarajat (oʻz pulingizdan boʻlmasa) kamomad boʻladi.",
+    "new": "Yangi xarajat",
+    "add": "Xarajat qoʻshish",
+    "amount": "Summa, soʻm",
+    "source": "Qaysi puldan",
+    "kind": {
+      "FUEL": "Yoqilgʻi",
+      "MEAL": "Ovqatlanish",
+      "TOLL": "Yoʻl toʻlovi / parkovka",
+      "REPAIR": "Taʼmir",
+      "OTHER": "Boshqa"
+    },
+    "src": {
+      "ADVANCE": "Avansdan",
+      "COLLECTED": "Yigʻilgan naqddan",
+      "OWN": "Oʻz pulimdan"
+    },
+    "st": {
+      "PENDING": "Tasdiq kutilmoqda",
+      "APPROVED": "Tasdiqlangan",
+      "REJECTED": "Rad etilgan"
+    },
+    "receipt": "Chek rasmini olish (majburiy)",
+    "receiptDone": "Chek rasmi olindi",
+    "noReceipt": "chek rasmi yoʻq",
+    "liters": "Litr",
+    "price": "1 litr narxi",
+    "odometer": "Spidometr, km (ixtiyoriy)",
+    "note": "Izoh (ixtiyoriy)",
+    "noteRequired": "Izoh: nimaga sarflandi",
+    "save": "Xarajatni saqlash",
+    "cancel": "Bekor qilish",
+    "queued": "{count} ta xarajat internet paydo boʻlganda yuboriladi",
+    "empty": "Hali xarajat yozilmagan",
+    "err": {
+      "amount": "Summani kiriting.",
+      "photo": "Yoqilgʻi uchun chek rasmini oling.",
+      "note": "«Boshqa» xarajat uchun izoh yozing.",
+      "liters": "Litr notoʻgʻri — masalan 12,5.",
+      "odometer": "Spidometr faqat raqam boʻlsin."
+    }
   }
 }

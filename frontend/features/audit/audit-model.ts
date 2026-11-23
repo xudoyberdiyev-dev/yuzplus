@@ -11,6 +11,7 @@ const ROUTES: Partial<Record<string, (id: string) => string>> = {
   customer_payment: (id) => `/payments/mt/${id}`,
   supplier_payment: (id) => `/payments/yt/${id}`,
   cash_op: (id) => `/cash/ops/${id}`,
+  employee_shortage: () => "/cash/shortages",
   price_change: (id) => `/prices/changes/${id}`,
   reconciliation_act: (id) => `/reconciliations/${id}`,
   product: (id) => `/products/${id}`,

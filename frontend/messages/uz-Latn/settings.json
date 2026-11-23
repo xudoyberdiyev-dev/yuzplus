@@ -82,6 +82,10 @@
     "refPriceTolPct": {
       "name": "Referent narx — ruxsat etilgan farq",
       "desc": "Referent narx bilan solishtirishda bizning narx shu foiz ichida farq qilsa, «Mos» hisoblanadi. 0 — faqat teng narx."
+    },
+    "tripExpenseLimit": {
+      "name": "Yoʻl xarajati limiti",
+      "desc": "Haydovchining bitta xarajati shu summadan oshsa, kassir qabulida «Limitdan oshgan» belgisi chiqadi. 0 — oʻchiq."
     }
   },
   "unit": {
@@ -93,7 +97,8 @@
     "TRIES": "urinish",
     "LOCK": "daqiqa",
     "DATE": "sana",
-    "RDAY": "kun"
+    "RDAY": "kun",
+    "RSUM": "soʻm"
   },
   "lastChange": "Oxirgi oʻzgarish: {t}, {n}",
   "defaultVal": "Standart qiymat",

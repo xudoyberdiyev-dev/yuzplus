@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { ArrowLeftRight, Banknote, Landmark, LockKeyhole, Plus, UserRound } from "lucide-react";
+import { ArrowLeftRight, Banknote, Fuel, Landmark, LockKeyhole, Plus, UserRound, UserRoundX } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { useBranchStore } from "@/lib/stores/branch";
 import { AccountCard, DriverCashSection } from "@/features/cash/cash-list";
 import { sumMoney } from "@/features/cash/list-model";
 import { useBranchList } from "@/features/organization/api";
+import { TRIP_EXPENSES_VIEW } from "@/features/trip-expenses/api";
 import { PAYMENT_MT, useAccounts, useAllAccounts } from "./api";
 
 /**
@@ -45,6 +46,12 @@ export function CashPage() {
   const cash = useQuery({
     queryKey: ["trips", "cash", branchId],
     queryFn: () => unwrap(api.GET("/api/trips/cash", { params: { query: { branchId: branchId ?? undefined } } })),
+    enabled: canAccept && (branchId != null || overall),
+    refetchInterval: 30_000,
+  });
+  const extras = useQuery({
+    queryKey: ["trips", "money", "open", branchId],
+    queryFn: () => unwrap(api.GET("/api/trips/cash/extras", { params: { query: { branchId: branchId ?? undefined } } })),
     enabled: canAccept && (branchId != null || overall),
     refetchInterval: 30_000,
   });
@@ -110,6 +117,16 @@ export function CashPage() {
               {t("cashiers")}
             </Button>
           ) : null}
+          {can(me.data, TRIP_EXPENSES_VIEW) ? (
+            <Button variant="secondary" icon={Fuel} onClick={() => router.push("/cash/trip-expenses")}>
+              {t("tripExpenses")}
+            </Button>
+          ) : null}
+          {can(me.data, "shortage.view") ? (
+            <Button variant="secondary" icon={UserRoundX} onClick={() => router.push("/cash/shortages")}>
+              {t("shortages")}
+            </Button>
+          ) : null}
           {canClose && !overall && kassas.length > 0 ? (
             <Button variant="secondary" icon={LockKeyhole} onClick={() => router.push(`/cash/close?acct=${closeAcct}`)}>
               {t("closeDay")}
@@ -160,8 +177,12 @@ export function CashPage() {
       {canAccept ? (
         <DriverCashSection
           list={cash.data}
-          error={cash.isError}
-          onRetry={() => void cash.refetch()}
+          extras={extras.data}
+          error={cash.isError || extras.isError}
+          onRetry={() => {
+            void cash.refetch();
+            void extras.refetch();
+          }}
           kassas={kassas}
           canAccept={canAccept}
         />

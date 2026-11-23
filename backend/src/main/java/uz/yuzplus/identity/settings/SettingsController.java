@@ -113,7 +113,7 @@ class SettingsController {
     }
 
     static String text(SettingKey k, BigDecimal v) {
-        return k.kind() == SettingKey.Kind.SUM ? v.setScale(2).toPlainString() : v.stripTrailingZeros().toPlainString();
+        return k.kind() == SettingKey.Kind.SUM || k.kind() == SettingKey.Kind.RSUM ? v.setScale(2).toPlainString() : v.stripTrailingZeros().toPlainString();
     }
 
     @GetMapping

@@ -622,7 +622,18 @@
     "photoNeeded": "Нужно хотя бы 1 фото",
     "deliverTitle": "Доставлено · {customer}",
     "markDelivered": "Отметить как доставлено",
-    "cashExp": "Получить: {amount} сум"
+    "cashExp": "Получить: {amount} сум",
+    "next": "Следующий адрес",
+    "road": "Маршрут",
+    "arrived": "Я на месте",
+    "arrivedAt": "Вы на месте · {t}",
+    "handTitle": "Сдача",
+    "handCash": "Наличные: к получению {due} · получено {got}",
+    "handCashWait": "Ожидает приёма кассиром",
+    "handCashDone": "Сдано кассиру",
+    "handGoods": "Товар на возврат на склад: заказов {n}",
+    "handGoodsWait": "Ожидает приёма завскладом",
+    "handGoodsDone": "Сдано на склад"
   },
   "shipments": {
     "tripStatus": {
@@ -1023,7 +1034,15 @@
     "bCtrl": "Контролируемый",
     "bShort": "Не хватило: {n} шт.",
     "dateWarn": "Дата доставки: {d}",
-    "more": "Другие действия"
+    "more": "Другие действия",
+    "gpsTitle": "Отслеживание рейса (GPS)",
+    "gpsOpen": "Открыть на карте",
+    "gps": {
+      "ARRIVED": "Прибыл",
+      "DELIVERED": "Доставлено",
+      "PARTIAL": "Доставлено частично",
+      "UNDELIVERED": "Не доставлено"
+    }
   },
   "markImport": {
     "open": "Загрузить из Excel",

@@ -85,7 +85,7 @@ class ExpenseReport {
                        coalesce(sum(c.amount) FILTER (WHERE a.kind NOT IN ('CASH', 'BANK')), 0) AS online
                 FROM cash_op c JOIN money_account a ON a.id = c.account_id
                 JOIN expense_item i ON i.id = c.expense_item_id JOIN branch b ON b.id = c.branch_id
-                WHERE c.direction = :d AND c.status = 'POSTED' AND c.op_date BETWEEN :f AND :t
+                WHERE c.direction = :d AND c.status = 'POSTED' AND c.source NOT IN ('SHORTAGE', 'ADVANCE') AND c.op_date BETWEEN :f AND :t
                   AND (CAST(:b AS BIGINT) IS NULL OR c.branch_id = :b)
                 GROUP BY 1, 2 ORDER BY %s""".formatted(g.key, g.name, order))
                 .param("d", d.name()).param("f", Date.valueOf(f)).param("t", Date.valueOf(t)).param("b", branchId)

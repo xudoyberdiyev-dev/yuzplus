@@ -35,3 +35,12 @@ describe("sozlama qiymati", () => {
     expect(vatRateValid("")).toBe(false);
   });
 });
+
+describe("RSUM (HD2 yoʻl xarajati limiti): 0 — oʻchiq", () => {
+  it("0 ruxsat etiladi, summa koʻrinishida", () => {
+    expect(canonicalSetting("RSUM", "0")).toBe("0.00");
+    expect(settingError("RSUM", 0, 0, "0")).toBeNull();
+    expect(settingError("RSUM", 0, 0, "abc")).toEqual({ code: "num" });
+    expect(displaySetting("RSUM", "500000.00")).toBe(displaySetting("SUM", "500000.00"));
+  });
+});

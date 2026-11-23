@@ -202,7 +202,7 @@ export function SettingsPage() {
                       meta={meta(v)}
                       value={raw}
                       unit={unit(v.kind)}
-                      wide={v.kind === "SUM"}
+                      wide={v.kind === "SUM" || v.kind === "RSUM"}
                       readOnly={!editable}
                       changed={changed}
                       error={err}

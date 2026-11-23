@@ -791,15 +791,33 @@ test("Direktor: birinchi kirish, buyurtmani tasdiqlaydi", async ({ page }) => {
   await expect(page.getByText("Tasdiqlandi — navbatga oʻtdi").first()).toBeVisible();
 });
 
-test("Kassir: qisman reysdagi naqd pulni qabul qiladi — haydovchi yangi reysga boʻshaydi", async ({ page }) => {
+test("Kassir: qisman reysdagi naqd pulni kam qabul qiladi (KT1 — haydovchi kamomadi) — haydovchi yangi reysga boʻshaydi", async ({
+  page,
+}) => {
   await login(page, "cashier.1", PASSWORD);
   await expect(page).toHaveURL(/\/$/);
   await page.goto("/cash");
   await expect(page.getByRole("heading", { name: "Haydovchilardan kutilayotgan pul" })).toBeVisible();
   await page.getByRole("button", { name: "Qabul qilish", exact: true }).first().click();
+  // KT1: haqiqatda sanalgan summa — 0; sabab «Haydovchi kamomadi», izoh majburiy, tasdiq oynasi
+  await field(page, "Topshirilgan summa").fill("0");
+  await field(page, "Topshirilgan summa").blur();
+  await page.getByRole("radio", { name: /^Haydovchi kamomadi/ }).check();
   await page.getByRole("button", { name: "Pulni qabul qilish" }).click();
+  await expect(page.getByText("Farq sababini izohda yozing")).toBeVisible();
+  await field(page, "Izoh").fill("Haydovchi pulni topshirmadi");
+  await page.getByRole("button", { name: "Pulni qabul qilish" }).click();
+  const confirm = page.getByRole("dialog", { name: "Pulni qabul qilishni tasdiqlang" });
+  await expect(confirm.getByText(/Haydovchi kamomadi: .* Filial rahbari va Direktorga xabar boradi/)).toBeVisible();
+  await confirm.getByRole("button", { name: "Pulni qabul qilish" }).click();
   await expect(page.getByText("Pul qabul qilindi").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Haydovchilardan kutilayotgan pul" })).toHaveCount(0);
+  // Xodim kamomadlari: ochiq qoldiq va jurnalda «Kamomad»
+  await page.getByRole("button", { name: "Kamomadlar" }).click();
+  await expect(page).toHaveURL(/\/cash\/shortages$/);
+  await expect(page.getByRole("heading", { name: "Xodim kamomadlari", level: 1 })).toBeVisible();
+  await expect(page.getByText("Kamomad", { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Qaytardi" }).first()).toBeVisible();
 });
 
 test("Ombor zanjiri: Direktor tasdiqlagan buyurtma reysga chiqadi", async ({ page }) => {

@@ -49,3 +49,47 @@ export function partial(tripId: number, stopId: number, reason: string, lines: {
 export function finishTrip(tripId: number): Promise<{ status: TripDetail["status"] }> {
   return api<{ status: TripDetail["status"] }>(`/api/trips/${tripId}/finish`, { method: "POST" });
 }
+
+/** HD1: bir martalik GPS nuqta (fon kuzatuvi yoʻq). */
+export function postPoint(
+  tripId: number,
+  body: { stopId: number | null; kind: string; lat: number; lng: number; accuracy: number | null; recordedAt: string },
+): Promise<void> {
+  return api<void>(`/api/trips/${tripId}/points`, { method: "POST", body });
+}
+
+// ===== HD2: yoʻl xarajatlari =====
+
+export type TripMoney = components["schemas"]["TripMoneyView"];
+export type TripExpense = components["schemas"]["TripExpense"];
+
+/** Reys avansi va xarajatlari (oʻz reysi). */
+export function tripMoney(tripId: number): Promise<TripMoney> {
+  return api<TripMoney>(`/api/trips/${tripId}/money`);
+}
+
+export type NewExpense = {
+  kind: string;
+  amount: string;
+  source: string;
+  note: string | null;
+  liters: string | null;
+  price: string | null;
+  odometer: number | null;
+  lat: number | null;
+  lng: number | null;
+  spentAt: string;
+  clientUuid: string;
+};
+
+/** Xarajat yozish; takroriy clientUuid — oʻsha yozuv (oflayn navbat xavfsiz). */
+export function addExpense(tripId: number, body: NewExpense): Promise<{ id: number }> {
+  return api<{ id: number }>(`/api/trips/${tripId}/expenses`, { method: "POST", body: { ...body, liters: body.liters ? Number(body.liters) : null } });
+}
+
+/** Chek rasmi (JPEG, ≤ 5 MB). */
+export function uploadReceipt(tripId: number, expenseId: number, uri: string): Promise<{ id: number }> {
+  const form = new FormData();
+  form.append("file", { uri, name: "chek.jpg", type: "image/jpeg" } as unknown as Blob);
+  return api<{ id: number }>(`/api/trips/${tripId}/expenses/${expenseId}/photo`, { method: "POST", body: form });
+}

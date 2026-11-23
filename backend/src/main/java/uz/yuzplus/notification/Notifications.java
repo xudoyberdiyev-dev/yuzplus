@@ -70,7 +70,10 @@ public class Notifications {
     private final NotificationStream stream;
     private final Texts texts;
 
-    Notifications(JdbcClient jdbc, NotificationStream stream, Texts texts) {
+    private final PushSender push;
+
+    Notifications(JdbcClient jdbc, NotificationStream stream, Texts texts, PushSender push) {
+        this.push = push;
         this.jdbc = jdbc;
         this.stream = stream;
         this.texts = texts;
@@ -138,6 +141,7 @@ public class Notifications {
         }
         if (!notified.isEmpty()) {
             stream.changedAfterCommit(notified);
+            push.afterCommit(notified, m.title(), m.body(), m.link());
         }
         return notified.size();
     }

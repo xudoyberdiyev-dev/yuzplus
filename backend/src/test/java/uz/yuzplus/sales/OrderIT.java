@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -2024,8 +2025,14 @@ class OrderIT {
         send(post(accept), cashier, "{\"accountId\":" + kassa + ",\"received\":\"abc\"}")
                 .andExpect(jsonPath("$.code").value("trip.cashReceivedInvalid"));
         send(post(accept), driverSession, "{\"accountId\":" + kassa + ",\"received\":\"1000\"}").andExpect(status().isForbidden());
+        // KT1: kam bo'lsa farq sababi majburiy — bu yerda (a) «Mijoz to'lamagan»
         send(post(accept), cashier, "{\"accountId\":" + kassa + ",\"received\":\"800,00\",\"note\":\"200 soʻm kam\"}")
+                .andExpect(jsonPath("$.code").value("trip.cashReasonRequired"));
+        send(post(accept), cashier, "{\"accountId\":" + kassa + ",\"received\":\"800,00\",\"note\":\"200 soʻm kam\",\"unpaid\":[{\"stopId\":"
+                + stop + ",\"amount\":\"200\"}]}")
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unpaid").value("200.00"))
+                .andExpect(jsonPath("$.shortage").value("0.00"))
                 .andExpect(jsonPath("$.expected").value("1000.00"))
                 .andExpect(jsonPath("$.received").value("800.00"))
                 .andExpect(jsonPath("$.diff").value("-200.00"))
@@ -2038,6 +2045,7 @@ class OrderIT {
                 .isEqualTo("2200.00");
         assertThat(jdbc.sql("SELECT diff::text || '|' || note FROM trip_cash_accept WHERE trip_id = :t").param("t", trip).query(String.class).single())
                 .isEqualTo("-200.00|200 soʻm kam");
+        assertThat(jdbc.sql("SELECT cash_collected::text FROM trip_stop WHERE id = :s").param("s", stop).query(String.class).single()).isEqualTo("800.00");
         assertThatThrownBy(() -> jdbc.sql("UPDATE trip_cash_accept SET note = 'y' WHERE trip_id = :t").param("t", trip).update())
                 .hasMessageContaining("faqat qo");
         assertThat(jdbc.sql("SELECT status FROM trip WHERE id = :t").param("t", trip).query(String.class).single()).isEqualTo("DONE");
@@ -2632,5 +2640,455 @@ class OrderIT {
         send(post("/api/customer-returns"), manager, body)
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.late").value(true));
+    }
+
+    // ===== KT1: haydovchi naqdini kam/ortiq qabul qilish =====
+
+    private record CashTrip(long trip, long driver, Cookie driverSession, long[] stops, long[] customers) {}
+
+    /** Reys: har mijozga bitta buyurtma (1000 × qty), hammasi yetkazilgan va naqd olingan (cash[i]). */
+    private CashTrip cashTrip(Place p, int qty, String... cash) throws Exception {
+        Cookie operator = loginAs("OPERATOR", p.branchId());
+        Cookie keeper = loginAs("WAREHOUSE_MANAGER", p.branchId());
+        Cookie picker = loginAs("PICKER", p.branchId());
+        Cookie driverSession = loginAs("DRIVER", p.branchId());
+        long driver = jdbc.sql("SELECT max(id) FROM employee WHERE full_name = 'Sinov DRIVER' AND branch_id = :b").param("b", p.branchId())
+                .query(Long.class).single();
+        long prod = product(p, "BY Kamomad " + UUID.randomUUID().toString().substring(0, 4), "1000", qty * cash.length + 5, null, null);
+        long[] customers = new long[cash.length];
+        long[] orders = new long[cash.length];
+        for (int i = 0; i < cash.length; i++) {
+            customers[i] = customer(p.branchId(), null);
+            orders[i] = documenting(p, customers[i], prod, qty, 1, "DELIVERY", operator, keeper, picker);
+        }
+        long vehicle = jdbc.sql("INSERT INTO vehicle (branch_id, plate_number, model) VALUES (:b, :p, 'Labo') RETURNING id")
+                .param("b", p.branchId()).param("p", "50" + ThreadLocalRandom.current().nextInt(100_000, 999_999)).query(Long.class).single();
+        String ids = java.util.Arrays.stream(orders).mapToObj(String::valueOf).collect(java.util.stream.Collectors.joining(","));
+        long trip = id(send(post("/api/trips"), keeper, "{\"vehicleId\":" + vehicle + ",\"driverId\":" + driver + ",\"tripDate\":\"" + today()
+                + "\",\"orderIds\":[" + ids + "]}").andExpect(status().isCreated()).andReturn());
+        long[] stops = new long[cash.length];
+        for (int i = 0; i < cash.length; i++) {
+            stops[i] = jdbc.sql("SELECT id FROM trip_stop WHERE trip_id = :t AND order_id = :o").param("t", trip).param("o", orders[i])
+                    .query(Long.class).single();
+            send(post("/api/trips/" + trip + "/stops/" + stops[i] + "/load"), driverSession, "{\"places\":1}").andExpect(status().isOk());
+        }
+        send(post("/api/trips/" + trip + "/start"), driverSession, "").andExpect(status().isOk());
+        for (int i = 0; i < cash.length; i++) {
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/api/trips/" + trip + "/stops/" + stops[i] + "/photos")
+                            .file(new org.springframework.mock.web.MockMultipartFile("file", "a.jpg", "image/jpeg", new byte[] {1, 2, 3}))
+                            .with(csrf()).cookie(driverSession))
+                    .andExpect(status().isCreated());
+            send(post("/api/trips/" + trip + "/stops/" + stops[i] + "/deliver"), driverSession, "{\"cash\":\"" + cash[i] + "\"}")
+                    .andExpect(status().isOk());
+        }
+        send(post("/api/trips/" + trip + "/finish"), driverSession, "").andExpect(jsonPath("$.status").value("RETURN_WAIT"));
+        return new CashTrip(trip, driver, driverSession, stops, customers);
+    }
+
+    private long kassa(long branchId) {
+        return jdbc.sql("INSERT INTO money_account (branch_id, kind, code, name) VALUES (:b, 'CASH', :c, 'Kassa') RETURNING id")
+                .param("b", branchId).param("c", "K-" + UUID.randomUUID().toString().substring(0, 8)).query(Long.class).single();
+    }
+
+    private String debt(long customer) {
+        return jdbc.sql("SELECT coalesce(sum(amount), 0)::text FROM party_ledger WHERE counterparty_id = :c AND side = 'CUSTOMER'").param("c", customer)
+                .query(String.class).single();
+    }
+
+    private String balanceOf(long account) {
+        return jdbc.sql("SELECT balance::text FROM money_account WHERE id = :a").param("a", account).query(String.class).single();
+    }
+
+    @Test
+    void tripCashShortageSplitsUnpaidAndDriverShortageThenRepaidAndWrittenOff() throws Exception {
+        Place p = place();
+        CashTrip ct = cashTrip(p, 2, "2000", "2000", "2000");
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        Cookie manager = loginAs("BRANCH_MANAGER", p.branchId());
+        long managerId = jdbc.sql("SELECT max(id) FROM employee WHERE full_name = 'Sinov BRANCH_MANAGER' AND branch_id = :b").param("b", p.branchId())
+                .query(Long.class).single();
+        long k = kassa(p.branchId());
+        String accept = "/api/trips/" + ct.trip() + "/cash/accept";
+        String head = "{\"accountId\":" + k + ",\"received\":\"4500\",\"note\":\"1500 kam\"";
+
+        // Sabab tanlanmagan / yig'indi mos emas / bekat summasidan ko'p / ortiqcha bo'lmasa (b) mumkin emas
+        send(post(accept), cashier, head + "}").andExpect(jsonPath("$.code").value("trip.cashReasonRequired"));
+        send(post(accept), cashier, head + ",\"unpaid\":[{\"stopId\":" + ct.stops()[0] + ",\"amount\":\"500\"}],\"shortage\":\"500\"}")
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("trip.cashSplitMismatch"));
+        send(post(accept), cashier, head + ",\"unpaid\":[{\"stopId\":" + ct.stops()[0] + ",\"amount\":\"2500\"}]}")
+                .andExpect(jsonPath("$.code").value("trip.cashUnpaidInvalid"));
+        send(post(accept), cashier, head + ",\"unpaid\":[{\"stopId\":999999999,\"amount\":\"1500\"}]}")
+                .andExpect(jsonPath("$.code").value("trip.cashUnpaidInvalid"));
+        send(post(accept), cashier, "{\"accountId\":" + k + ",\"received\":\"6000\",\"shortage\":\"100\"}")
+                .andExpect(jsonPath("$.code").value("trip.cashSplitMismatch"));
+        assertThat(jdbc.sql("SELECT count(*) FROM trip_cash_accept WHERE trip_id = :t").param("t", ct.trip()).query(Long.class).single()).isZero();
+
+        // Aralash: (a) 1-mijoz 1 000 to'lamagan + (b) haydovchi kamomadi 500
+        send(post(accept), cashier, head + ",\"unpaid\":[{\"stopId\":" + ct.stops()[0] + ",\"amount\":\"1000\"}],\"shortage\":\"500,00\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expected").value("6000.00"))
+                .andExpect(jsonPath("$.received").value("4500.00"))
+                .andExpect(jsonPath("$.diff").value("-1500.00"))
+                .andExpect(jsonPath("$.unpaid").value("1000.00"))
+                .andExpect(jsonPath("$.shortage").value("500.00"))
+                .andExpect(jsonPath("$.payments.length()").value(3));
+        assertThat(debt(ct.customers()[0])).isEqualTo("1000.00");
+        assertThat(debt(ct.customers()[1])).isEqualTo("0.00");
+        assertThat(debt(ct.customers()[2])).isEqualTo("0.00");
+        assertThat(jdbc.sql("SELECT cash_collected::text FROM trip_stop WHERE id = :s").param("s", ct.stops()[0]).query(String.class).single())
+                .isEqualTo("1000.00");
+        // Kassada haqiqatda sanalgan summa: MT 5 500 − KO «Haydovchi kamomadi» 500
+        assertThat(balanceOf(k)).isEqualTo("4500.00");
+        assertThat(jdbc.sql("""
+                SELECT c.direction || '|' || c.amount::text || '|' || i.name FROM cash_op c JOIN expense_item i ON i.id = c.expense_item_id
+                WHERE c.account_id = :a AND c.source = 'SHORTAGE'""").param("a", k).query(String.class).single())
+                .isEqualTo("OUT|500.00|Haydovchi kamomadi");
+        assertThat(jdbc.sql("SELECT balance::text FROM employee_shortage_balance WHERE employee_id = :e AND branch_id = :b")
+                        .param("e", ct.driver()).param("b", p.branchId()).query(String.class).single())
+                .isEqualTo("500.00");
+        assertThat(jdbc.sql("SELECT count(*) FROM notification WHERE employee_id = :e AND kind = 'shortage.recorded'").param("e", managerId)
+                        .query(Long.class).single())
+                .isEqualTo(1);
+        assertThat(jdbc.sql("SELECT status FROM trip WHERE id = :t").param("t", ct.trip()).query(String.class).single()).isEqualTo("DONE");
+        assertThatThrownBy(() -> jdbc.sql("UPDATE employee_shortage SET amount = 1 WHERE employee_id = :e").param("e", ct.driver()).update())
+                .hasMessageContaining("faqat qo");
+
+        // Ro'yxat: Kassir ko'radi, haydovchi — yo'q
+        mvc.perform(get("/api/shortages").param("branchId", String.valueOf(p.branchId())).param("openOnly", "true").cookie(cashier))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.balances[?(@.employeeId == " + ct.driver() + ")].balance").value(hasItem("500.00")))
+                .andExpect(jsonPath("$.entries[?(@.employeeId == " + ct.driver() + ")].kind").value(hasItem("SHORTAGE")));
+        mvc.perform(get("/api/shortages").cookie(ct.driverSession())).andExpect(status().isForbidden());
+
+        // Yopish: «Qaytardi» (kassa kirimi) va Direktor «Hisobdan chiqarish»
+        String repay = "{\"branchId\":" + p.branchId() + ",\"employeeId\":" + ct.driver() + ",\"accountId\":" + k + ",\"amount\":\"";
+        send(post("/api/shortages/repay"), cashier, repay + "600\"}").andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("shortage.exceedsBalance"));
+        send(post("/api/shortages/repay"), cashier, repay + "300\"}").andExpect(status().isOk())
+                .andExpect(jsonPath("$.cashOp", matchesPattern("KO-[A-Z]{3}-\\d{6}")));
+        assertThat(balanceOf(k)).isEqualTo("4800.00");
+        String off = "{\"branchId\":" + p.branchId() + ",\"employeeId\":" + ct.driver() + ",\"amount\":\"200\",\"reason\":\"";
+        send(post("/api/shortages/write-off"), cashier, off + "Kechirildi\"}").andExpect(status().isForbidden());
+        Cookie director = loginAs("DIRECTOR", p.branchId());
+        send(post("/api/shortages/write-off"), director, off + " \"}").andExpect(status().isBadRequest());
+        send(post("/api/shortages/write-off"), director, off.replace("200", "201") + "Kechirildi\"}")
+                .andExpect(jsonPath("$.code").value("shortage.exceedsBalance"));
+        send(post("/api/shortages/write-off"), director, off + "Kechirildi\"}").andExpect(status().isOk());
+        assertThat(jdbc.sql("SELECT balance::text FROM employee_shortage_balance WHERE employee_id = :e AND branch_id = :b")
+                        .param("e", ct.driver()).param("b", p.branchId()).query(String.class).single())
+                .isEqualTo("0.00");
+        assertThat(jdbc.sql("SELECT string_agg(kind || ':' || amount::text, ',' ORDER BY id) FROM employee_shortage WHERE employee_id = :e")
+                        .param("e", ct.driver()).query(String.class).single())
+                .isEqualTo("SHORTAGE:500.00,REPAID:300.00,WRITTEN_OFF:200.00");
+        // Kamomad KO si qo'lda bekor qilinmaydi
+        long ko = jdbc.sql("SELECT id FROM cash_op WHERE account_id = :a AND source = 'SHORTAGE' AND direction = 'OUT'").param("a", k).query(Long.class).single();
+        send(post("/api/cash-ops/" + ko + "/cancel"), director, "{\"reason\":\"xato\"}").andExpect(jsonPath("$.code").value("cash.shortageOp"));
+    }
+
+    @Test
+    void tripCashOverageGoesToChosenCustomerAndParallelAcceptIsSingle() throws Exception {
+        Place p = place();
+        CashTrip ct = cashTrip(p, 1, "1000", "1000");
+        // HD1: bir martalik GPS nuqta — faqat o'z reysi, koordinata chegarasi; reys kartasida ko'rinadi
+        String points = "/api/trips/" + ct.trip() + "/points";
+        send(post(points), ct.driverSession(), "{\"stopId\":" + ct.stops()[0] + ",\"kind\":\"ARRIVED\",\"lat\":41.311081,\"lng\":69.240562,\"accuracy\":12}")
+                .andExpect(status().isNoContent());
+        send(post(points), ct.driverSession(), "{\"kind\":\"DELIVERED\",\"lat\":91,\"lng\":69.2}").andExpect(status().isBadRequest());
+        send(post(points), ct.driverSession(), "{\"stopId\":999999999,\"kind\":\"DELIVERED\",\"lat\":41.3,\"lng\":69.2}").andExpect(status().isNotFound());
+        send(post(points), loginAs("DRIVER", p.branchId()), "{\"kind\":\"DELIVERED\",\"lat\":41.3,\"lng\":69.2}").andExpect(status().isForbidden());
+        mvc.perform(get("/api/trips/" + ct.trip()).cookie(loginAs("WAREHOUSE_MANAGER", p.branchId())))
+                .andExpect(jsonPath("$.points.length()").value(1))
+                .andExpect(jsonPath("$.points[0].kind").value("ARRIVED"))
+                .andExpect(jsonPath("$.points[0].lat").value("41.311081"))
+                .andExpect(jsonPath("$.points[0].stopId").value(ct.stops()[0]));
+        // HD1: yangi reys haqida haydovchiga bildirishnoma; push tokeni ro'yxatdan o'tadi
+        assertThat(jdbc.sql("SELECT count(*) FROM notification WHERE employee_id = :e AND kind = 'trip.assigned'").param("e", ct.driver())
+                        .query(Long.class).single())
+                .isEqualTo(1);
+        String token = "ExponentPushToken[t" + UUID.randomUUID().toString().substring(0, 8) + "]";
+        send(post("/api/devices"), ct.driverSession(), "{\"token\":\"" + token + "\",\"platform\":\"ANDROID\"}").andExpect(status().isNoContent());
+        send(post("/api/devices"), ct.driverSession(), "{\"token\":\"abc\",\"platform\":\"ANDROID\"}").andExpect(status().isBadRequest());
+        assertThat(jdbc.sql("SELECT employee_id FROM device_token WHERE token = :t AND active").param("t", token).query(Long.class).single())
+                .isEqualTo(ct.driver());
+        send(post("/api/devices/remove"), ct.driverSession(), "{\"token\":\"" + token + "\"}").andExpect(status().isNoContent());
+        assertThat(jdbc.sql("SELECT active FROM device_token WHERE token = :t").param("t", token).query(Boolean.class).single()).isFalse();
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        long k = kassa(p.branchId());
+        String accept = "/api/trips/" + ct.trip() + "/cash/accept";
+        send(post(accept), cashier, "{\"accountId\":" + k + ",\"received\":\"2300\",\"note\":\"ortiqcha\",\"overageStopId\":999999999}")
+                .andExpect(jsonPath("$.code").value("trip.cashOverageStopInvalid"));
+        // Parallel: ikki kassir bir vaqtda — faqat bittasi qabul qiladi
+        Cookie cashier2 = loginAs("CASHIER", p.branchId());
+        String body = "{\"accountId\":" + k + ",\"received\":\"2300\",\"note\":\"ortiqcha\",\"overageStopId\":" + ct.stops()[0] + "}";
+        var pool = java.util.concurrent.Executors.newFixedThreadPool(2);
+        var go = new java.util.concurrent.CountDownLatch(1);
+        var ok = new java.util.concurrent.atomic.AtomicInteger();
+        List<java.util.concurrent.Future<?>> futures = new java.util.ArrayList<>();
+        for (Cookie who : List.of(cashier, cashier2)) {
+            futures.add(pool.submit(() -> {
+                go.await();
+                int st = send(post(accept), who, body).andReturn().getResponse().getStatus();
+                if (st == 200) {
+                    ok.incrementAndGet();
+                }
+                return null;
+            }));
+        }
+        go.countDown();
+        for (var f : futures) {
+            f.get(60, java.util.concurrent.TimeUnit.SECONDS);
+        }
+        pool.shutdown();
+        assertThat(ok.get()).isEqualTo(1);
+        assertThat(jdbc.sql("SELECT count(*) FROM trip_cash_accept WHERE trip_id = :t").param("t", ct.trip()).query(Long.class).single()).isEqualTo(1);
+        // Ortiqcha 300 — tanlangan (1-) mijozga avans; 2-mijoz to'liq yopildi; kamomad yo'q
+        assertThat(debt(ct.customers()[0])).isEqualTo("-300.00");
+        assertThat(debt(ct.customers()[1])).isEqualTo("0.00");
+        assertThat(balanceOf(k)).isEqualTo("2300.00");
+        assertThat(jdbc.sql("SELECT count(*) FROM employee_shortage WHERE employee_id = :e").param("e", ct.driver()).query(Long.class).single()).isZero();
+        assertThat(jdbc.sql("SELECT overage_stop_id FROM trip_cash_accept WHERE trip_id = :t").param("t", ct.trip()).query(Long.class).single())
+                .isEqualTo(ct.stops()[0]);
+    }
+
+    // ===== HD2: reys avansi va yo'l xarajatlari =====
+
+    private long expense(CashTrip ct, String json) throws Exception {
+        return id(send(post("/api/trips/" + ct.trip() + "/expenses"), ct.driverSession(), json).andExpect(status().isCreated()).andReturn());
+    }
+
+    @Test
+    void tripAdvanceAndExpensesSettleAtCashAccept() throws Exception {
+        Place p = place();
+        CashTrip ct = cashTrip(p, 2, "2000", "2000");
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        long k = kassa(p.branchId());
+        jdbc.sql("UPDATE money_account SET balance = 10000 WHERE id = :a").param("a", k).update();
+        String trip = "/api/trips/" + ct.trip();
+
+        // Avans: faqat kassir (payments.mt); KO chiqim, xarajat hisobotiga kirmaydi
+        send(post(trip + "/advances"), ct.driverSession(), "{\"accountId\":" + k + ",\"amount\":\"3000\"}").andExpect(status().isForbidden());
+        send(post(trip + "/advances"), cashier, "{\"accountId\":" + k + ",\"amount\":\"3000\",\"note\":\"Yoqilgʻi uchun\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.advanceOpen").value("3000.00"))
+                .andExpect(jsonPath("$.advances[0].cashOp", matchesPattern("KO-[A-Z]{3}-\\d{6}")));
+        assertThat(balanceOf(k)).isEqualTo("7000.00");
+
+        // Haydovchi xarajatlari: takroriy clientUuid — o'sha yozuv; «Boshqa» — izoh majburiy; boshqa haydovchi — yo'q
+        String uuid = UUID.randomUUID().toString();
+        String fuelBody = "{\"kind\":\"FUEL\",\"amount\":\"1200\",\"source\":\"ADVANCE\",\"liters\":12.5,\"price\":\"96\",\"odometer\":120400,"
+                + "\"clientUuid\":\"" + uuid + "\"}";
+        long fuel = expense(ct, fuelBody);
+        assertThat(expense(ct, fuelBody)).isEqualTo(fuel);
+        long meal = expense(ct, "{\"kind\":\"MEAL\",\"amount\":\"300\",\"source\":\"OWN\"}");
+        send(post(trip + "/expenses"), ct.driverSession(), "{\"kind\":\"OTHER\",\"amount\":\"500\",\"source\":\"COLLECTED\"}")
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("trip.expenseNoteRequired"));
+        send(post(trip + "/expenses"), ct.driverSession(), "{\"kind\":\"MEAL\",\"amount\":\"0\",\"source\":\"OWN\"}")
+                .andExpect(jsonPath("$.code").value("trip.expenseAmountInvalid"));
+        long other = expense(ct, "{\"kind\":\"OTHER\",\"amount\":\"500\",\"source\":\"COLLECTED\",\"note\":\"Moyka\"}");
+        send(post(trip + "/expenses"), loginAs("DRIVER", p.branchId()), "{\"kind\":\"MEAL\",\"amount\":\"100\",\"source\":\"OWN\"}")
+                .andExpect(status().isForbidden());
+        mvc.perform(get(trip + "/money").cookie(ct.driverSession()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pending").value(3))
+                .andExpect(jsonPath("$.expensesOpen").value("2000.00"))
+                .andExpect(jsonPath("$.advanceOpen").value("3000.00"));
+        mvc.perform(get(trip + "/money").cookie(loginAs("DRIVER", p.branchId()))).andExpect(status().isNotFound());
+        // Limit (sozlama, 0 — o'chiq): 1 000 dan oshgan xarajat belgilanadi, bloklanmaydi
+        jdbc.sql("UPDATE app_setting SET value = 1000 WHERE key = 'tripExpenseLimit'").update();
+        mvc.perform(get(trip + "/money").cookie(cashier))
+                .andExpect(jsonPath("$.expenses[?(@.id == " + fuel + ")].overLimit").value(hasItem(true)))
+                .andExpect(jsonPath("$.expenses[?(@.id == " + meal + ")].overLimit").value(hasItem(false)));
+        jdbc.sql("UPDATE app_setting SET value = 0 WHERE key = 'tripExpenseLimit'").update();
+        mvc.perform(get("/api/trips/cash/extras").param("branchId", String.valueOf(p.branchId())).cookie(cashier))
+                .andExpect(jsonPath("$[?(@.tripId == " + ct.trip() + ")].pending").value(hasItem(3)));
+
+        // Qabul: har xarajatga qaror shart; yoqilg'i — chek rasmisiz emas; rad etishda sabab; bekat bo'yicha eski qabul — yo'q
+        String accept = trip + "/cash/accept";
+        String head = "{\"accountId\":" + k + ",\"received\":\"5000\",\"note\":\"Rad etilgan 500 topshirilmadi\",\"shortage\":\"500\"";
+        String approveFuel = "{\"expenseId\":" + fuel + ",\"approve\":true}";
+        String approveMeal = "{\"expenseId\":" + meal + ",\"approve\":true}";
+        send(post(accept), cashier, head + "}").andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("trip.expenseUndecided"));
+        send(post(accept), cashier, head + ",\"expenses\":[" + approveFuel + "," + approveMeal + ",{\"expenseId\":" + other + ",\"approve\":false}]}")
+                .andExpect(jsonPath("$.code").value("trip.expensePhotoRequired"));
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart(trip + "/expenses/" + fuel + "/photo")
+                        .file(new org.springframework.mock.web.MockMultipartFile("file", "chek.jpg", "image/jpeg", new byte[] {7, 7, 7}))
+                        .with(csrf()).cookie(ct.driverSession()))
+                .andExpect(status().isCreated());
+        send(post(accept), cashier, head + ",\"expenses\":[" + approveFuel + "," + approveMeal + ",{\"expenseId\":" + other + ",\"approve\":false}]}")
+                .andExpect(jsonPath("$.code").value("trip.expenseRejectReason"));
+        send(post("/api/trips/cash/" + ct.stops()[0] + "/accept"), cashier, "{\"accountId\":" + k + "}")
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("trip.cashUseTrip"));
+        assertThat(balanceOf(k)).isEqualTo("7000.00");
+
+        // Kutilgan = 4 000 naqd + 3 000 avans − 1 500 tasdiqlangan = 5 500; topshirildi 5 000 — rad etilgan 500 haydovchi kamomadi
+        send(post(accept), cashier, head + ",\"expenses\":[" + approveFuel + "," + approveMeal + ",{\"expenseId\":" + other
+                        + ",\"approve\":false,\"reason\":\"Chek yoʻq\"}]}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expected").value("5500.00"))
+                .andExpect(jsonPath("$.diff").value("-500.00"))
+                .andExpect(jsonPath("$.shortage").value("500.00"))
+                .andExpect(jsonPath("$.advance").value("3000.00"))
+                .andExpect(jsonPath("$.expenses").value("1500.00"))
+                .andExpect(jsonPath("$.cashOps.length()").value(3))
+                .andExpect(jsonPath("$.payments.length()").value(2));
+        // Kassa: 7 000 + 4 000 MT + 3 000 avans qaytdi − 1 500 xarajat − 500 kamomad = 12 000 (= 7 000 + sanalgan 5 000)
+        assertThat(balanceOf(k)).isEqualTo("12000.00");
+        assertThat(jdbc.sql("""
+                SELECT string_agg(c.direction || '|' || c.amount::text || '|' || i.name || '|' || c.source, ',' ORDER BY c.id)
+                FROM cash_op c JOIN expense_item i ON i.id = c.expense_item_id WHERE c.account_id = :a AND c.source IN ('ADVANCE', 'TRIP_EXPENSE')""")
+                        .param("a", k).query(String.class).single())
+                .isEqualTo("OUT|3000.00|Haydovchiga avans|ADVANCE,IN|3000.00|Haydovchi avansi qaytdi|ADVANCE,"
+                        + "OUT|1200.00|Transport va yoqilgʻi|TRIP_EXPENSE,OUT|300.00|Haydovchi ovqatlanishi|TRIP_EXPENSE");
+        assertThat(jdbc.sql("SELECT string_agg(status, ',' ORDER BY id) FROM trip_expense WHERE trip_id = :t").param("t", ct.trip())
+                        .query(String.class).single())
+                .isEqualTo("APPROVED,APPROVED,REJECTED");
+        assertThat(jdbc.sql("SELECT balance::text FROM employee_shortage_balance WHERE employee_id = :e AND branch_id = :b")
+                        .param("e", ct.driver()).param("b", p.branchId()).query(String.class).single())
+                .isEqualTo("500.00");
+        assertThat(jdbc.sql("SELECT status FROM trip WHERE id = :t").param("t", ct.trip()).query(String.class).single()).isEqualTo("DONE");
+        assertThatThrownBy(() -> jdbc.sql("UPDATE trip_expense SET amount = 1 WHERE id = :e").param("e", fuel).update())
+                .hasMessageContaining("qoʻshiladi");
+        send(post(trip + "/expenses"), ct.driverSession(), "{\"kind\":\"MEAL\",\"amount\":\"100\",\"source\":\"OWN\"}")
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("trip.expenseClosed"));
+        Cookie director = loginAs("DIRECTOR", p.branchId());
+        long advKo = jdbc.sql("SELECT id FROM cash_op WHERE account_id = :a AND source = 'ADVANCE' AND direction = 'OUT'").param("a", k)
+                .query(Long.class).single();
+        send(post("/api/cash-ops/" + advKo + "/cancel"), director, "{\"reason\":\"xato\"}").andExpect(jsonPath("$.code").value("cash.tripOp"));
+
+        // Chek rasmi va hisobot
+        mvc.perform(get("/api/trip-expenses/" + fuel + "/photo").cookie(cashier))
+                .andExpect(status().isOk()).andExpect(content().contentType("image/jpeg"));
+        mvc.perform(get("/api/trip-expenses").param("branchId", String.valueOf(p.branchId())).param("driverId", String.valueOf(ct.driver()))
+                        .cookie(cashier))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value("2000.00"))
+                .andExpect(jsonPath("$.approved").value("1500.00"))
+                .andExpect(jsonPath("$.rows.length()").value(3))
+                .andExpect(jsonPath("$.byDriver[0].approved").value("1500.00"))
+                .andExpect(jsonPath("$.byKind[0].key").value("FUEL"))
+                .andExpect(jsonPath("$.byKind[0].liters").value("12.50"));
+        mvc.perform(get("/api/trip-expenses").cookie(ct.driverSession())).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void tripExpensesAboveCashMeanCashierPaysDriverExactly() throws Exception {
+        Place p = place();
+        CashTrip ct = cashTrip(p, 1, "1000");
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        long k = kassa(p.branchId());
+        jdbc.sql("UPDATE money_account SET balance = 1000 WHERE id = :a").param("a", k).update();
+        long repair = expense(ct, "{\"kind\":\"REPAIR\",\"amount\":\"1500\",\"source\":\"OWN\",\"note\":\"Shina\"}");
+        String accept = "/api/trips/" + ct.trip() + "/cash/accept";
+        String decided = ",\"expenses\":[{\"expenseId\":" + repair + ",\"approve\":true}]}";
+        // Kutilgan = 1 000 − 1 500 = −500: kassa haydovchiga aynan 500 to'laydi
+        send(post(accept), cashier, "{\"accountId\":" + k + ",\"received\":\"-400\",\"note\":\"x\"" + decided)
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("trip.cashReceivedInvalid"));
+        send(post(accept), cashier, "{\"accountId\":" + k + ",\"received\":\"-500\"" + decided)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expected").value("-500.00"))
+                .andExpect(jsonPath("$.diff").value("0.00"))
+                .andExpect(jsonPath("$.expenses").value("1500.00"));
+        assertThat(balanceOf(k)).isEqualTo("500.00");
+        assertThat(debt(ct.customers()[0])).isEqualTo("0.00");
+        assertThat(jdbc.sql("SELECT status FROM trip WHERE id = :t").param("t", ct.trip()).query(String.class).single()).isEqualTo("DONE");
+    }
+
+    /**
+     * HD4: haydovchi kuni oxirigacha (API darajasida) — yuklash → 3 bekat (toʻliq / qisman / yetkazilmadi) → yoʻl xarajati → yakun →
+     * kassir kam qabul: (a) mijoz toʻlamagan + (b) haydovchi kamomadi → kamomadni «Qaytardi» bilan yopish.
+     */
+    @Test
+    void driverFullDayFromLoadToShortageClosed() throws Exception {
+        Place p = place();
+        Cookie operator = loginAs("OPERATOR", p.branchId());
+        Cookie keeper = loginAs("WAREHOUSE_MANAGER", p.branchId());
+        Cookie picker = loginAs("PICKER", p.branchId());
+        Cookie drv = loginAs("DRIVER", p.branchId());
+        long driver = jdbc.sql("SELECT max(id) FROM employee WHERE full_name = 'Sinov DRIVER' AND branch_id = :b").param("b", p.branchId())
+                .query(Long.class).single();
+        long prod = product(p, "BY Haydovchi kuni", "1000", 20, null, null);
+        long[] customers = new long[3];
+        long[] orders = new long[3];
+        for (int i = 0; i < 3; i++) {
+            customers[i] = customer(p.branchId(), null);
+            orders[i] = documenting(p, customers[i], prod, 2, 1, "DELIVERY", operator, keeper, picker);
+        }
+        long vehicle = jdbc.sql("INSERT INTO vehicle (branch_id, plate_number, model) VALUES (:b, :p, 'Labo') RETURNING id")
+                .param("b", p.branchId()).param("p", "60" + ThreadLocalRandom.current().nextInt(100_000, 999_999)).query(Long.class).single();
+        long trip = id(send(post("/api/trips"), keeper, "{\"vehicleId\":" + vehicle + ",\"driverId\":" + driver + ",\"tripDate\":\"" + today()
+                + "\",\"orderIds\":[" + orders[0] + "," + orders[1] + "," + orders[2] + "]}").andExpect(status().isCreated()).andReturn());
+        String t = "/api/trips/" + trip;
+        long[] stops = new long[3];
+        for (int i = 0; i < 3; i++) {
+            stops[i] = jdbc.sql("SELECT id FROM trip_stop WHERE trip_id = :t AND order_id = :o").param("t", trip).param("o", orders[i])
+                    .query(Long.class).single();
+            send(post(t + "/stops/" + stops[i] + "/load"), drv, "{\"places\":1}").andExpect(status().isOk());
+        }
+        send(post(t + "/start"), drv, "").andExpect(status().isOk());
+        for (int i = 0; i < 2; i++) {
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart(t + "/stops/" + stops[i] + "/photos")
+                            .file(new org.springframework.mock.web.MockMultipartFile("file", "a.jpg", "image/jpeg", new byte[] {1, 2, 3}))
+                            .with(csrf()).cookie(drv))
+                    .andExpect(status().isCreated());
+        }
+        // 1) toʻliq, naqd 2 000; 2) qisman — 1 dona qaytdi, naqd 1 000; 3) yetkazilmadi
+        send(post(t + "/stops/" + stops[0] + "/deliver"), drv, "{\"cash\":\"2000\"}").andExpect(status().isOk());
+        MvcResult lines = mvc.perform(get(t + "/stops/" + stops[1] + "/lines").cookie(drv)).andReturn();
+        long saleLine = ((Number) JsonPath.read(lines.getResponse().getContentAsString(), "$[0].id")).longValue();
+        send(post(t + "/stops/" + stops[1] + "/partial"), drv,
+                "{\"reason\":\"1 tasini olmadi\",\"lines\":[{\"saleLineId\":" + saleLine + ",\"qty\":1}],\"cash\":\"1000\"}")
+                .andExpect(jsonPath("$.stops[1].outcome").value("PARTIAL"));
+        send(post(t + "/stops/" + stops[2] + "/undeliver"), drv, "{\"reason\":\"Doʻkon yopiq\"}").andExpect(status().isOk());
+        // Yoʻl xarajati — oʻz pulidan ovqatlanish 300
+        long meal = expense(new CashTrip(trip, driver, drv, stops, customers), "{\"kind\":\"MEAL\",\"amount\":\"300\",\"source\":\"OWN\"}");
+        send(post(t + "/finish"), drv, "").andExpect(jsonPath("$.status").value("RETURN_WAIT"));
+
+        // Kassir: kutilgan 3 000 − 300 = 2 700; sanaldi 2 400 — 1-mijoz 200 toʻlamagan (a), 100 haydovchi kamomadi (b)
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        long k = kassa(p.branchId());
+        send(post(t + "/cash/accept"), cashier, "{\"accountId\":" + k + ",\"received\":\"2400\",\"note\":\"300 kam\",\"unpaid\":[{\"stopId\":"
+                + stops[0] + ",\"amount\":\"200\"}],\"shortage\":\"100\",\"expenses\":[{\"expenseId\":" + meal + ",\"approve\":true}]}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expected").value("2700.00"))
+                .andExpect(jsonPath("$.unpaid").value("200.00"))
+                .andExpect(jsonPath("$.shortage").value("100.00"))
+                .andExpect(jsonPath("$.expenses").value("300.00"));
+        assertThat(debt(customers[0])).isEqualTo("200.00");
+        assertThat(debt(customers[1])).isEqualTo("0.00");
+        assertThat(debt(customers[2])).isEqualTo("0.00");
+        assertThat(balanceOf(k)).isEqualTo("2400.00");
+        // Qaytgan tovar hali omborga topshirilmagan — reys «Qaytish kutilmoqda»
+        assertThat(jdbc.sql("SELECT status FROM trip WHERE id = :tr").param("tr", trip).query(String.class).single()).isEqualTo("RETURN_WAIT");
+        mvc.perform(get("/api/trips/cash/extras").param("branchId", String.valueOf(p.branchId())).cookie(cashier))
+                .andExpect(jsonPath("$[?(@.tripId == " + trip + ")]").isEmpty());
+
+        // Kamomad yopildi — «Qaytardi»
+        send(post("/api/shortages/repay"), cashier, "{\"branchId\":" + p.branchId() + ",\"employeeId\":" + driver + ",\"accountId\":" + k
+                + ",\"amount\":\"100\"}").andExpect(status().isOk());
+        assertThat(jdbc.sql("SELECT balance::text FROM employee_shortage_balance WHERE employee_id = :e AND branch_id = :b")
+                        .param("e", driver).param("b", p.branchId()).query(String.class).single())
+                .isEqualTo("0.00");
+        assertThat(balanceOf(k)).isEqualTo("2500.00");
+    }
+
+    /** HD2 koʻrik: xarajat naqdning katta qismini yesa va mijoz kam toʻlagan boʻlsa — kassa haydovchiga toʻlaydi, (a) taqsimot bilan. */
+    @Test
+    void negativeReceivedWithUnpaidSplit() throws Exception {
+        Place p = place();
+        CashTrip ct = cashTrip(p, 1, "1000");
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        long k = kassa(p.branchId());
+        jdbc.sql("UPDATE money_account SET balance = 1000 WHERE id = :a").param("a", k).update();
+        long repair = expense(ct, "{\"kind\":\"REPAIR\",\"amount\":\"900\",\"source\":\"COLLECTED\",\"note\":\"Shina\"}");
+        String accept = "/api/trips/" + ct.trip() + "/cash/accept";
+        String dec = ",\"expenses\":[{\"expenseId\":" + repair + ",\"approve\":true}]}";
+        // Kutilgan 100; mijoz 300 kam toʻlagan — kassa haydovchiga 200 beradi
+        send(post(accept), cashier, "{\"accountId\":" + k + ",\"received\":\"-200\",\"note\":\"mijoz kam\",\"unpaid\":[{\"stopId\":" + ct.stops()[0]
+                + ",\"amount\":\"300\"}]" + dec)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expected").value("100.00"))
+                .andExpect(jsonPath("$.diff").value("-300.00"));
+        assertThat(debt(ct.customers()[0])).isEqualTo("300.00");
+        assertThat(balanceOf(k)).isEqualTo("800.00");
     }
 }

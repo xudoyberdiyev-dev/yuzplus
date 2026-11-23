@@ -65,7 +65,19 @@ class TripController {
             @jakarta.validation.constraints.NotNull(message = "{validation.required}") Long accountId,
             @jakarta.validation.constraints.NotNull(message = "{validation.required}")
             @Schema(description = "Kassir sanagan summa") String received,
-            @Schema(nullable = true, description = "Farq bo'lsa majburiy") @Size(max = 300) String note) {}
+            @Schema(nullable = true, description = "Farq bo'lsa majburiy") @Size(max = 300) String note,
+            @Schema(nullable = true, description = "Kam bo'lsa (a) «Mijoz toʻlamagan»: bekat va summa") @Size(max = 200) List<@Valid UnpaidShare> unpaid,
+            @Schema(nullable = true, description = "Kam bo'lsa (b) «Haydovchi kamomadi» summasi; (a)+(b) = farq") @Size(max = 24) String shortage,
+            @Schema(nullable = true, description = "Ortiqcha bo'lsa — qaysi bekat mijoziga (standart — oxirgisi)") Long overageStopId,
+            @Schema(nullable = true, description = "HD2: har kutilayotgan yoʻl xarajatiga qaror (tasdiqlash / rad etish sabab bilan)")
+            @Size(max = 200) List<@Valid ExpenseDecision> expenses) {}
+
+    record ExpenseDecision(@jakarta.validation.constraints.NotNull(message = "{validation.required}") Long expenseId,
+            @jakarta.validation.constraints.NotNull(message = "{validation.required}") Boolean approve,
+            @Schema(nullable = true, description = "Rad etishda majburiy") @Size(max = 300) String reason) {}
+
+    record UnpaidShare(@jakarta.validation.constraints.NotNull(message = "{validation.required}") Long stopId,
+            @jakarta.validation.constraints.NotNull(message = "{validation.required}") @Size(max = 24) String amount) {}
 
     record ReturnedLine(@jakarta.validation.constraints.NotNull(message = "{validation.required}") Long saleLineId,
             @jakarta.validation.constraints.NotNull(message = "{validation.required}") @jakarta.validation.constraints.Min(0) Integer qty) {}
@@ -251,6 +263,22 @@ class TripController {
         return trips.find(actor(), id);
     }
 
+    record PointRequest(@Schema(nullable = true) Long stopId, @jakarta.validation.constraints.NotNull(message = "{validation.required}") TripModels.PointKind kind,
+            @jakarta.validation.constraints.NotNull(message = "{validation.required}") @jakarta.validation.constraints.DecimalMin("-90")
+            @jakarta.validation.constraints.DecimalMax("90") java.math.BigDecimal lat,
+            @jakarta.validation.constraints.NotNull(message = "{validation.required}") @jakarta.validation.constraints.DecimalMin("-180")
+            @jakarta.validation.constraints.DecimalMax("180") java.math.BigDecimal lng,
+            @Schema(nullable = true) @jakarta.validation.constraints.Min(0) Integer accuracy,
+            @Schema(nullable = true, description = "Qurilma vaqti (oflayn navbat)") java.time.Instant recordedAt) {}
+
+    @PostMapping("/{id}/points")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('trip.driver')")
+    @Operation(summary = "GPS nuqta (HD1)", description = "Bir martalik joylashuv: «Yetib keldim» yoki bekat natijasi. Fon kuzatuvi yoʻq.")
+    void point(@PathVariable long id, @Valid @RequestBody PointRequest r) {
+        trips.addPoint(actor(), id, r.stopId(), r.kind(), r.lat(), r.lng(), r.accuracy(), r.recordedAt());
+    }
+
     @PostMapping("/{id}/finish")
     @PreAuthorize("hasAuthority('trip.driver')")
     @Operation(summary = "«Reysni yakunlash»", description = "Qaytgan tovar yoki naqd pul bo'lsa — «Qaytish kutilmoqda».")
@@ -294,9 +322,16 @@ class TripController {
     @PostMapping("/{id}/cash/accept")
     @PreAuthorize("hasAuthority('payments.mt')")
     @Operation(summary = "Haydovchidan pulni reys bo'yicha qabul qilish",
-            description = "Sanalgan summa to'xtashlar bo'yicha taqsimlanadi, har ulush — MT. Farq bo'lsa izoh majburiy.")
+            description = "Kassir sanagan summa. Kutilgan = bekatlar naqdi + ochiq avans − tasdiqlangan yoʻl xarajatlari (HD2; manfiy — kassa "
+                    + "haydovchiga toʻlaydi, received = kutilgan). Farq bo'lsa izoh majburiy; kam bo'lsa sabab: (a) mijoz to'lamagan (bekat bo'yicha) va/yoki "
+                    + "(b) haydovchi kamomadi; ortiqcha — tanlangan bekat mijoziga.")
     TripModels.TripCashAccepted acceptTripCash(@PathVariable long id, @Valid @RequestBody TripCashAcceptRequest r) {
-        return trips.acceptTripCash(actor(), id, r.accountId(), parseMoney(r.received()), r.note());
+        List<Trips.Unpaid> unpaid = r.unpaid() == null ? List.of()
+                : r.unpaid().stream().map(u -> new Trips.Unpaid(u.stopId(), parseMoney(u.amount()))).toList();
+        return trips.acceptTripCash(actor(), id, r.accountId(), parseMoney(r.received()), r.note(), unpaid,
+                r.shortage() == null || r.shortage().isBlank() ? null : parseMoney(r.shortage()), r.overageStopId(),
+                r.expenses() == null ? List.of()
+                        : r.expenses().stream().map(d -> new TripExpenses.Decision(d.expenseId(), d.approve(), d.reason())).toList());
     }
 
     private static Money parseMoney(String s) {

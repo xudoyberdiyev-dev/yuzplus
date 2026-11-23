@@ -139,6 +139,24 @@ class CashOps {
         return id;
     }
 
+    /**
+     * Tizim KO (KT1 xodim kamomadi): standart modda nomi bo'yicha, tasdiqsiz, darhol o'tkaziladi. Chaqiruvchi tranzaksiyasida.
+     * Qaytaradi: [id, raqam].
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    Posted system(Actor actor, Accounts.Account acc, Direction dir, String itemName, Money amount, String party, String note, OpSource source) {
+        long item = jdbc.sql("SELECT id FROM expense_item WHERE system AND name = :n AND direction = :d")
+                .param("n", itemName)
+                .param("d", dir == Direction.OUT ? "EXPENSE" : "INCOME")
+                .query(Long.class)
+                .single();
+        long id = insert(actor, acc, dir, item, amount, today(), party, note, null, source, OpStatus.POSTED);
+        post(id);
+        return new Posted(id, jdbc.sql("SELECT number FROM cash_op WHERE id = :id").param("id", id).query(String.class).single());
+    }
+
+    record Posted(long id, String number) {}
+
     private long insert(Actor actor, Accounts.Account acc, Direction dir, long itemId, Money amount, LocalDate date, String party, String note,
             String baseNo, OpSource source, OpStatus status) {
         DocumentPrefix prefix = acc.kind() == Accounts.Kind.CASH ? DocumentPrefix.KO : DocumentPrefix.BO;
@@ -246,6 +264,12 @@ class CashOps {
         String source = jdbc.sql("SELECT source FROM cash_op WHERE id = :id").param("id", id).query(String.class).single();
         if (OpSource.CLOSE.name().equals(source)) {
             throw YuzplusException.conflict("cash.closeCorrection");
+        }
+        if (OpSource.SHORTAGE.name().equals(source)) {
+            throw YuzplusException.conflict("cash.shortageOp");
+        }
+        if (OpSource.ADVANCE.name().equals(source) || OpSource.TRIP_EXPENSE.name().equals(source)) {
+            throw YuzplusException.conflict("cash.tripOp");
         }
         String why = reason.strip();
         Money back = h.direction() == Direction.OUT ? h.amount() : Money.ZERO.minus(h.amount());

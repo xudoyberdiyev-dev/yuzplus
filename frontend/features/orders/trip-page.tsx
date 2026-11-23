@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  MapPin,
   Ban,
   Check,
   ChevronDown,
@@ -37,6 +38,7 @@ import { TextField } from "@/components/ui/text-field";
 import { toast } from "@/components/ui/toast";
 import { can } from "@/features/auth/can";
 import { ensureCsrf, useMe } from "@/features/auth/session";
+import { TripMoneySection } from "@/features/trip-expenses/trip-money-section";
 import { InvoiceFormsMenu } from "@/features/orders/invoice-forms";
 import { formatIsoDate, parseUzDate } from "@/features/counterparties/api";
 import { Steps } from "@/features/payments/payment-doc-page";
@@ -648,6 +650,8 @@ export function TripPage({ id }: { id: number }) {
             </span>
           </div>
         </section>
+        {data.points.length > 0 ? <TripPoints points={data.points} stops={stops} /> : null}
+        <TripMoneySection tripId={data.id} branchId={data.branchId} closed={data.status === "DONE" || data.status === "CANCELLED"} />
       </div>
 
       <Modal
@@ -697,5 +701,42 @@ function Outcome({ stop }: { stop: TripStop }) {
       <look.icon size={12} strokeWidth={1.5} aria-hidden />
       {look.text}
     </span>
+  );
+}
+
+/** HD1: reys xronologiyasi — bir martalik GPS nuqtalar (rahbar uchun), xaritada ochish havolasi bilan. */
+function TripPoints({ points, stops }: { points: TripDetail["points"]; stops: TripStop[] }) {
+  const t = useTranslations("orders.tripPage");
+  const byId = new Map(stops.map((s) => [s.id, s]));
+  return (
+    <section className="flex min-w-0 flex-col rounded-card border border-border bg-surface">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3.5">
+        <MapPin size={16} strokeWidth={1.5} aria-hidden />
+        <span className="text-[14px] font-semibold">{t("gpsTitle")}</span>
+      </div>
+      <ol className="flex flex-col gap-1.5 p-3">
+        {points.map((p, k) => {
+          const stop = p.stopId != null ? byId.get(p.stopId) : undefined;
+          return (
+            <li key={k} className="flex flex-wrap items-baseline justify-between gap-2 text-table">
+              <span className="min-w-0">
+                <span className="tabular-nums text-text-secondary">{formatDateTime(new Date(p.recordedAt))}</span> ·{" "}
+                <span className="font-medium">{t(`gps.${p.kind}`)}</span>
+                {stop ? <span className="text-text-secondary"> · {stop.customer}</span> : null}
+                {p.accuracy != null ? <span className="text-text-secondary"> · ±{p.accuracy} m</span> : null}
+              </span>
+              <a
+                className="text-primary hover:underline"
+                href={`https://maps.google.com/?q=${p.lat},${p.lng}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t("gpsOpen")}
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
   );
 }

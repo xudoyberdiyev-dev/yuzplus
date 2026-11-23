@@ -153,7 +153,7 @@ export interface paths {
             cookie?: never;
         };
         /** Audit yozuvlari (yangilari birinchi), yorliqlar soni bilan */
-        get: operations["list_37"];
+        get: operations["list_38"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1782,6 +1782,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Qurilma tokenini ro'yxatdan o'tkazish
+         * @description Token boshqa xodimda bo'lsa — joriy xodimga o'tadi.
+         */
+        post: operations["register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/devices/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Qurilma tokenini o'chirish (chiqishda) */
+        post: operations["remove_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dictionaries-overview": {
         parameters: {
             query?: never;
@@ -1882,7 +1919,7 @@ export interface paths {
             cookie?: never;
         };
         /** Faol xodimlar (tanlash uchun) */
-        get: operations["list_36"];
+        get: operations["list_37"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2780,7 +2817,7 @@ export interface paths {
          * Faktura navbati
          * @description Filtrlar: filial (barcha filiallar doirasida), holat, davr (navbatga tushgan sana), qidiruv (buyurtma, mijoz, STIR, HF, e-faktura №). Kutilayotganlar — eng uzoq kutayotgani birinchi.
          */
-        get: operations["list_35"];
+        get: operations["list_36"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3670,7 +3707,7 @@ export interface paths {
             cookie?: never;
         };
         /** Oxirgi 50 ta bildirishnoma va o'qilmaganlar soni */
-        get: operations["list_34"];
+        get: operations["list_35"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6496,7 +6533,7 @@ export interface paths {
          * Markirovka kodlari hisoboti
          * @description Davr — skanerlangan sana (standart: oy boshidan bugungacha); mijoz, mahsulot, egasi (mijoz / zaxira), holat, qidiruv. Olib tashlangan kodlar — faqat status=REMOVED bilan.
          */
-        get: operations["list_33"];
+        get: operations["list_34"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6720,7 +6757,7 @@ export interface paths {
          * Zaxira kodlar
          * @description Filtrlar: filial (barcha filiallar doirasida), mahsulot, holat, davr (zaxiraga tushgan sana), qidiruv.
          */
-        get: operations["list_32"];
+        get: operations["list_33"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6773,7 +6810,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Hisobdan chiqarish */
-        post: operations["writeOff"];
+        post: operations["writeOff_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6788,7 +6825,7 @@ export interface paths {
             cookie?: never;
         };
         /** Rollar ro'yxati */
-        get: operations["list_31"];
+        get: operations["list_32"];
         put?: never;
         post?: never;
         delete?: never;
@@ -7263,6 +7300,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/shortages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Xodim kamomadlari
+         * @description Qoldiqlar (ochiq / hammasi) va jurnal (oxirgi 300 ta).
+         */
+        get: operations["list_31"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shortages/repay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kamomadni qaytardi
+         * @description Kassa kirimi (KO, «Haydovchi kamomadini qaytardi»), kamomad qoldig'i kamayadi.
+         */
+        post: operations["repay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shortages/write-off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kamomadni hisobdan chiqarish
+         * @description Sabab majburiy; kassa harakati yo'q.
+         */
+        post: operations["writeOff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stock": {
         parameters: {
             query?: never;
@@ -7652,6 +7749,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trip-expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Yoʻl xarajatlari: roʻyxat va hisobot
+         * @description Haydovchi / mashina / oy / tur boʻyicha; 1 km ga soʻm — odometr boʻyicha.
+         */
+        get: operations["report"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trip-expenses/{expenseId}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Chek rasmini koʻrish */
+        get: operations["photoView"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/trips": {
         parameters: {
             query?: never;
@@ -7688,6 +7822,26 @@ export interface paths {
          * @description Naqd olingan, Kassir hali qabul qilmagan summalar.
          */
         get: operations["driverCash"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trips/cash/extras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Hisob-kitob kutayotgan avans/xarajatli reyslar
+         * @description Kassa → «Haydovchilardan naqd» uchun.
+         */
+        get: operations["extras"];
         put?: never;
         post?: never;
         delete?: never;
@@ -7877,6 +8031,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trips/{id}/advances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Haydovchiga avans berish
+         * @description KO chiqim «Haydovchiga avans» (xarajat hisobotiga kirmaydi). Naqd qabulida qaytadi.
+         */
+        post: operations["advance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/trips/{id}/cancel": {
         parameters: {
             query?: never;
@@ -7908,9 +8082,49 @@ export interface paths {
         put?: never;
         /**
          * Haydovchidan pulni reys bo'yicha qabul qilish
-         * @description Sanalgan summa to'xtashlar bo'yicha taqsimlanadi, har ulush — MT. Farq bo'lsa izoh majburiy.
+         * @description Kassir sanagan summa. Kutilgan = bekatlar naqdi + ochiq avans − tasdiqlangan yoʻl xarajatlari (HD2; manfiy — kassa haydovchiga toʻlaydi, received = kutilgan). Farq bo'lsa izoh majburiy; kam bo'lsa sabab: (a) mijoz to'lamagan (bekat bo'yicha) va/yoki (b) haydovchi kamomadi; ortiqcha — tanlangan bekat mijoziga.
          */
         post: operations["acceptTripCash"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trips/{id}/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Yoʻl xarajatini yozish (haydovchi)
+         * @description Yoqilgʻida chek rasmi majburiy (keyin yuklanadi; rasmsiz tasdiqlanmaydi).
+         */
+        post: operations["addExpense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trips/{id}/expenses/{expenseId}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Chek rasmi
+         * @description JPEG/PNG/WEBP, ≤ 5 MB.
+         */
+        post: operations["photo_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7931,6 +8145,23 @@ export interface paths {
          * @description Qaytgan tovar yoki naqd pul bo'lsa — «Qaytish kutilmoqda».
          */
         post: operations["finish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trips/{id}/money": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reys avansi va yoʻl xarajatlari */
+        get: operations["money"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7971,6 +8202,26 @@ export interface paths {
          * @description Faqat «Rejalashtirilgan» reys, haydovchi qabul qilmagan buyurtma; buyurtma «Hujjatlashtirilmoqda»ga qaytadi.
          */
         post: operations["removeOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trips/{id}/points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * GPS nuqta (HD1)
+         * @description Bir martalik joylashuv: «Yetib keldim» yoki bekat natijasi. Fon kuzatuvi yoʻq.
+         */
+        post: operations["point"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9067,6 +9318,13 @@ export interface components {
             /** @enum {string} */
             type: "RECEIVING" | "MAIN" | "QUARANTINE" | "SHIPPING" | "COLD" | "SAFE";
         };
+        AdvanceRequest: {
+            /** Format: int64 */
+            accountId: number;
+            /** @description Summa, masalan «300000.00» */
+            amount: string;
+            note?: string;
+        };
         AllBranchesRequest: {
             enabled: boolean;
         };
@@ -9881,7 +10139,7 @@ export interface components {
             opDate: string;
             party?: string;
             /** @enum {string} */
-            source: "MANUAL" | "CLOSE";
+            source: "MANUAL" | "CLOSE" | "SHORTAGE" | "ADVANCE" | "TRIP_EXPENSE";
             /** @enum {string} */
             status: "PENDING" | "POSTED" | "REJECTED" | "CANCELLED";
             /** Format: int64 */
@@ -10745,6 +11003,15 @@ export interface components {
             /** Format: int32 */
             nominal: number;
         };
+        DeviceRemoveRequest: {
+            token: string;
+        };
+        DeviceRequest: {
+            /** @enum {string} */
+            platform: "ANDROID" | "IOS";
+            /** @description ExponentPushToken[…] */
+            token: string;
+        };
         DocPayment: {
             /** Format: date */
             dueDate?: string;
@@ -11089,6 +11356,29 @@ export interface components {
             waybillDate: string;
             waybillNumber: string;
         };
+        ExpenseCreated: {
+            /** Format: int64 */
+            id: number;
+        };
+        ExpenseDecision: {
+            approve: boolean;
+            /** Format: int64 */
+            expenseId: number;
+            /** @description Rad etishda majburiy */
+            reason?: string;
+        };
+        ExpenseGroup: {
+            approved: string;
+            /** Format: int32 */
+            count: number;
+            key: string;
+            /** Format: int32 */
+            km?: number;
+            label: string;
+            liters?: string;
+            perKm?: string;
+            total: string;
+        };
         ExpenseItem: {
             active: boolean;
             /** @enum {string} */
@@ -11097,6 +11387,17 @@ export interface components {
             id: number;
             name: string;
             system: boolean;
+        };
+        ExpenseReport: {
+            approved: string;
+            byDriver: components["schemas"]["ExpenseGroup"][];
+            byKind: components["schemas"]["ExpenseGroup"][];
+            byMonth: components["schemas"]["ExpenseGroup"][];
+            byVehicle: components["schemas"]["ExpenseGroup"][];
+            /** Format: int32 */
+            pending: number;
+            rows: components["schemas"]["TripExpense"][];
+            total: string;
         };
         ExpenseReportView: {
             /** Format: int64 */
@@ -11111,6 +11412,36 @@ export interface components {
             /** Format: date */
             to: string;
             total: components["schemas"]["ExpenseRow"];
+        };
+        ExpenseRequest: {
+            amount: string;
+            /**
+             * Format: uuid
+             * @description Takroriy yuborishdan himoya (oflayn navbat)
+             */
+            clientUuid?: string;
+            /** @enum {string} */
+            kind: "FUEL" | "MEAL" | "TOLL" | "REPAIR" | "OTHER";
+            lat?: number;
+            /** @description Yoqilgʻi: litr */
+            liters?: number;
+            lng?: number;
+            /** @description «Boshqa» turida majburiy */
+            note?: string;
+            /**
+             * Format: int32
+             * @description Spidometr, km
+             */
+            odometer?: number;
+            /** @description Yoqilgʻi: 1 litr narxi */
+            price?: string;
+            /** @enum {string} */
+            source: "ADVANCE" | "OWN" | "COLLECTED";
+            /**
+             * Format: date-time
+             * @description Qurilma vaqti (oflayn navbat)
+             */
+            spentAt?: string;
         };
         ExpenseRow: {
             cash: string;
@@ -13870,6 +14201,21 @@ export interface components {
             warehouse: string;
             zone?: string;
         };
+        PointRequest: {
+            /** Format: int32 */
+            accuracy?: number;
+            /** @enum {string} */
+            kind: "ARRIVED" | "DELIVERED" | "PARTIAL" | "UNDELIVERED";
+            lat: number;
+            lng: number;
+            /**
+             * Format: date-time
+             * @description Qurilma vaqti (oflayn navbat)
+             */
+            recordedAt?: string;
+            /** Format: int64 */
+            stopId?: number;
+        };
         PostRequest: {
             /**
              * @description Farq bo'lsa majburiy
@@ -15558,9 +15904,9 @@ export interface components {
         };
         SettingValue: {
             /** @enum {string} */
-            key: "expiryWarnDays" | "invRemindDays" | "orderLateDays" | "limitBranchPct" | "overdueDirDays" | "priceWarnPct" | "returnDays" | "refPriceTolPct" | "cashBranchApprove" | "hcDirApprove" | "ivDirApprove" | "pwMin" | "sessionMin" | "pinTries" | "pinLockMin";
+            key: "expiryWarnDays" | "invRemindDays" | "orderLateDays" | "limitBranchPct" | "overdueDirDays" | "priceWarnPct" | "returnDays" | "refPriceTolPct" | "cashBranchApprove" | "hcDirApprove" | "ivDirApprove" | "tripExpenseLimit" | "pwMin" | "sessionMin" | "pinTries" | "pinLockMin";
             /** @enum {string} */
-            kind: "DAY" | "PCT" | "SUM" | "LEN" | "MIN" | "TRIES" | "LOCK" | "RDAY";
+            kind: "DAY" | "PCT" | "SUM" | "LEN" | "MIN" | "TRIES" | "LOCK" | "RDAY" | "RSUM";
             /** Format: int64 */
             max: number;
             /** Format: int64 */
@@ -15613,6 +15959,37 @@ export interface components {
             name: string;
             rows: string[][];
         };
+        ShortageBalance: {
+            balance: string;
+            branch: string;
+            /** Format: int64 */
+            branchId: number;
+            closed: string;
+            employee: string;
+            /** Format: int64 */
+            employeeId: number;
+            total: string;
+        };
+        ShortageEntry: {
+            amount: string;
+            /** Format: int64 */
+            branchId: number;
+            cashOp?: string;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: string;
+            employee: string;
+            /** Format: int64 */
+            employeeId: number;
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            kind: "SHORTAGE" | "REPAID" | "WRITTEN_OFF";
+            note?: string;
+            trip?: string;
+            /** Format: int64 */
+            tripId?: number;
+        };
         ShortageInfo: {
             history: components["schemas"]["ShortageResolution"][];
             number: string;
@@ -15621,6 +15998,24 @@ export interface components {
             shortageQty: number;
             /** Format: int64 */
             transferId: number;
+        };
+        ShortageOverview: {
+            balances: components["schemas"]["ShortageBalance"][];
+            entries: components["schemas"]["ShortageEntry"][];
+        };
+        ShortageRepayRequest: {
+            /** Format: int64 */
+            accountId: number;
+            /** @description Summa, masalan «200000.00» */
+            amount: string;
+            /** Format: int64 */
+            branchId: number;
+            /** Format: int64 */
+            employeeId: number;
+            note?: string;
+        };
+        ShortageRepayResult: {
+            cashOp: string;
         };
         ShortageResolution: {
             /** @enum {string} */
@@ -15641,6 +16036,14 @@ export interface components {
             /** @enum {string} */
             kind: "WRITE_OFF" | "RETURN";
             note: string;
+        };
+        ShortageWriteOffRequest: {
+            amount: string;
+            /** Format: int64 */
+            branchId: number;
+            /** Format: int64 */
+            employeeId: number;
+            reason: string;
         };
         SignerOption: {
             /** Format: int64 */
@@ -16431,19 +16834,51 @@ export interface components {
             /** @enum {string} */
             zoneType?: "RECEIVING" | "MAIN" | "QUARANTINE" | "SHIPPING" | "COLD" | "SAFE";
         };
+        TripAdvance: {
+            amount: string;
+            cashOp: string;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: string;
+            /** Format: int64 */
+            id: number;
+            note?: string;
+            settled: boolean;
+        };
         TripCashAcceptRequest: {
             /** Format: int64 */
             accountId: number;
+            /** @description HD2: har kutilayotgan yoʻl xarajatiga qaror (tasdiqlash / rad etish sabab bilan) */
+            expenses?: components["schemas"]["ExpenseDecision"][];
             /** @description Farq bo'lsa majburiy */
             note?: string;
+            /**
+             * Format: int64
+             * @description Ortiqcha bo'lsa — qaysi bekat mijoziga (standart — oxirgisi)
+             */
+            overageStopId?: number;
             /** @description Kassir sanagan summa */
             received: string;
+            /** @description Kam bo'lsa (b) «Haydovchi kamomadi» summasi; (a)+(b) = farq */
+            shortage?: string;
+            /** @description Kam bo'lsa (a) «Mijoz toʻlamagan»: bekat va summa */
+            unpaid?: components["schemas"]["UnpaidShare"][];
         };
         TripCashAccepted: {
+            /** @description Qaytgan avans (HD2) */
+            advance: string;
+            /** @description Avans/xarajat KO raqamlari */
+            cashOps: string[];
             diff: string;
             expected: string;
+            /** @description Tasdiqlangan yoʻl xarajatlari (HD2) */
+            expenses: string;
             payments: string[];
             received: string;
+            /** @description «Haydovchi kamomadi» */
+            shortage: string;
+            /** @description «Mijoz toʻlamagan» jami */
+            unpaid: string;
         };
         TripDetail: {
             /** Format: int64 */
@@ -16464,6 +16899,8 @@ export interface components {
             /** Format: int32 */
             places: number;
             plateNumber: string;
+            /** @description HD1: GPS nuqtalar (bir martalik — «Yetib keldim» va natija), vaqt boʻyicha */
+            points: components["schemas"]["TripPoint"][];
             refrigerator: boolean;
             /** Format: date-time */
             startedAt?: string;
@@ -16478,9 +16915,75 @@ export interface components {
             vehicleId: number;
             vehicleModel?: string;
         };
+        TripExpense: {
+            amount: string;
+            cashOp?: string;
+            decidedBy?: string;
+            driver: string;
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            kind: "FUEL" | "MEAL" | "TOLL" | "REPAIR" | "OTHER";
+            lat?: number;
+            liters?: string;
+            lng?: number;
+            note?: string;
+            /** Format: int32 */
+            odometer?: number;
+            /** @description Summa sozlamadagi limitdan oshgan (limit 0 — oʻchiq) */
+            overLimit: boolean;
+            /** Format: int32 */
+            photos: number;
+            price?: string;
+            rejectReason?: string;
+            settled: boolean;
+            /** @enum {string} */
+            source: "ADVANCE" | "OWN" | "COLLECTED";
+            /** Format: date-time */
+            spentAt: string;
+            /** @enum {string} */
+            status: "PENDING" | "APPROVED" | "REJECTED";
+            /** Format: int64 */
+            tripId: number;
+            tripNumber: string;
+            vehicle: string;
+        };
+        TripMoneyView: {
+            /** @description Qabul qilinmagan avanslar jami */
+            advanceOpen: string;
+            advances: components["schemas"]["TripAdvance"][];
+            /** Format: int64 */
+            branchId: number;
+            driver: string;
+            expenses: components["schemas"]["TripExpense"][];
+            /** @description Qabul qilinmagan xarajatlar jami (kutilayotgan + hal qilingan) */
+            expensesOpen: string;
+            /** Format: int32 */
+            pending: number;
+            /** Format: int64 */
+            tripId: number;
+            tripNumber: string;
+            /** @enum {string} */
+            tripStatus: "PLANNED" | "IN_TRANSIT" | "RETURN_WAIT" | "DONE" | "CANCELLED";
+        };
         TripOptions: {
             drivers: components["schemas"]["DriverOption"][];
             vehicles: components["schemas"]["VehicleOption"][];
+        };
+        TripPoint: {
+            /**
+             * Format: int32
+             * @description Aniqlik, metr
+             */
+            accuracy?: number;
+            /** @enum {string} */
+            kind: "ARRIVED" | "DELIVERED" | "PARTIAL" | "UNDELIVERED";
+            lat: string;
+            lng: string;
+            /** Format: date-time */
+            recordedAt: string;
+            /** Format: int64 */
+            stopId?: number;
         };
         TripRequest: {
             /** Format: int64 */
@@ -16606,6 +17109,11 @@ export interface components {
             /** Format: int32 */
             qty: number;
             unit: string;
+        };
+        UnpaidShare: {
+            amount: string;
+            /** Format: int64 */
+            stopId: number;
         };
         UnreadCounts: {
             /** Format: int64 */
@@ -17504,7 +18012,7 @@ export interface operations {
             };
         };
     };
-    list_37: {
+    list_38: {
         parameters: {
             query?: {
                 view?: "ALL" | "CANCEL" | "FAIL" | "PERM" | "CTRL";
@@ -19877,6 +20385,50 @@ export interface operations {
             };
         };
     };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    remove_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceRemoveRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     overview_5: {
         parameters: {
             query?: {
@@ -20020,7 +20572,7 @@ export interface operations {
             };
         };
     };
-    list_36: {
+    list_37: {
         parameters: {
             query?: never;
             header?: never;
@@ -21283,7 +21835,7 @@ export interface operations {
             };
         };
     };
-    list_35: {
+    list_36: {
         parameters: {
             query?: {
                 branchId?: number;
@@ -22475,7 +23027,7 @@ export interface operations {
             };
         };
     };
-    list_34: {
+    list_35: {
         parameters: {
             query?: never;
             header?: never;
@@ -26558,7 +27110,7 @@ export interface operations {
             };
         };
     };
-    list_33: {
+    list_34: {
         parameters: {
             query?: {
                 branchId?: number;
@@ -26890,7 +27442,7 @@ export interface operations {
             };
         };
     };
-    list_32: {
+    list_33: {
         parameters: {
             query?: {
                 branchId?: number;
@@ -26968,7 +27520,7 @@ export interface operations {
             };
         };
     };
-    writeOff: {
+    writeOff_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -26992,7 +27544,7 @@ export interface operations {
             };
         };
     };
-    list_31: {
+    list_32: {
         parameters: {
             query?: never;
             header?: never;
@@ -27703,6 +28255,76 @@ export interface operations {
             };
         };
     };
+    list_31: {
+        parameters: {
+            query?: {
+                branchId?: number;
+                employeeId?: number;
+                openOnly?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShortageOverview"];
+                };
+            };
+        };
+    };
+    repay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShortageRepayRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShortageRepayResult"];
+                };
+            };
+        };
+    };
+    writeOff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShortageWriteOffRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     list_30: {
         parameters: {
             query?: {
@@ -28240,6 +28862,55 @@ export interface operations {
             };
         };
     };
+    report: {
+        parameters: {
+            query?: {
+                branchId?: number;
+                from?: string;
+                to?: string;
+                driverId?: number;
+                vehicleId?: number;
+                status?: "PENDING" | "APPROVED" | "REJECTED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseReport"];
+                };
+            };
+        };
+    };
+    photoView: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expenseId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+        };
+    };
     list_5: {
         parameters: {
             query?: {
@@ -28305,6 +28976,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DriverCash"][];
+                };
+            };
+        };
+    };
+    extras: {
+        parameters: {
+            query?: {
+                branchId?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripMoneyView"][];
                 };
             };
         };
@@ -28535,6 +29228,32 @@ export interface operations {
             };
         };
     };
+    advance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdvanceRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripMoneyView"];
+                };
+            };
+        };
+    };
     cancel_2: {
         parameters: {
             query?: never;
@@ -28587,6 +29306,62 @@ export interface operations {
             };
         };
     };
+    addExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseCreated"];
+                };
+            };
+        };
+    };
+    photo_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                expenseId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoResult"];
+                };
+            };
+        };
+    };
     finish: {
         parameters: {
             query?: never;
@@ -28605,6 +29380,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FinishResult"];
+                };
+            };
+        };
+    };
+    money: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripMoneyView"];
                 };
             };
         };
@@ -28659,6 +29456,30 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TripDetail"];
                 };
+            };
+        };
+    };
+    point: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PointRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
