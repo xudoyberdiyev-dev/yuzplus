@@ -532,7 +532,7 @@ _(07.11.2026 18:12 — 6 savolga javob berildi va 20:00–20:30 da joriy qilindi
 - 01.11.2026 — Spring Session REQUIRES_NEW tranzaksiyada ishlaydi: sessiyani o'zgartiradigan integratsion testlar `@Transactional` bo'lmaydi.
 
 ## Sessiya jurnali
-- 23.11 06:07 (ertalabki oyna, 1-sessiya): S1 8-qism — `ReceiptReminders` FIFO qoldigʻi boʻyicha (toʻlangan kirim eslatilmaydi, summa — qolgan qarz), `SchedulerConfig` (3 oqim, xato → `system_error`), IT + unit (`docs/notes/S1-audit-8.md`).
+- 23.11 06:07–06:50 (ertalabki oyna, 1-sessiya; oyna erta yopildi): S1 8-qism — `ReceiptReminders` FIFO qoldigʻi boʻyicha (toʻlangan kirim eslatilmaydi, summa — qolgan qarz), `SchedulerConfig` (3 oqim, xato → `system_error`), IT + unit (`docs/notes/S1-audit-8.md`).
 - 23.11 02:34 (tungi oyna, zaxira sessiya): S1 7-qism — xavfsizlik qayta skani (ruxsatlar, SQL, CSRF), zaiflik topilmadi (`docs/notes/S1-audit-7.md`). Qolgan vazifalar egasi «boshla»sini kutadi.
 - 22.11 14:06–15:20 (kunduzgi oyna): S1 5-qism — frontend lugʻatlari til boʻyicha (`next/dynamic`, kirish JS 1,74 → 0,89 MB), kirish formasi gidratsiyagacha yozilgan qiymatni saqlaydi, N+1 koʻrigi (kontragent kartochkasi `DebtSummaries.ofParty`). CI toʻliq yashil (cd2cc12d). Oyna erta yopildi — ochiq avtonom vazifa qolmadi.
 - 22.11 02:27–03:00 (tungi oyna, 3-sessiya, zanjir): S1 Docs hisobot egasi uchun; S1 4-qism — `ExcelUploadGuard` (7 import, ≤ 100 MB ochilgan hajm, `import.tooLarge` 3 til, unit test), `/actuator/**` → `settings.security` (`EndpointPermissionsIT`), bogʻliqliklar auditi; topildi: `backup.yml` hali ishlamagan (repo public → skipped). CI 81444af5 toʻliq yashil. Oyna erta yopildi, hisobot `reports/2026-11-22-0300.md`.
