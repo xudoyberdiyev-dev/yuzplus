@@ -319,6 +319,8 @@
     "prices_reference": "Narxlar: referent narx bilan solishtirish",
     "kk_view": "Kutilayotgan kirim: koʻrish",
     "kk_create": "Kutilayotgan kirim: yaratish va tahrirlash",
-    "kk_approve": "Kutilayotgan kirim: tasdiqlash (qarz yoziladi), bekor qilish"
+    "kk_approve": "Kutilayotgan kirim: tasdiqlash (qarz yoziladi), bekor qilish",
+    "shortage_view": "Xodim kamomadlari: koʻrish",
+    "shortage_writeOff": "Xodim kamomadi: hisobdan chiqarish"
   }
 }

@@ -18,7 +18,7 @@ final class CashModels {
 
     enum OpStatus { PENDING, POSTED, REJECTED, CANCELLED }
 
-    enum OpSource { MANUAL, CLOSE }
+    enum OpSource { MANUAL, CLOSE, SHORTAGE }
 
     enum TransferStatus { POSTED, CANCELLED }
 

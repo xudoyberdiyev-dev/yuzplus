@@ -65,7 +65,13 @@ class TripController {
             @jakarta.validation.constraints.NotNull(message = "{validation.required}") Long accountId,
             @jakarta.validation.constraints.NotNull(message = "{validation.required}")
             @Schema(description = "Kassir sanagan summa") String received,
-            @Schema(nullable = true, description = "Farq bo'lsa majburiy") @Size(max = 300) String note) {}
+            @Schema(nullable = true, description = "Farq bo'lsa majburiy") @Size(max = 300) String note,
+            @Schema(nullable = true, description = "Kam bo'lsa (a) «Mijoz toʻlamagan»: bekat va summa") @Size(max = 200) List<@Valid UnpaidShare> unpaid,
+            @Schema(nullable = true, description = "Kam bo'lsa (b) «Haydovchi kamomadi» summasi; (a)+(b) = farq") @Size(max = 24) String shortage,
+            @Schema(nullable = true, description = "Ortiqcha bo'lsa — qaysi bekat mijoziga (standart — oxirgisi)") Long overageStopId) {}
+
+    record UnpaidShare(@jakarta.validation.constraints.NotNull(message = "{validation.required}") Long stopId,
+            @jakarta.validation.constraints.NotNull(message = "{validation.required}") @Size(max = 24) String amount) {}
 
     record ReturnedLine(@jakarta.validation.constraints.NotNull(message = "{validation.required}") Long saleLineId,
             @jakarta.validation.constraints.NotNull(message = "{validation.required}") @jakarta.validation.constraints.Min(0) Integer qty) {}
@@ -294,9 +300,13 @@ class TripController {
     @PostMapping("/{id}/cash/accept")
     @PreAuthorize("hasAuthority('payments.mt')")
     @Operation(summary = "Haydovchidan pulni reys bo'yicha qabul qilish",
-            description = "Sanalgan summa to'xtashlar bo'yicha taqsimlanadi, har ulush — MT. Farq bo'lsa izoh majburiy.")
+            description = "Kassir sanagan summa. Farq bo'lsa izoh majburiy; kam bo'lsa sabab: (a) mijoz to'lamagan (bekat bo'yicha) va/yoki "
+                    + "(b) haydovchi kamomadi; ortiqcha — tanlangan bekat mijoziga.")
     TripModels.TripCashAccepted acceptTripCash(@PathVariable long id, @Valid @RequestBody TripCashAcceptRequest r) {
-        return trips.acceptTripCash(actor(), id, r.accountId(), parseMoney(r.received()), r.note());
+        List<Trips.Unpaid> unpaid = r.unpaid() == null ? List.of()
+                : r.unpaid().stream().map(u -> new Trips.Unpaid(u.stopId(), parseMoney(u.amount()))).toList();
+        return trips.acceptTripCash(actor(), id, r.accountId(), parseMoney(r.received()), r.note(), unpaid,
+                r.shortage() == null || r.shortage().isBlank() ? null : parseMoney(r.shortage()), r.overageStopId());
     }
 
     private static Money parseMoney(String s) {

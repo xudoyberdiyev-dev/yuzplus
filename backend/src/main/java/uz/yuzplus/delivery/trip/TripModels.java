@@ -94,5 +94,7 @@ final class TripModels {
             Instant collectedAt, TripStatus tripStatus) {}
 
     /** Reys bo'yicha qabul natijasi: kutilgan, sanalgan, farq (sanalgan − kutilgan) va yozilgan MT raqamlari. */
-    record TripCashAccepted(String expected, String received, String diff, List<String> payments) {}
+    record TripCashAccepted(String expected, String received, String diff, List<String> payments,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "«Mijoz toʻlamagan» jami") String unpaid,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "«Haydovchi kamomadi»") String shortage) {}
 }

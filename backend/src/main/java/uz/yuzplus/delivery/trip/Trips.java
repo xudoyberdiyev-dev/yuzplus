@@ -48,9 +48,11 @@ class Trips {
     private final AuditLog audit;
     private final uz.yuzplus.finance.CustomerPayments payments;
     private final TripOrderListener settle;
+    private final uz.yuzplus.finance.DriverShortages shortages;
 
     Trips(JdbcClient jdbc, OrderDispatch dispatch, DocumentSequenceService numbers, AuditLog audit, uz.yuzplus.finance.CustomerPayments payments,
-            TripOrderListener settle) {
+            TripOrderListener settle, uz.yuzplus.finance.DriverShortages shortages) {
+        this.shortages = shortages;
         this.payments = payments;
         this.settle = settle;
         this.jdbc = jdbc;
@@ -210,6 +212,609 @@ class Trips {
         }
         audit.record(AuditEntry.of("trip.create", "trip", id).change(null, Map.of("number", number, "orders", orders.size(), "places", places)));
         return id;
+    }
+
+    /** «O'zi olib ketadi»: reyssiz, nakladnoy bilan «Yuklanmoqda». */
+    @Transactional
+    String pickup(Actor actor, long orderId) {
+        DispatchOrder o = dispatch.lockDocumenting(actor, List.of(orderId)).getFirst();
+        if (o.delivery() != OrderDispatch.Delivery.PICKUP) {
+            throw YuzplusException.badRequest("trip.notPickup");
+        }
+        return dispatch.toLoading(actor, orderId);
+    }
+
+    /** Bekor qilish — faqat «Rejalashtirilgan» (yuklash boshlanmagan); buyurtmalar «Hujjatlashtirilmoqda»ga qaytadi. */
+    @Transactional
+    void cancel(Actor actor, long id, String reason) {
+        TripStatus st = jdbc.sql("SELECT status, branch_id FROM trip WHERE id = :id FOR UPDATE")
+                .param("id", id)
+                .query((rs, n) -> actor.canAccessBranch(rs.getLong("branch_id")) ? TripStatus.valueOf(rs.getString("status")) : null)
+                .list()
+                .stream()
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> YuzplusException.notFound("error.notFound"));
+        if (st != TripStatus.PLANNED) {
+            throw YuzplusException.conflict("trip.cannotCancel");
+        }
+        List<Long> orders = jdbc.sql("SELECT order_id FROM trip_stop WHERE trip_id = :id AND active ORDER BY order_id")
+                .param("id", id)
+                .query(Long.class)
+                .list();
+        boolean loaded = jdbc.sql("SELECT EXISTS (SELECT 1 FROM trip_stop WHERE trip_id = :id AND active AND loaded_at IS NOT NULL)")
+                .param("id", id).query(Boolean.class).single();
+        if (loaded) {
+            throw YuzplusException.conflict("trip.alreadyLoading");
+        }
+        for (long o : orders) {
+            dispatch.backToDocumenting(actor, o, reason.strip());
+        }
+        jdbc.sql("UPDATE trip_stop SET active = false WHERE trip_id = :id").param("id", id).update();
+        jdbc.sql("""
+                UPDATE trip SET status = 'CANCELLED', cancelled_by = :by, cancelled_at = now(), cancel_reason = :r, updated_at = now(),
+                       version = version + 1 WHERE id = :id""")
+                .param("by", actor.employeeId())
+                .param("r", reason.strip())
+                .param("id", id)
+                .update();
+        audit.record(AuditEntry.of("trip.cancel", "trip", id).withReason(reason.strip()));
+    }
+
+    private record Planned(long id, long branchId, long vehicleId) {}
+
+    /** Reys «Rejalashtirilgan» va foydalanuvchi filialida bo'lishi shart (qulflanadi). */
+    private Planned lockPlanned(Actor actor, long id) {
+        record X(long id, long branchId, long vehicleId, TripStatus status) {}
+        X t = jdbc.sql("SELECT id, branch_id, vehicle_id, status FROM trip WHERE id = :id FOR UPDATE")
+                .param("id", id)
+                .query((rs, n) -> new X(rs.getLong("id"), rs.getLong("branch_id"), rs.getLong("vehicle_id"), TripStatus.valueOf(rs.getString("status"))))
+                .optional()
+                .filter(x -> actor.canAccessBranch(x.branchId()))
+                .orElseThrow(() -> YuzplusException.notFound("error.notFound"));
+        if (t.status() != TripStatus.PLANNED) {
+            throw YuzplusException.conflict("trip.notEditable");
+        }
+        return new Planned(t.id(), t.branchId(), t.vehicleId());
+    }
+
+    /**
+     * Rejalashtirilgan reysga buyurtma qo'shish: «Hujjatlashtirilmoqda» buyurtmalar, reys filialidan, «O'zi olib ketadi» emas; sig'im
+     * mashinaning barcha faol reyslari bilan birga tekshiriladi. Har buyurtma nakladnoy raqami bilan «Yuklanmoqda»ga.
+     */
+    @Transactional
+    void addOrders(Actor actor, long tripId, List<Long> orderIds) {
+        Planned t = lockPlanned(actor, tripId);
+        List<DispatchOrder> orders = dispatch.lockDocumenting(actor, orderIds);
+        if (orders.stream().anyMatch(o -> o.branchId() != t.branchId())) {
+            throw YuzplusException.badRequest("trip.mixedBranches");
+        }
+        if (orders.stream().anyMatch(o -> o.delivery() == OrderDispatch.Delivery.PICKUP)) {
+            throw YuzplusException.badRequest("trip.pickupInTrip");
+        }
+        Vehicle v = jdbc.sql("SELECT id, branch_id, plate_number, active FROM vehicle WHERE id = :id FOR UPDATE")
+                .param("id", t.vehicleId())
+                .query((rs, n) -> new Vehicle(rs.getLong("id"), rs.getLong("branch_id"), rs.getString("plate_number"),
+                        rs.getBoolean("active")))
+                .single();
+        int places = orders.stream().mapToInt(DispatchOrder::places).sum();
+        int seq = jdbc.sql("SELECT coalesce(max(seq), 0) FROM trip_stop WHERE trip_id = :t").param("t", tripId).query(Integer.class).single();
+        for (DispatchOrder o : orders) {
+            jdbc.sql("INSERT INTO trip_stop (trip_id, order_id, seq, places) VALUES (:t, :o, :s, :p)")
+                    .param("t", tripId)
+                    .param("o", o.id())
+                    .param("s", ++seq)
+                    .param("p", o.places())
+                    .update();
+            dispatch.toLoading(actor, o.id());
+        }
+        jdbc.sql("UPDATE trip SET places = places + :p, updated_at = now(), version = version + 1 WHERE id = :t")
+                .param("p", places).param("t", tripId).update();
+        audit.record(AuditEntry.of("trip.addOrders", "trip", tripId)
+                .change(null, Map.of("orders", orders.stream().map(DispatchOrder::number).toList(), "places", places)));
+    }
+
+    /**
+     * Rejalashtirilgan reys sarlavhasi (prototip TripPage): sana, haydovchi, mashina, ekspeditor, izoh. Haydovchi biror bekatni
+     * qabul qilgan (yuklangan) bo'lsa — o'zgartirilmaydi. Tekshiruvlar reys tuzishdagidek.
+     */
+    @Transactional
+    void update(Actor actor, long tripId, TripUpdate r) {
+        Planned t = lockPlanned(actor, tripId);
+        boolean loaded = jdbc.sql("SELECT EXISTS (SELECT 1 FROM trip_stop WHERE trip_id = :t AND active AND loaded_at IS NOT NULL)")
+                .param("t", tripId).query(Boolean.class).single();
+        if (loaded) {
+            throw YuzplusException.conflict("trip.stopLoaded");
+        }
+        boolean vehicleOk = jdbc.sql("SELECT EXISTS (SELECT 1 FROM vehicle WHERE id = :v AND branch_id = :b AND active)")
+                .param("v", r.vehicleId()).param("b", t.branchId()).query(Boolean.class).single();
+        if (!vehicleOk) {
+            throw YuzplusException.badRequest("trip.vehicleUnknown");
+        }
+        boolean driverOk = jdbc.sql("""
+                SELECT EXISTS (SELECT 1 FROM employee e JOIN role r ON r.id = e.role_id
+                               WHERE e.id = :d AND r.code = 'DRIVER' AND e.branch_id = :b AND e.status = 'ACTIVE')""")
+                .param("d", r.driverId())
+                .param("b", t.branchId())
+                .query(Boolean.class)
+                .single();
+        if (!driverOk) {
+            throw YuzplusException.badRequest("trip.driverUnknown");
+        }
+        jdbc.sql("SELECT id FROM employee WHERE id = :d FOR UPDATE").param("d", r.driverId()).query(Long.class).single();
+        String busyTrip = jdbc.sql("""
+                SELECT number FROM trip WHERE driver_id = :d AND id <> :t AND status IN ('PLANNED', 'IN_TRANSIT', 'RETURN_WAIT') LIMIT 1""")
+                .param("d", r.driverId())
+                .param("t", tripId)
+                .query(String.class)
+                .optional()
+                .orElse(null);
+        if (busyTrip != null) {
+            throw YuzplusException.conflict("trip.driverBusy", busyTrip);
+        }
+        if (r.tripDate().isBefore(LocalDate.now(TASHKENT))) {
+            throw YuzplusException.badRequest("trip.datePast");
+        }
+        jdbc.sql("""
+                UPDATE trip SET vehicle_id = :v, driver_id = :d, trip_date = :date, expeditor = :exp, note = :note,
+                       updated_at = now(), version = version + 1 WHERE id = :t""")
+                .param("v", r.vehicleId())
+                .param("d", r.driverId())
+                .param("date", java.sql.Date.valueOf(r.tripDate()))
+                .param("exp", r.expeditor() == null || r.expeditor().isBlank() ? null : r.expeditor().strip())
+                .param("note", r.note() == null || r.note().isBlank() ? null : r.note().strip())
+                .param("t", tripId)
+                .update();
+        audit.record(AuditEntry.of("trip.update", "trip", tripId)
+                .change(null, Map.of("vehicleId", r.vehicleId(), "driverId", r.driverId(), "tripDate", r.tripDate().toString())));
+    }
+
+    /** Bekatlar tartibi (prototip TripPage — sudrab): faqat «Rejalashtirilgan», ro'yxat reysning faol bekatlari bilan aynan mos. */
+    @Transactional
+    void reorder(Actor actor, long tripId, List<Long> stopIds) {
+        lockPlanned(actor, tripId);
+        List<Long> active = jdbc.sql("SELECT id FROM trip_stop WHERE trip_id = :t AND active ORDER BY seq")
+                .param("t", tripId).query(Long.class).list();
+        if (stopIds.size() != active.size() || !new HashSet<>(stopIds).equals(new HashSet<>(active))) {
+            throw YuzplusException.badRequest("trip.stopsMismatch");
+        }
+        // UNIQUE (trip_id, seq): avval hammasini vaqtincha suramiz, keyin faollar 1..n, olib tashlanganlar ulardan keyin
+        jdbc.sql("UPDATE trip_stop SET seq = seq + 100000 WHERE trip_id = :t").param("t", tripId).update();
+        int seq = 0;
+        for (long id : stopIds) {
+            jdbc.sql("UPDATE trip_stop SET seq = :s WHERE id = :id").param("s", ++seq).param("id", id).update();
+        }
+        List<Long> inactive = jdbc.sql("SELECT id FROM trip_stop WHERE trip_id = :t AND NOT active ORDER BY seq")
+                .param("t", tripId).query(Long.class).list();
+        for (long id : inactive) {
+            jdbc.sql("UPDATE trip_stop SET seq = :s WHERE id = :id").param("s", ++seq).param("id", id).update();
+        }
+        jdbc.sql("UPDATE trip SET updated_at = now(), version = version + 1 WHERE id = :t").param("t", tripId).update();
+        audit.record(AuditEntry.of("trip.reorder", "trip", tripId).change(null, Map.of("stops", stopIds)));
+    }
+
+    /**
+     * Rejalashtirilgan reysdan buyurtmani olib tashlash (haydovchi hali qabul qilmagan): buyurtma «Hujjatlashtirilmoqda»ga qaytadi, NK
+     * raqami saqlanadi. Oxirgi buyurtma olib tashlanmaydi — reysni bekor qilish kerak.
+     */
+    @Transactional
+    void removeOrder(Actor actor, long tripId, long orderId, String reason) {
+        lockPlanned(actor, tripId);
+        record S(long id, int places, boolean loaded) {}
+        S s = jdbc.sql("SELECT id, places, loaded_at IS NOT NULL AS loaded FROM trip_stop WHERE trip_id = :t AND order_id = :o AND active")
+                .param("t", tripId)
+                .param("o", orderId)
+                .query((rs, n) -> new S(rs.getLong("id"), rs.getInt("places"), rs.getBoolean("loaded")))
+                .optional()
+                .orElseThrow(() -> YuzplusException.notFound("error.notFound"));
+        if (s.loaded()) {
+            throw YuzplusException.conflict("trip.stopLoaded");
+        }
+        int left = jdbc.sql("SELECT count(*) FROM trip_stop WHERE trip_id = :t AND active").param("t", tripId).query(Integer.class).single();
+        if (left <= 1) {
+            throw YuzplusException.conflict("trip.lastOrder");
+        }
+        jdbc.sql("UPDATE trip_stop SET active = false WHERE id = :id").param("id", s.id()).update();
+        jdbc.sql("UPDATE trip SET places = places - :p, updated_at = now(), version = version + 1 WHERE id = :t")
+                .param("p", s.places()).param("t", tripId).update();
+        dispatch.backToDocumenting(actor, orderId, reason.strip());
+        audit.record(AuditEntry.of("trip.removeOrder", "trip", tripId).change(Map.of("order", orderId), null).withReason(reason.strip()));
+    }
+
+    // ===== Haydovchi (SPEC 5.2 №8–9) =====
+
+    @Transactional(readOnly = true)
+    java.util.Optional<TripDetail> mine(Actor actor) {
+        return jdbc.sql("""
+                SELECT id FROM trip WHERE driver_id = :d AND status IN ('PLANNED', 'IN_TRANSIT', 'RETURN_WAIT') ORDER BY id LIMIT 1""")
+                .param("d", actor.employeeId())
+                .query(Long.class)
+                .optional()
+                .map(id -> find(actor, id));
+    }
+
+    private record Own(long id, String number, TripStatus status) {}
+
+    private Own lockOwn(Actor actor, long id) {
+        return lockOwn(actor, id, TripStatus.PLANNED);
+    }
+
+    private Own lockOwn(Actor actor, long id, TripStatus expected) {
+        Own t = jdbc.sql("SELECT id, number, status, driver_id, branch_id FROM trip WHERE id = :id FOR UPDATE")
+                .param("id", id)
+                .query((rs, n) -> actor.canAccessBranch(rs.getLong("branch_id")) && rs.getLong("driver_id") == actor.employeeId()
+                        ? new Own(rs.getLong("id"), rs.getString("number"), TripStatus.valueOf(rs.getString("status")))
+                        : null)
+                .list()
+                .stream()
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> YuzplusException.forbidden("trip.notDriver"));
+        if (t.status() != expected) {
+            throw YuzplusException.conflict(expected == TripStatus.PLANNED ? "trip.notPlanned" : "trip.notInTransit");
+        }
+        return t;
+    }
+
+    /** «Qabul qildim»: haydovchi buyurtmani joylar soni bo'yicha oladi (son hujjatdagiga teng bo'lishi shart). */
+    @Transactional
+    void load(Actor actor, long tripId, long stopId, int places) {
+        lockOwn(actor, tripId);
+        Integer expected = jdbc.sql("SELECT places FROM trip_stop WHERE id = :s AND trip_id = :t AND active")
+                .param("s", stopId)
+                .param("t", tripId)
+                .query(Integer.class)
+                .optional()
+                .orElseThrow(() -> YuzplusException.notFound("error.notFound"));
+        if (expected != places) {
+            throw YuzplusException.conflict("trip.placesMismatch", expected);
+        }
+        jdbc.sql("UPDATE trip_stop SET loaded_by = :by, loaded_at = now() WHERE id = :s AND loaded_at IS NULL")
+                .param("by", actor.employeeId())
+                .param("s", stopId)
+                .update();
+        audit.record(AuditEntry.of("trip.load", "trip", tripId).change(null, Map.of("stop", stopId, "places", places)));
+    }
+
+    /** «Yuklab bo'lindi — reysni boshlash»: barcha buyurtmalar qabul qilingan; har biriga sotuv va HF, «Yo'lda». */
+    @Transactional
+    List<String> start(Actor actor, long tripId) {
+        Own t = lockOwn(actor, tripId);
+        record S(long orderId, boolean loaded) {}
+        List<S> stops = jdbc.sql("SELECT order_id, loaded_at IS NOT NULL AS loaded FROM trip_stop WHERE trip_id = :t AND active ORDER BY seq")
+                .param("t", tripId)
+                .query((rs, n) -> new S(rs.getLong("order_id"), rs.getBoolean("loaded")))
+                .list();
+        long notLoaded = stops.stream().filter(x -> !x.loaded()).count();
+        if (notLoaded > 0) {
+            throw YuzplusException.conflict("trip.notLoaded", notLoaded);
+        }
+        List<String> sales = new ArrayList<>();
+        for (S x : stops) {
+            sales.add(dispatch.ship(actor, x.orderId(), tripId));
+        }
+        jdbc.sql("UPDATE trip SET status = 'IN_TRANSIT', started_at = now(), updated_at = now(), version = version + 1 WHERE id = :id")
+                .param("id", tripId)
+                .update();
+        audit.record(AuditEntry.of("trip.start", "trip", tripId).change(Map.of("status", "PLANNED"), Map.of("status", "IN_TRANSIT", "sales", sales)));
+        return sales;
+    }
+
+    private record OpenStop(long id, long orderId) {}
+
+    private OpenStop openStop(long tripId, long stopId) {
+        record X(long id, long orderId, String outcome) {}
+        X x = jdbc.sql("SELECT id, order_id, outcome FROM trip_stop WHERE id = :s AND trip_id = :t AND active FOR UPDATE")
+                .param("s", stopId)
+                .param("t", tripId)
+                .query((rs, n) -> new X(rs.getLong("id"), rs.getLong("order_id"), rs.getString("outcome")))
+                .optional()
+                .orElseThrow(() -> YuzplusException.notFound("error.notFound"));
+        if (x.outcome() != null) {
+            throw YuzplusException.conflict("trip.stopDone");
+        }
+        return new OpenStop(x.id(), x.orderId());
+    }
+
+    private static final java.util.Set<String> IMAGE_TYPES = java.util.Set.of("image/jpeg", "image/png", "image/webp");
+
+    /** Yetkazish rasmi (yoki imzo) — manzil natijasi belgilanmaguncha. */
+    @Transactional
+    long addPhoto(Actor actor, long tripId, long stopId, String contentType, byte[] data, boolean signature) {
+        lockOwn(actor, tripId, TripStatus.IN_TRANSIT);
+        openStop(tripId, stopId);
+        if (contentType == null || !IMAGE_TYPES.contains(contentType) || data.length == 0 || data.length > 5 * 1024 * 1024) {
+            throw YuzplusException.badRequest("trip.photoInvalid");
+        }
+        return jdbc.sql("""
+                INSERT INTO delivery_photo (stop_id, content_type, size_bytes, data, kind, created_by) VALUES (:s, :ct, :sz, :d, :k, :by) RETURNING id""")
+                .param("s", stopId)
+                .param("ct", contentType)
+                .param("sz", data.length)
+                .param("d", data)
+                .param("k", signature ? "SIGNATURE" : "PHOTO")
+                .param("by", actor.employeeId())
+                .query(Long.class)
+                .single();
+    }
+
+    /** «Yetkazildi»: kamida 1 rasm; naqd to'lovda olingan summa (0 … buyurtma summasi). */
+    @Transactional
+    void deliver(Actor actor, long tripId, long stopId, String cash) {
+        lockOwn(actor, tripId, TripStatus.IN_TRANSIT);
+        OpenStop s = openStop(tripId, stopId);
+        requirePhoto(stopId);
+        Money collected = cash(cash, Money.of(dispatch.total(s.orderId())));
+        dispatch.delivered(actor, s.orderId());
+        jdbc.sql("""
+                UPDATE trip_stop SET outcome = 'DELIVERED', outcome_by = :by, outcome_at = now(), cash_collected = :c WHERE id = :s""")
+                .param("by", actor.employeeId())
+                .param("c", collected == null ? null : collected.amount())
+                .param("s", stopId)
+                .update();
+        audit.record(AuditEntry.of("trip.delivered", "trip", tripId).change(null, Map.of("stop", stopId, "cash", collected == null ? "0" : collected.toString())));
+    }
+
+    private void requirePhoto(long stopId) {
+        boolean photo = jdbc.sql("SELECT EXISTS (SELECT 1 FROM delivery_photo WHERE stop_id = :s AND kind = 'PHOTO')")
+                .param("s", stopId).query(Boolean.class).single();
+        if (!photo) {
+            throw YuzplusException.conflict("trip.photoRequired");
+        }
+    }
+
+    /** Naqd olingan summa: bo'sh — null; 0 … limit oralig'ida bo'lishi shart. */
+    private static Money cash(String cash, Money limit) {
+        if (cash == null || cash.isBlank()) {
+            return null;
+        }
+        Money collected;
+        try {
+            collected = Money.of(cash.strip());
+        } catch (RuntimeException e) {
+            throw YuzplusException.badRequest("trip.cashInvalid", limit.format());
+        }
+        if (collected.isNegative() || collected.compareTo(limit) > 0) {
+            throw YuzplusException.badRequest("trip.cashInvalid", limit.format());
+        }
+        return collected;
+    }
+
+    /** Manzildagi sotuv qatorlari (qisman yetkazish uchun). */
+    @Transactional(readOnly = true)
+    List<OrderDispatch.SaleLine> stopLines(Actor actor, long tripId, long stopId) {
+        long orderId = jdbc.sql("""
+                SELECT s.order_id FROM trip_stop s JOIN trip t ON t.id = s.trip_id
+                WHERE s.id = :s AND s.trip_id = :t AND s.active AND t.driver_id = :d""")
+                .param("s", stopId)
+                .param("t", tripId)
+                .param("d", actor.employeeId())
+                .query(Long.class)
+                .optional()
+                .orElseThrow(() -> YuzplusException.notFound("error.notFound"));
+        return dispatch.saleLines(orderId);
+    }
+
+    /**
+     * «Qisman» (SPEC 5.4): rasm majburiy, sabab majburiy; qabul qilinmagan qism QM bo'lib qaytadi (asl sotuv narxida), naqd —
+     * qolgan summagacha.
+     */
+    @Transactional
+    String partial(Actor actor, long tripId, long stopId, String reason, Map<Long, Integer> returned, String cash) {
+        lockOwn(actor, tripId, TripStatus.IN_TRANSIT);
+        OpenStop s = openStop(tripId, stopId);
+        requirePhoto(stopId);
+        OrderDispatch.PartialResult r = dispatch.partiallyDelivered(actor, s.orderId(), tripId, reason, returned);
+        Money collected = cash(cash, Money.of(r.netTotal()));
+        jdbc.sql("""
+                UPDATE trip_stop SET outcome = 'PARTIAL', outcome_by = :by, outcome_at = now(), outcome_reason = :r, cash_collected = :c WHERE id = :s""")
+                .param("by", actor.employeeId())
+                .param("r", reason.strip())
+                .param("c", collected == null ? null : collected.amount())
+                .param("s", stopId)
+                .update();
+        audit.record(AuditEntry.of("trip.partial", "trip", tripId)
+                .change(null, Map.of("stop", stopId, "return", r.returnNumber(), "cash", collected == null ? "0" : collected.toString()))
+                .withReason(reason.strip()));
+        return r.returnNumber();
+    }
+
+    /** «Yetkazilmadi» (sabab majburiy): sotuv va qarz bekor, tovar «Qaytmoqda». */
+    @Transactional
+    void undeliver(Actor actor, long tripId, long stopId, String reason) {
+        lockOwn(actor, tripId, TripStatus.IN_TRANSIT);
+        OpenStop s = openStop(tripId, stopId);
+        dispatch.undelivered(actor, s.orderId(), reason.strip());
+        jdbc.sql("""
+                UPDATE trip_stop SET outcome = 'UNDELIVERED', outcome_by = :by, outcome_at = now(), outcome_reason = :r WHERE id = :s""")
+                .param("by", actor.employeeId())
+                .param("r", reason.strip())
+                .param("s", stopId)
+                .update();
+        audit.record(AuditEntry.of("trip.undelivered", "trip", tripId).change(null, Map.of("stop", stopId)).withReason(reason.strip()));
+    }
+
+    /** «Reysni yakunlash»: barcha manzillarda natija; qaytgan tovar yoki naqd pul bo'lsa — «Qaytish kutilmoqda», aks holda yakunlangan. */
+    @Transactional
+    TripStatus finish(Actor actor, long tripId) {
+        lockOwn(actor, tripId, TripStatus.IN_TRANSIT);
+        record F(long open, long undelivered, BigDecimal cash) {}
+        F f = jdbc.sql("""
+                SELECT count(*) FILTER (WHERE outcome IS NULL) AS open, count(*) FILTER (WHERE outcome IN ('UNDELIVERED', 'PARTIAL') AND EXISTS (
+                           SELECT 1 FROM sales_return_pending r WHERE r.order_id = trip_stop.order_id AND r.received_at IS NULL)) AS undelivered,
+                       coalesce(sum(cash_collected) FILTER (WHERE cash_payment_id IS NULL AND cash_accept_id IS NULL), 0) AS cash
+                FROM trip_stop WHERE trip_id = :t AND active""")
+                .param("t", tripId)
+                .query((rs, n) -> new F(rs.getLong("open"), rs.getLong("undelivered"), rs.getBigDecimal("cash")))
+                .single();
+        if (f.open() > 0) {
+            throw YuzplusException.conflict("trip.stopsOpen", f.open());
+        }
+        // Qabul qilinmagan qaytgan tovar (yetkazilmadi / qisman) yoki naqd pul bo'lsa — topshirilguncha «Qaytish kutilmoqda»
+        TripStatus next = f.undelivered() > 0 || f.cash().signum() > 0 ? TripStatus.RETURN_WAIT : TripStatus.DONE;
+        jdbc.sql("UPDATE trip SET status = :s, finished_at = now(), updated_at = now(), version = version + 1 WHERE id = :id")
+                .param("s", next.name())
+                .param("id", tripId)
+                .update();
+        audit.record(AuditEntry.of("trip.finish", "trip", tripId).change(Map.of("status", "IN_TRANSIT"), Map.of("status", next.name())));
+        return next;
+    }
+
+    // ===== Haydovchidagi pul → Kassir (SPEC 5.4) =====
+
+    @Transactional(readOnly = true)
+    List<TripModels.DriverCash> driverCash(Actor actor, Long branchId) {
+        return jdbc.sql("""
+                SELECT s.id, s.trip_id, t.number AS trip, d.full_name AS driver, o.number AS order_number, o.customer_id, c.name AS customer,
+                       s.cash_collected, s.outcome_at, t.branch_id, t.status
+                FROM trip_stop s JOIN trip t ON t.id = s.trip_id JOIN employee d ON d.id = t.driver_id
+                JOIN sales_order o ON o.id = s.order_id JOIN counterparty c ON c.id = o.customer_id
+                WHERE s.active AND s.cash_collected > 0 AND s.cash_payment_id IS NULL AND s.cash_accept_id IS NULL AND t.status IN ('IN_TRANSIT', 'RETURN_WAIT')
+                  AND (CAST(:b AS BIGINT) IS NULL OR t.branch_id = :b)
+                ORDER BY d.full_name, t.id, s.seq""")
+                .param("b", branchId)
+                .query((rs, n) -> actor.canAccessBranch(rs.getLong("branch_id"))
+                        ? new TripModels.DriverCash(rs.getLong("id"), rs.getLong("trip_id"), rs.getString("trip"), rs.getString("driver"),
+                                rs.getString("order_number"), rs.getLong("customer_id"), rs.getString("customer"), money(rs.getBigDecimal("cash_collected")),
+                                rs.getTimestamp("outcome_at").toInstant(), TripStatus.valueOf(rs.getString("status")))
+                        : null)
+                .list()
+                .stream()
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    /** Kassir naqd pulni sanab qabul qiladi → MT o'tkaziladi (eng eski qarzdan), reys yakunlanishi tekshiriladi. */
+    @Transactional
+    String acceptCash(Actor actor, long stopId, long accountId) {
+        record C(long tripId, String trip, long branchId, long customerId, BigDecimal cash, String order) {}
+        C c = jdbc.sql("""
+                SELECT s.trip_id, t.number AS trip, t.branch_id, o.customer_id, s.cash_collected, o.number AS order_number
+                FROM trip_stop s JOIN trip t ON t.id = s.trip_id JOIN sales_order o ON o.id = s.order_id
+                WHERE s.id = :s AND s.active AND s.cash_collected > 0 AND s.cash_payment_id IS NULL AND s.cash_accept_id IS NULL AND t.status IN ('IN_TRANSIT', 'RETURN_WAIT')
+                FOR UPDATE OF s, t""")
+                .param("s", stopId)
+                .query((rs, n) -> new C(rs.getLong("trip_id"), rs.getString("trip"), rs.getLong("branch_id"), rs.getLong("customer_id"),
+                        rs.getBigDecimal("cash_collected"), rs.getString("order_number")))
+                .optional()
+                .filter(x -> actor.canAccessBranch(x.branchId()))
+                .orElseThrow(() -> YuzplusException.conflict("trip.cashNotFound"));
+        uz.yuzplus.finance.CustomerPayments.Posted p = payments.acceptDriverCash(actor, c.branchId(), c.customerId(), accountId, new Money(c.cash()),
+                c.trip(), "Haydovchidan: " + c.trip() + " · " + c.order());
+        jdbc.sql("UPDATE trip_stop SET cash_payment_id = :p WHERE id = :s").param("p", p.id()).param("s", stopId).update();
+        audit.record(AuditEntry.of("trip.cashAccepted", "trip", c.tripId()).change(null, Map.of("stop", stopId, "payment", p.number())));
+        settle.closeIfSettled(c.tripId());
+        return p.number();
+    }
+
+    /** Kassir tanlagan «Mijoz to'lamagan» ulushi (KT1 (a)): bekat va summa. */
+    record Unpaid(long stopId, Money amount) {}
+
+    /**
+     * Reys bo'yicha qabul (prototip `Cash`, KT1 — SPEC 5.4): Kassir HAQIQATDA sanagan summani qabul qiladi. Farq ≠ 0 bo'lsa izoh majburiy.
+     * Kam bo'lsa farq sababi bo'yicha taqsimlanadi (yig'indisi = farq): (a) «Mijoz to'lamagan» — tanlangan bekat(lar) {@code cash_collected}
+     * kamayadi, MT kam yoziladi, farq mijoz qarzida qoladi; (b) «Haydovchi kamomadi» — mijozlar MT to'liq, kassaga tushmagan farq — xodim
+     * kamomadi (KO chiqim + jurnal, bildirishnoma). Ortiqcha — tanlangan bekat (standart — oxirgisi) mijoziga MT (qarz, ortig'i avans).
+     * Hammasi bitta tranzaksiyada, bekatlar va reys FOR UPDATE.
+     */
+    @Transactional
+    TripModels.TripCashAccepted acceptTripCash(Actor actor, long tripId, long accountId, Money received, String note, List<Unpaid> unpaid,
+            Money shortage, Long overageStopId) {
+        record S(long id, long branchId, long customerId, BigDecimal cash, String order, String trip, long driverId) {}
+        List<S> stops = jdbc.sql("""
+                SELECT s.id, t.branch_id, o.customer_id, s.cash_collected, o.number AS order_number, t.number AS trip, t.driver_id
+                FROM trip_stop s JOIN trip t ON t.id = s.trip_id JOIN sales_order o ON o.id = s.order_id
+                WHERE s.trip_id = :t AND s.active AND s.cash_collected > 0 AND s.cash_payment_id IS NULL AND s.cash_accept_id IS NULL
+                  AND t.status IN ('IN_TRANSIT', 'RETURN_WAIT')
+                ORDER BY s.seq, s.id
+                FOR UPDATE OF s, t""")
+                .param("t", tripId)
+                .query((rs, n) -> new S(rs.getLong("id"), rs.getLong("branch_id"), rs.getLong("customer_id"), rs.getBigDecimal("cash_collected"),
+                        rs.getString("order_number"), rs.getString("trip"), rs.getLong("driver_id")))
+                .list();
+        if (stops.isEmpty() || !actor.canAccessBranch(stops.getFirst().branchId())) {
+            throw YuzplusException.conflict("trip.cashNotFound");
+        }
+        if (received.isNegative()) {
+            throw YuzplusException.badRequest("trip.cashReceivedInvalid");
+        }
+        Money expected = stops.stream().map(s -> new Money(s.cash())).reduce(Money.ZERO, Money::plus);
+        Money diff = received.minus(expected);
+        String n = note == null || note.isBlank() ? null : note.strip();
+        if (!diff.isZero() && n == null) {
+            throw YuzplusException.badRequest("trip.cashNoteRequired");
+        }
+        // Taqsimot tekshiruvi
+        Map<Long, Money> unpaidByStop = new java.util.HashMap<>();
+        Money unpaidTotal = Money.ZERO;
+        for (Unpaid u : unpaid) {
+            S st = stops.stream().filter(x -> x.id() == u.stopId()).findFirst().orElse(null);
+            if (st == null || !u.amount().isPositive() || unpaidByStop.containsKey(u.stopId()) || u.amount().compareTo(new Money(st.cash())) > 0) {
+                throw YuzplusException.badRequest("trip.cashUnpaidInvalid");
+            }
+            unpaidByStop.put(u.stopId(), u.amount());
+            unpaidTotal = unpaidTotal.plus(u.amount());
+        }
+        Money driverShortage = shortage == null ? Money.ZERO : shortage;
+        if (driverShortage.isNegative()) {
+            throw YuzplusException.badRequest("trip.cashSplitMismatch", Money.ZERO.minus(diff).format());
+        }
+        if (diff.isNegative()) {
+            if (unpaid.isEmpty() && driverShortage.isZero()) {
+                throw YuzplusException.badRequest("trip.cashReasonRequired");
+            }
+            if (unpaidTotal.plus(driverShortage).compareTo(Money.ZERO.minus(diff)) != 0) {
+                throw YuzplusException.badRequest("trip.cashSplitMismatch", Money.ZERO.minus(diff).format());
+            }
+        } else if (!unpaid.isEmpty() || !driverShortage.isZero()) {
+            throw YuzplusException.badRequest("trip.cashSplitMismatch", Money.ZERO.format());
+        }
+        Money overage = diff.isPositive() ? diff : Money.ZERO;
+        long overageStop = stops.getLast().id();
+        if (overage.isPositive() && overageStopId != null) {
+            overageStop = stops.stream().filter(x -> x.id() == overageStopId).findFirst()
+                    .orElseThrow(() -> YuzplusException.badRequest("trip.cashOverageStopInvalid")).id();
+        }
+        Long acceptId = jdbc.sql("""
+                INSERT INTO trip_cash_accept (trip_id, account_id, expected, received, diff, note, accepted_by, unpaid, shortage, overage_stop_id)
+                VALUES (:t, :a, :e, :r, :d, :n, :by, :u, :sh, :os) RETURNING id""")
+                .param("t", tripId).param("a", accountId).param("e", expected.amount()).param("r", received.amount())
+                .param("d", diff.amount()).param("n", n).param("by", actor.employeeId())
+                .param("u", unpaidTotal.amount()).param("sh", driverShortage.amount()).param("os", overage.isPositive() ? overageStop : null)
+                .query(Long.class).single();
+        S first = stops.getFirst();
+        String trip = first.trip();
+        List<String> numbers = new ArrayList<>();
+        for (S s : stops) {
+            Money own = new Money(s.cash());
+            Money notPaid = unpaidByStop.getOrDefault(s.id(), Money.ZERO);
+            Money share = own.minus(notPaid).plus(s.id() == overageStop ? overage : Money.ZERO);
+            Long paymentId = null;
+            if (share.isPositive()) {
+                uz.yuzplus.finance.CustomerPayments.Posted p = payments.acceptDriverCash(actor, s.branchId(), s.customerId(), accountId, share, trip,
+                        "Haydovchidan: " + trip + " · " + s.order());
+                paymentId = p.id();
+                numbers.add(p.number());
+            }
+            if (notPaid.isPositive()) {
+                Money left = own.minus(notPaid);
+                jdbc.sql("UPDATE trip_stop SET cash_collected = :c WHERE id = :s").param("c", left.amount()).param("s", s.id()).update();
+                audit.record(AuditEntry.of("trip.cashUnpaid", "trip", tripId)
+                        .change(Map.of("stop", s.id(), "cash", own.toString()), Map.of("stop", s.id(), "cash", left.toString()))
+                        .withReason(n));
+            }
+            jdbc.sql("UPDATE trip_stop SET cash_payment_id = :p, cash_accept_id = :a WHERE id = :s")
+                    .param("p", paymentId).param("a", acceptId).param("s", s.id()).update();
+        }
+        if (driverShortage.isPositive()) {
+            shortages.recordTrip(actor, first.branchId(), first.driverId(), accountId, tripId, acceptId, trip, driverShortage, n);
+        }
+        audit.record(AuditEntry.of("trip.cashAccepted", "trip", tripId).change(null, Map.of("expected", expected.toString(),
+                "received", received.toString(), "diff", diff.toString(), "unpaid", unpaidTotal.toString(), "shortage", driverShortage.toString(),
+                "payments", String.join(", ", numbers))));
+        settle.closeIfSettled(tripId);
+        return new TripModels.TripCashAccepted(expected.toString(), received.toString(), diff.toString(), numbers, unpaidTotal.toString(),
+                driverShortage.toString());
     }
 
     /** «O'zi olib ketadi»: reyssiz, nakladnoy bilan «Yuklanmoqda». */

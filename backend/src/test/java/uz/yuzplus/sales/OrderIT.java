@@ -2024,8 +2024,14 @@ class OrderIT {
         send(post(accept), cashier, "{\"accountId\":" + kassa + ",\"received\":\"abc\"}")
                 .andExpect(jsonPath("$.code").value("trip.cashReceivedInvalid"));
         send(post(accept), driverSession, "{\"accountId\":" + kassa + ",\"received\":\"1000\"}").andExpect(status().isForbidden());
+        // KT1: kam bo'lsa farq sababi majburiy — bu yerda (a) «Mijoz to'lamagan»
         send(post(accept), cashier, "{\"accountId\":" + kassa + ",\"received\":\"800,00\",\"note\":\"200 soʻm kam\"}")
+                .andExpect(jsonPath("$.code").value("trip.cashReasonRequired"));
+        send(post(accept), cashier, "{\"accountId\":" + kassa + ",\"received\":\"800,00\",\"note\":\"200 soʻm kam\",\"unpaid\":[{\"stopId\":"
+                + stop + ",\"amount\":\"200\"}]}")
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unpaid").value("200.00"))
+                .andExpect(jsonPath("$.shortage").value("0.00"))
                 .andExpect(jsonPath("$.expected").value("1000.00"))
                 .andExpect(jsonPath("$.received").value("800.00"))
                 .andExpect(jsonPath("$.diff").value("-200.00"))
@@ -2038,6 +2044,7 @@ class OrderIT {
                 .isEqualTo("2200.00");
         assertThat(jdbc.sql("SELECT diff::text || '|' || note FROM trip_cash_accept WHERE trip_id = :t").param("t", trip).query(String.class).single())
                 .isEqualTo("-200.00|200 soʻm kam");
+        assertThat(jdbc.sql("SELECT cash_collected::text FROM trip_stop WHERE id = :s").param("s", stop).query(String.class).single()).isEqualTo("800.00");
         assertThatThrownBy(() -> jdbc.sql("UPDATE trip_cash_accept SET note = 'y' WHERE trip_id = :t").param("t", trip).update())
                 .hasMessageContaining("faqat qo");
         assertThat(jdbc.sql("SELECT status FROM trip WHERE id = :t").param("t", trip).query(String.class).single()).isEqualTo("DONE");
@@ -2632,5 +2639,190 @@ class OrderIT {
         send(post("/api/customer-returns"), manager, body)
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.late").value(true));
+    }
+
+    // ===== KT1: haydovchi naqdini kam/ortiq qabul qilish =====
+
+    private record CashTrip(long trip, long driver, Cookie driverSession, long[] stops, long[] customers) {}
+
+    /** Reys: har mijozga bitta buyurtma (1000 × qty), hammasi yetkazilgan va naqd olingan (cash[i]). */
+    private CashTrip cashTrip(Place p, int qty, String... cash) throws Exception {
+        Cookie operator = loginAs("OPERATOR", p.branchId());
+        Cookie keeper = loginAs("WAREHOUSE_MANAGER", p.branchId());
+        Cookie picker = loginAs("PICKER", p.branchId());
+        Cookie driverSession = loginAs("DRIVER", p.branchId());
+        long driver = jdbc.sql("SELECT max(id) FROM employee WHERE full_name = 'Sinov DRIVER' AND branch_id = :b").param("b", p.branchId())
+                .query(Long.class).single();
+        long prod = product(p, "BY Kamomad " + UUID.randomUUID().toString().substring(0, 4), "1000", qty * cash.length + 5, null, null);
+        long[] customers = new long[cash.length];
+        long[] orders = new long[cash.length];
+        for (int i = 0; i < cash.length; i++) {
+            customers[i] = customer(p.branchId(), null);
+            orders[i] = documenting(p, customers[i], prod, qty, 1, "DELIVERY", operator, keeper, picker);
+        }
+        long vehicle = jdbc.sql("INSERT INTO vehicle (branch_id, plate_number, model) VALUES (:b, :p, 'Labo') RETURNING id")
+                .param("b", p.branchId()).param("p", "50" + ThreadLocalRandom.current().nextInt(100_000, 999_999)).query(Long.class).single();
+        String ids = java.util.Arrays.stream(orders).mapToObj(String::valueOf).collect(java.util.stream.Collectors.joining(","));
+        long trip = id(send(post("/api/trips"), keeper, "{\"vehicleId\":" + vehicle + ",\"driverId\":" + driver + ",\"tripDate\":\"" + today()
+                + "\",\"orderIds\":[" + ids + "]}").andExpect(status().isCreated()).andReturn());
+        long[] stops = new long[cash.length];
+        for (int i = 0; i < cash.length; i++) {
+            stops[i] = jdbc.sql("SELECT id FROM trip_stop WHERE trip_id = :t AND order_id = :o").param("t", trip).param("o", orders[i])
+                    .query(Long.class).single();
+            send(post("/api/trips/" + trip + "/stops/" + stops[i] + "/load"), driverSession, "{\"places\":1}").andExpect(status().isOk());
+        }
+        send(post("/api/trips/" + trip + "/start"), driverSession, "").andExpect(status().isOk());
+        for (int i = 0; i < cash.length; i++) {
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/api/trips/" + trip + "/stops/" + stops[i] + "/photos")
+                            .file(new org.springframework.mock.web.MockMultipartFile("file", "a.jpg", "image/jpeg", new byte[] {1, 2, 3}))
+                            .with(csrf()).cookie(driverSession))
+                    .andExpect(status().isCreated());
+            send(post("/api/trips/" + trip + "/stops/" + stops[i] + "/deliver"), driverSession, "{\"cash\":\"" + cash[i] + "\"}")
+                    .andExpect(status().isOk());
+        }
+        send(post("/api/trips/" + trip + "/finish"), driverSession, "").andExpect(jsonPath("$.status").value("RETURN_WAIT"));
+        return new CashTrip(trip, driver, driverSession, stops, customers);
+    }
+
+    private long kassa(long branchId) {
+        return jdbc.sql("INSERT INTO money_account (branch_id, kind, code, name) VALUES (:b, 'CASH', :c, 'Kassa') RETURNING id")
+                .param("b", branchId).param("c", "K-" + UUID.randomUUID().toString().substring(0, 8)).query(Long.class).single();
+    }
+
+    private String debt(long customer) {
+        return jdbc.sql("SELECT coalesce(sum(amount), 0)::text FROM party_ledger WHERE counterparty_id = :c AND side = 'CUSTOMER'").param("c", customer)
+                .query(String.class).single();
+    }
+
+    private String balanceOf(long account) {
+        return jdbc.sql("SELECT balance::text FROM money_account WHERE id = :a").param("a", account).query(String.class).single();
+    }
+
+    @Test
+    void tripCashShortageSplitsUnpaidAndDriverShortageThenRepaidAndWrittenOff() throws Exception {
+        Place p = place();
+        CashTrip ct = cashTrip(p, 2, "2000", "2000", "2000");
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        Cookie manager = loginAs("BRANCH_MANAGER", p.branchId());
+        long managerId = jdbc.sql("SELECT max(id) FROM employee WHERE full_name = 'Sinov BRANCH_MANAGER' AND branch_id = :b").param("b", p.branchId())
+                .query(Long.class).single();
+        long k = kassa(p.branchId());
+        String accept = "/api/trips/" + ct.trip() + "/cash/accept";
+        String head = "{\"accountId\":" + k + ",\"received\":\"4500\",\"note\":\"1500 kam\"";
+
+        // Sabab tanlanmagan / yig'indi mos emas / bekat summasidan ko'p / ortiqcha bo'lmasa (b) mumkin emas
+        send(post(accept), cashier, head + "}").andExpect(jsonPath("$.code").value("trip.cashReasonRequired"));
+        send(post(accept), cashier, head + ",\"unpaid\":[{\"stopId\":" + ct.stops()[0] + ",\"amount\":\"500\"}],\"shortage\":\"500\"}")
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("trip.cashSplitMismatch"));
+        send(post(accept), cashier, head + ",\"unpaid\":[{\"stopId\":" + ct.stops()[0] + ",\"amount\":\"2500\"}]}")
+                .andExpect(jsonPath("$.code").value("trip.cashUnpaidInvalid"));
+        send(post(accept), cashier, head + ",\"unpaid\":[{\"stopId\":999999999,\"amount\":\"1500\"}]}")
+                .andExpect(jsonPath("$.code").value("trip.cashUnpaidInvalid"));
+        send(post(accept), cashier, "{\"accountId\":" + k + ",\"received\":\"6000\",\"shortage\":\"100\"}")
+                .andExpect(jsonPath("$.code").value("trip.cashSplitMismatch"));
+        assertThat(jdbc.sql("SELECT count(*) FROM trip_cash_accept WHERE trip_id = :t").param("t", ct.trip()).query(Long.class).single()).isZero();
+
+        // Aralash: (a) 1-mijoz 1 000 to'lamagan + (b) haydovchi kamomadi 500
+        send(post(accept), cashier, head + ",\"unpaid\":[{\"stopId\":" + ct.stops()[0] + ",\"amount\":\"1000\"}],\"shortage\":\"500,00\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expected").value("6000.00"))
+                .andExpect(jsonPath("$.received").value("4500.00"))
+                .andExpect(jsonPath("$.diff").value("-1500.00"))
+                .andExpect(jsonPath("$.unpaid").value("1000.00"))
+                .andExpect(jsonPath("$.shortage").value("500.00"))
+                .andExpect(jsonPath("$.payments.length()").value(3));
+        assertThat(debt(ct.customers()[0])).isEqualTo("1000.00");
+        assertThat(debt(ct.customers()[1])).isEqualTo("0.00");
+        assertThat(debt(ct.customers()[2])).isEqualTo("0.00");
+        assertThat(jdbc.sql("SELECT cash_collected::text FROM trip_stop WHERE id = :s").param("s", ct.stops()[0]).query(String.class).single())
+                .isEqualTo("1000.00");
+        // Kassada haqiqatda sanalgan summa: MT 5 500 − KO «Haydovchi kamomadi» 500
+        assertThat(balanceOf(k)).isEqualTo("4500.00");
+        assertThat(jdbc.sql("""
+                SELECT c.direction || '|' || c.amount::text || '|' || i.name FROM cash_op c JOIN expense_item i ON i.id = c.expense_item_id
+                WHERE c.account_id = :a AND c.source = 'SHORTAGE'""").param("a", k).query(String.class).single())
+                .isEqualTo("OUT|500.00|Haydovchi kamomadi");
+        assertThat(jdbc.sql("SELECT balance::text FROM employee_shortage_balance WHERE employee_id = :e AND branch_id = :b")
+                        .param("e", ct.driver()).param("b", p.branchId()).query(String.class).single())
+                .isEqualTo("500.00");
+        assertThat(jdbc.sql("SELECT count(*) FROM notification WHERE employee_id = :e AND kind = 'shortage.recorded'").param("e", managerId)
+                        .query(Long.class).single())
+                .isEqualTo(1);
+        assertThat(jdbc.sql("SELECT status FROM trip WHERE id = :t").param("t", ct.trip()).query(String.class).single()).isEqualTo("DONE");
+        assertThatThrownBy(() -> jdbc.sql("UPDATE employee_shortage SET amount = 1 WHERE employee_id = :e").param("e", ct.driver()).update())
+                .hasMessageContaining("faqat qo");
+
+        // Ro'yxat: Kassir ko'radi, haydovchi — yo'q
+        mvc.perform(get("/api/shortages").param("branchId", String.valueOf(p.branchId())).param("openOnly", "true").cookie(cashier))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.balances[?(@.employeeId == " + ct.driver() + ")].balance").value(hasItem("500.00")))
+                .andExpect(jsonPath("$.entries[?(@.employeeId == " + ct.driver() + ")].kind").value(hasItem("SHORTAGE")));
+        mvc.perform(get("/api/shortages").cookie(ct.driverSession())).andExpect(status().isForbidden());
+
+        // Yopish: «Qaytardi» (kassa kirimi) va Direktor «Hisobdan chiqarish»
+        String repay = "{\"branchId\":" + p.branchId() + ",\"employeeId\":" + ct.driver() + ",\"accountId\":" + k + ",\"amount\":\"";
+        send(post("/api/shortages/repay"), cashier, repay + "600\"}").andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("shortage.exceedsBalance"));
+        send(post("/api/shortages/repay"), cashier, repay + "300\"}").andExpect(status().isOk())
+                .andExpect(jsonPath("$.cashOp", matchesPattern("KO-[A-Z]{3}-\\d{6}")));
+        assertThat(balanceOf(k)).isEqualTo("4800.00");
+        String off = "{\"branchId\":" + p.branchId() + ",\"employeeId\":" + ct.driver() + ",\"amount\":\"200\",\"reason\":\"";
+        send(post("/api/shortages/write-off"), cashier, off + "Kechirildi\"}").andExpect(status().isForbidden());
+        Cookie director = loginAs("DIRECTOR", p.branchId());
+        send(post("/api/shortages/write-off"), director, off + " \"}").andExpect(status().isBadRequest());
+        send(post("/api/shortages/write-off"), director, off.replace("200", "201") + "Kechirildi\"}")
+                .andExpect(jsonPath("$.code").value("shortage.exceedsBalance"));
+        send(post("/api/shortages/write-off"), director, off + "Kechirildi\"}").andExpect(status().isOk());
+        assertThat(jdbc.sql("SELECT balance::text FROM employee_shortage_balance WHERE employee_id = :e AND branch_id = :b")
+                        .param("e", ct.driver()).param("b", p.branchId()).query(String.class).single())
+                .isEqualTo("0.00");
+        assertThat(jdbc.sql("SELECT string_agg(kind || ':' || amount::text, ',' ORDER BY id) FROM employee_shortage WHERE employee_id = :e")
+                        .param("e", ct.driver()).query(String.class).single())
+                .isEqualTo("SHORTAGE:500.00,REPAID:300.00,WRITTEN_OFF:200.00");
+        // Kamomad KO si qo'lda bekor qilinmaydi
+        long ko = jdbc.sql("SELECT id FROM cash_op WHERE account_id = :a AND source = 'SHORTAGE' AND direction = 'OUT'").param("a", k).query(Long.class).single();
+        send(post("/api/cash-ops/" + ko + "/cancel"), director, "{\"reason\":\"xato\"}").andExpect(jsonPath("$.code").value("cash.shortageOp"));
+    }
+
+    @Test
+    void tripCashOverageGoesToChosenCustomerAndParallelAcceptIsSingle() throws Exception {
+        Place p = place();
+        CashTrip ct = cashTrip(p, 1, "1000", "1000");
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        long k = kassa(p.branchId());
+        String accept = "/api/trips/" + ct.trip() + "/cash/accept";
+        send(post(accept), cashier, "{\"accountId\":" + k + ",\"received\":\"2300\",\"note\":\"ortiqcha\",\"overageStopId\":999999999}")
+                .andExpect(jsonPath("$.code").value("trip.cashOverageStopInvalid"));
+        // Parallel: ikki kassir bir vaqtda — faqat bittasi qabul qiladi
+        Cookie cashier2 = loginAs("CASHIER", p.branchId());
+        String body = "{\"accountId\":" + k + ",\"received\":\"2300\",\"note\":\"ortiqcha\",\"overageStopId\":" + ct.stops()[0] + "}";
+        var pool = java.util.concurrent.Executors.newFixedThreadPool(2);
+        var go = new java.util.concurrent.CountDownLatch(1);
+        var ok = new java.util.concurrent.atomic.AtomicInteger();
+        List<java.util.concurrent.Future<?>> futures = new java.util.ArrayList<>();
+        for (Cookie who : List.of(cashier, cashier2)) {
+            futures.add(pool.submit(() -> {
+                go.await();
+                int st = send(post(accept), who, body).andReturn().getResponse().getStatus();
+                if (st == 200) {
+                    ok.incrementAndGet();
+                }
+                return null;
+            }));
+        }
+        go.countDown();
+        for (var f : futures) {
+            f.get(60, java.util.concurrent.TimeUnit.SECONDS);
+        }
+        pool.shutdown();
+        assertThat(ok.get()).isEqualTo(1);
+        assertThat(jdbc.sql("SELECT count(*) FROM trip_cash_accept WHERE trip_id = :t").param("t", ct.trip()).query(Long.class).single()).isEqualTo(1);
+        // Ortiqcha 300 — tanlangan (1-) mijozga avans; 2-mijoz to'liq yopildi; kamomad yo'q
+        assertThat(debt(ct.customers()[0])).isEqualTo("-300.00");
+        assertThat(debt(ct.customers()[1])).isEqualTo("0.00");
+        assertThat(balanceOf(k)).isEqualTo("2300.00");
+        assertThat(jdbc.sql("SELECT count(*) FROM employee_shortage WHERE employee_id = :e").param("e", ct.driver()).query(Long.class).single()).isZero();
+        assertThat(jdbc.sql("SELECT overage_stop_id FROM trip_cash_accept WHERE trip_id = :t").param("t", ct.trip()).query(Long.class).single())
+                .isEqualTo(ct.stops()[0]);
     }
 }
