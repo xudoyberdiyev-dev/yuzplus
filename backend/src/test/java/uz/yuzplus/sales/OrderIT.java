@@ -2893,6 +2893,12 @@ class OrderIT {
                 .andExpect(jsonPath("$.expensesOpen").value("2000.00"))
                 .andExpect(jsonPath("$.advanceOpen").value("3000.00"));
         mvc.perform(get(trip + "/money").cookie(loginAs("DRIVER", p.branchId()))).andExpect(status().isNotFound());
+        // Limit (sozlama, 0 — o'chiq): 1 000 dan oshgan xarajat belgilanadi, bloklanmaydi
+        jdbc.sql("UPDATE app_setting SET value = 1000 WHERE key = 'tripExpenseLimit'").update();
+        mvc.perform(get(trip + "/money").cookie(cashier))
+                .andExpect(jsonPath("$.expenses[?(@.id == " + fuel + ")].overLimit").value(hasItem(true)))
+                .andExpect(jsonPath("$.expenses[?(@.id == " + meal + ")].overLimit").value(hasItem(false)));
+        jdbc.sql("UPDATE app_setting SET value = 0 WHERE key = 'tripExpenseLimit'").update();
         mvc.perform(get("/api/trips/cash/extras").param("branchId", String.valueOf(p.branchId())).cookie(cashier))
                 .andExpect(jsonPath("$[?(@.tripId == " + ct.trip() + ")].pending").value(hasItem(3)));
 

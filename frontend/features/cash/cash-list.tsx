@@ -239,6 +239,7 @@ export function ExpenseLabel({ x }: { x: TripExpense }) {
       ) : x.kind === "FUEL" ? (
         <span className="text-danger">· {t("noReceipt")}</span>
       ) : null}
+      {x.overLimit ? <Badge tone="warning">{t("overLimit")}</Badge> : null}
       {x.status !== "PENDING" ? <Badge tone={STATUS_TONE[x.status]}>{t(`status.${x.status}`)}</Badge> : null}
     </span>
   );

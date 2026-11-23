@@ -37646,11 +37646,11 @@
         "properties" : {
           "key" : {
             "type" : "string",
-            "enum" : [ "expiryWarnDays", "invRemindDays", "orderLateDays", "limitBranchPct", "overdueDirDays", "priceWarnPct", "returnDays", "refPriceTolPct", "cashBranchApprove", "hcDirApprove", "ivDirApprove", "pwMin", "sessionMin", "pinTries", "pinLockMin" ]
+            "enum" : [ "expiryWarnDays", "invRemindDays", "orderLateDays", "limitBranchPct", "overdueDirDays", "priceWarnPct", "returnDays", "refPriceTolPct", "cashBranchApprove", "hcDirApprove", "ivDirApprove", "tripExpenseLimit", "pwMin", "sessionMin", "pinTries", "pinLockMin" ]
           },
           "kind" : {
             "type" : "string",
-            "enum" : [ "DAY", "PCT", "SUM", "LEN", "MIN", "TRIES", "LOCK", "RDAY" ]
+            "enum" : [ "DAY", "PCT", "SUM", "LEN", "MIN", "TRIES", "LOCK", "RDAY", "RSUM" ]
           },
           "max" : {
             "type" : "integer",
@@ -40162,6 +40162,10 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "overLimit" : {
+            "type" : "boolean",
+            "description" : "Summa sozlamadagi limitdan oshgan (limit 0 — oʻchiq)"
+          },
           "photos" : {
             "type" : "integer",
             "format" : "int32"
@@ -40198,7 +40202,7 @@
             "type" : "string"
           }
         },
-        "required" : [ "amount", "driver", "id", "kind", "photos", "settled", "source", "spentAt", "status", "tripId", "tripNumber", "vehicle" ]
+        "required" : [ "amount", "driver", "id", "kind", "overLimit", "photos", "settled", "source", "spentAt", "status", "tripId", "tripNumber", "vehicle" ]
       },
       "TripMoneyView" : {
         "type" : "object",

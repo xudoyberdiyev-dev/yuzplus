@@ -20,6 +20,8 @@ public enum SettingKey {
     cashBranchApprove(Section.MONEY, Kind.SUM, Scope.DIRECTOR),
     hcDirApprove(Section.MONEY, Kind.SUM, Scope.DIRECTOR),
     ivDirApprove(Section.MONEY, Kind.SUM, Scope.DIRECTOR),
+    /** Bitta yoʻl xarajati limiti, soʻm (HD2, egasi 23.11.2026): oshsa kassirga «Limitdan oshgan» belgisi; 0 — oʻchiq (standart). */
+    tripExpenseLimit(Section.MONEY, Kind.RSUM, Scope.DIRECTOR),
     pwMin(Section.SEC, Kind.LEN, Scope.SECURITY),
     sessionMin(Section.SEC, Kind.MIN, Scope.SECURITY),
     pinTries(Section.SEC, Kind.TRIES, Scope.SECURITY),
@@ -33,7 +35,9 @@ public enum SettingKey {
     public enum Kind {
         DAY(1, 365), PCT(0, 100), SUM(0, 0), LEN(6, 64), MIN(5, 480), TRIES(1, 10), LOCK(1, 120),
         /** Kun, 0 — cheksiz (qaytarish muddati). */
-        RDAY(0, 365);
+        RDAY(0, 365),
+        /** So'm, 0 — o'chiq (limit). */
+        RSUM(0, 0);
 
         private final long min;
         private final long max;
@@ -56,8 +60,9 @@ public enum SettingKey {
             if (v == null) {
                 return false;
             }
-            if (this == SUM) {
-                return v.signum() > 0 && v.stripTrailingZeros().scale() <= 2 && v.compareTo(new BigDecimal("1000000000000")) <= 0;
+            if (this == SUM || this == RSUM) {
+                return (this == RSUM ? v.signum() >= 0 : v.signum() > 0) && v.stripTrailingZeros().scale() <= 2
+                        && v.compareTo(new BigDecimal("1000000000000")) <= 0;
             }
             return v.stripTrailingZeros().scale() <= 0 && v.compareTo(BigDecimal.valueOf(min)) >= 0 && v.compareTo(BigDecimal.valueOf(max)) <= 0;
         }

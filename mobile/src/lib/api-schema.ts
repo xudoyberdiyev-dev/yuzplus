@@ -15904,9 +15904,9 @@ export interface components {
         };
         SettingValue: {
             /** @enum {string} */
-            key: "expiryWarnDays" | "invRemindDays" | "orderLateDays" | "limitBranchPct" | "overdueDirDays" | "priceWarnPct" | "returnDays" | "refPriceTolPct" | "cashBranchApprove" | "hcDirApprove" | "ivDirApprove" | "pwMin" | "sessionMin" | "pinTries" | "pinLockMin";
+            key: "expiryWarnDays" | "invRemindDays" | "orderLateDays" | "limitBranchPct" | "overdueDirDays" | "priceWarnPct" | "returnDays" | "refPriceTolPct" | "cashBranchApprove" | "hcDirApprove" | "ivDirApprove" | "tripExpenseLimit" | "pwMin" | "sessionMin" | "pinTries" | "pinLockMin";
             /** @enum {string} */
-            kind: "DAY" | "PCT" | "SUM" | "LEN" | "MIN" | "TRIES" | "LOCK" | "RDAY";
+            kind: "DAY" | "PCT" | "SUM" | "LEN" | "MIN" | "TRIES" | "LOCK" | "RDAY" | "RSUM";
             /** Format: int64 */
             max: number;
             /** Format: int64 */
@@ -16930,6 +16930,8 @@ export interface components {
             note?: string;
             /** Format: int32 */
             odometer?: number;
+            /** @description Summa sozlamadagi limitdan oshgan (limit 0 — oʻchiq) */
+            overLimit: boolean;
             /** Format: int32 */
             photos: number;
             price?: string;

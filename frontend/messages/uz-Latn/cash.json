@@ -615,6 +615,7 @@
     "receiptTake": "Chek rasmini olish (majburiy)",
     "receiptTaken": "Chek rasmi tanlandi",
     "ePhoto": "Yoqilgʻi uchun chek rasmini oling",
-    "eNote": "«Boshqa» xarajat uchun izoh yozing"
+    "eNote": "«Boshqa» xarajat uchun izoh yozing",
+    "overLimit": "Limitdan oshgan"
   }
 }

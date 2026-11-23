@@ -1,6 +1,6 @@
 import { formatMoney } from "@/lib/format";
 
-export type SettingKind = "DAY" | "PCT" | "SUM" | "LEN" | "MIN" | "TRIES" | "LOCK" | "RDAY";
+export type SettingKind = "DAY" | "PCT" | "SUM" | "LEN" | "MIN" | "TRIES" | "LOCK" | "RDAY" | "RSUM";
 
 /**
  * Kiritilgan qiymatni serverga yuboriladigan koʻrinishga keltirish (prototip `num`): SUM — «2.000.000,00» yoki «2000000» →
@@ -8,7 +8,7 @@ export type SettingKind = "DAY" | "PCT" | "SUM" | "LEN" | "MIN" | "TRIES" | "LOC
  */
 export function canonicalSetting(kind: SettingKind, raw: string): string | null {
   const t = raw.replace(/\s/g, "");
-  if (kind === "SUM") {
+  if (kind === "SUM" || kind === "RSUM") {
     const c = t.replace(/\./g, "").replace(",", ".");
     if (!/^\d+(\.\d{1,2})?$/.test(c)) return null;
     const [int, frac = ""] = c.split(".");
@@ -25,13 +25,14 @@ export function settingError(kind: SettingKind, min: number, max: number, raw: s
   const c = canonicalSetting(kind, raw);
   if (c === null) return { code: "num" };
   if (kind === "SUM") return /^0+\.00$/.test(c) ? { code: "sum" } : null;
+  if (kind === "RSUM") return null;
   const n = Number(c);
   return n < min || n > max ? { code: "range", min, max } : null;
 }
 
 /** Koʻrsatish: SUM — «2.000.000,00», qolganlari — oʻzi. */
 export function displaySetting(kind: SettingKind, value: string): string {
-  return kind === "SUM" ? formatMoney(value) : value;
+  return kind === "SUM" || kind === "RSUM" ? formatMoney(value) : value;
 }
 
 /** Qoralamadagi toʻgʻri va asl (server koʻrinishidagi) qiymatdan farqli kalitlar → serverga yuboriladigan qiymatlar. */

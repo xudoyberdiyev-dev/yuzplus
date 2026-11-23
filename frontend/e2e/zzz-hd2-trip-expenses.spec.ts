@@ -45,6 +45,7 @@ const expense = (id: number, kind: string, amount: string, source: string, photo
   photos,
   driver: "Hasan Haydovchiyev",
   vehicle: "01 E 777 EE",
+  overLimit: false,
 });
 
 const MONEY = {

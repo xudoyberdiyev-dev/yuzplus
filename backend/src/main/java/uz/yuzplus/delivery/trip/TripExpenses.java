@@ -47,7 +47,8 @@ public class TripExpenses {
             @Schema(nullable = true) String liters, @Schema(nullable = true) String price, @Schema(nullable = true) Integer odometer,
             @Schema(nullable = true) BigDecimal lat, @Schema(nullable = true) BigDecimal lng, Instant spentAt, Status status,
             @Schema(nullable = true) String rejectReason, @Schema(nullable = true) String decidedBy, boolean settled,
-            @Schema(nullable = true) String cashOp, int photos, String driver, String vehicle) {}
+            @Schema(nullable = true) String cashOp, int photos, String driver, String vehicle,
+            @Schema(description = "Summa sozlamadagi limitdan oshgan (limit 0 — oʻchiq)") boolean overLimit) {}
 
     /** Reysning pul holati: avanslar, xarajatlar va ochiq (hali qabul qilinmagan) yig'indilar. */
     public record TripMoneyView(long tripId, String tripNumber, TripModels.TripStatus tripStatus, String driver, long branchId,
@@ -71,8 +72,10 @@ public class TripExpenses {
     private final JdbcClient jdbc;
     private final TripMoney money;
     private final AuditLog audit;
+    private final uz.yuzplus.shared.settings.SystemSettings settings;
 
-    TripExpenses(JdbcClient jdbc, TripMoney money, AuditLog audit) {
+    TripExpenses(JdbcClient jdbc, TripMoney money, AuditLog audit, uz.yuzplus.shared.settings.SystemSettings settings) {
+        this.settings = settings;
         this.jdbc = jdbc;
         this.money = money;
         this.audit = audit;
@@ -347,6 +350,7 @@ public class TripExpenses {
         for (var e : params.entrySet()) {
             q = q.param(e.getKey(), e.getValue());
         }
+        BigDecimal limit = settings.value(uz.yuzplus.shared.settings.SettingKey.tripExpenseLimit);
         return q.query((rs, n) -> new TripExpense(rs.getLong("id"), rs.getLong("trip_id"), rs.getString("trip"), Kind.valueOf(rs.getString("kind")),
                         new Money(rs.getBigDecimal("amount")).toString(), Source.valueOf(rs.getString("source")), rs.getString("note"),
                         rs.getBigDecimal("liters") == null ? null : rs.getBigDecimal("liters").toPlainString(),
@@ -354,7 +358,8 @@ public class TripExpenses {
                         rs.getObject("odometer", Integer.class), rs.getBigDecimal("lat"), rs.getBigDecimal("lng"),
                         rs.getTimestamp("spent_at").toInstant(), Status.valueOf(rs.getString("status")), rs.getString("reject_reason"),
                         rs.getString("decided_by"), rs.getObject("accept_id") != null, rs.getString("ko"), rs.getInt("photos"),
-                        rs.getString("driver"), rs.getString("vehicle")))
+                        rs.getString("driver"), rs.getString("vehicle"),
+                        limit.signum() > 0 && rs.getBigDecimal("amount").compareTo(limit) > 0))
                 .list();
     }
 
