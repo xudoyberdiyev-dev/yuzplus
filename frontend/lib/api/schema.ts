@@ -1782,6 +1782,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Qurilma tokenini ro'yxatdan o'tkazish
+         * @description Token boshqa xodimda bo'lsa — joriy xodimga o'tadi.
+         */
+        post: operations["register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/devices/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Qurilma tokenini o'chirish (chiqishda) */
+        post: operations["remove_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/dictionaries-overview": {
         parameters: {
             query?: never;
@@ -8037,6 +8074,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trips/{id}/points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * GPS nuqta (HD1)
+         * @description Bir martalik joylashuv: «Yetib keldim» yoki bekat natijasi. Fon kuzatuvi yoʻq.
+         */
+        post: operations["point"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/trips/{id}/sheet/pdf": {
         parameters: {
             query?: never;
@@ -10804,6 +10861,15 @@ export interface components {
             count: number;
             /** Format: int32 */
             nominal: number;
+        };
+        DeviceRemoveRequest: {
+            token: string;
+        };
+        DeviceRequest: {
+            /** @enum {string} */
+            platform: "ANDROID" | "IOS";
+            /** @description ExponentPushToken[…] */
+            token: string;
         };
         DocPayment: {
             /** Format: date */
@@ -13930,6 +13996,21 @@ export interface components {
             warehouse: string;
             zone?: string;
         };
+        PointRequest: {
+            /** Format: int32 */
+            accuracy?: number;
+            /** @enum {string} */
+            kind: "ARRIVED" | "DELIVERED" | "PARTIAL" | "UNDELIVERED";
+            lat: number;
+            lng: number;
+            /**
+             * Format: date-time
+             * @description Qurilma vaqti (oflayn navbat)
+             */
+            recordedAt?: string;
+            /** Format: int64 */
+            stopId?: number;
+        };
         PostRequest: {
             /**
              * @description Farq bo'lsa majburiy
@@ -16594,6 +16675,8 @@ export interface components {
             /** Format: int32 */
             places: number;
             plateNumber: string;
+            /** @description HD1: GPS nuqtalar (bir martalik — «Yetib keldim» va natija), vaqt boʻyicha */
+            points: components["schemas"]["TripPoint"][];
             refrigerator: boolean;
             /** Format: date-time */
             startedAt?: string;
@@ -16611,6 +16694,21 @@ export interface components {
         TripOptions: {
             drivers: components["schemas"]["DriverOption"][];
             vehicles: components["schemas"]["VehicleOption"][];
+        };
+        TripPoint: {
+            /**
+             * Format: int32
+             * @description Aniqlik, metr
+             */
+            accuracy?: number;
+            /** @enum {string} */
+            kind: "ARRIVED" | "DELIVERED" | "PARTIAL" | "UNDELIVERED";
+            lat: string;
+            lng: string;
+            /** Format: date-time */
+            recordedAt: string;
+            /** Format: int64 */
+            stopId?: number;
         };
         TripRequest: {
             /** Format: int64 */
@@ -20009,6 +20107,50 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DebtDoc"][];
                 };
+            };
+        };
+    };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    remove_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceRemoveRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -28864,6 +29006,30 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TripDetail"];
                 };
+            };
+        };
+    };
+    point: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PointRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

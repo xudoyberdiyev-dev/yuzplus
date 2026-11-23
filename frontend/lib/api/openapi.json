@@ -177,6 +177,9 @@
     "description" : "Ko'chirish — ZK, OK, FS bitta ro'yxatda",
     "name" : "transfer-overview"
   }, {
+    "description" : "Mobil qurilma (push) tokenlari",
+    "name" : "devices"
+  }, {
     "description" : "Zaxira markirovka kodlari",
     "name" : "reserve-codes"
   }, {
@@ -4256,6 +4259,51 @@
         },
         "summary" : "Yetkazib beruvchi bo'yicha ochiq hujjatlar",
         "tags" : [ "debts" ]
+      }
+    },
+    "/api/devices" : {
+      "post" : {
+        "description" : "Token boshqa xodimda bo'lsa — joriy xodimga o'tadi.",
+        "operationId" : "register",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DeviceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Qurilma tokenini ro'yxatdan o'tkazish",
+        "tags" : [ "devices" ]
+      }
+    },
+    "/api/devices/remove" : {
+      "post" : {
+        "operationId" : "remove_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DeviceRemoveRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Qurilma tokenini o'chirish (chiqishda)",
+        "tags" : [ "devices" ]
       }
     },
     "/api/dictionaries-overview" : {
@@ -18433,6 +18481,38 @@
         "tags" : [ "trips" ]
       }
     },
+    "/api/trips/{id}/points" : {
+      "post" : {
+        "description" : "Bir martalik joylashuv: «Yetib keldim» yoki bekat natijasi. Fon kuzatuvi yoʻq.",
+        "operationId" : "point",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PointRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "GPS nuqta (HD1)",
+        "tags" : [ "trips" ]
+      }
+    },
     "/api/trips/{id}/sheet/pdf" : {
       "get" : {
         "operationId" : "sheetPdf",
@@ -25204,6 +25284,34 @@
           }
         },
         "required" : [ "count", "nominal" ]
+      },
+      "DeviceRemoveRequest" : {
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "token" ]
+      },
+      "DeviceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "platform" : {
+            "type" : "string",
+            "enum" : [ "ANDROID", "IOS" ]
+          },
+          "token" : {
+            "type" : "string",
+            "description" : "ExponentPushToken[…]",
+            "maxLength" : 200,
+            "minLength" : 0,
+            "pattern" : "^Expo(nent)?PushToken\\[[A-Za-z0-9_\\-]+\\]$"
+          }
+        },
+        "required" : [ "platform", "token" ]
       },
       "DocPayment" : {
         "type" : "object",
@@ -32853,6 +32961,40 @@
         },
         "required" : [ "warehouse" ]
       },
+      "PointRequest" : {
+        "type" : "object",
+        "properties" : {
+          "accuracy" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 0
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "ARRIVED", "DELIVERED", "PARTIAL", "UNDELIVERED" ]
+          },
+          "lat" : {
+            "type" : "number",
+            "maximum" : 90,
+            "minimum" : -90
+          },
+          "lng" : {
+            "type" : "number",
+            "maximum" : 180,
+            "minimum" : -180
+          },
+          "recordedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Qurilma vaqti (oflayn navbat)"
+          },
+          "stopId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "kind", "lat", "lng" ]
+      },
       "PostRequest" : {
         "type" : "object",
         "properties" : {
@@ -39400,6 +39542,13 @@
           "plateNumber" : {
             "type" : "string"
           },
+          "points" : {
+            "type" : "array",
+            "description" : "HD1: GPS nuqtalar (bir martalik — «Yetib keldim» va natija), vaqt boʻyicha",
+            "items" : {
+              "$ref" : "#/components/schemas/TripPoint"
+            }
+          },
           "refrigerator" : {
             "type" : "boolean"
           },
@@ -39435,7 +39584,7 @@
             "type" : "string"
           }
         },
-        "required" : [ "branchId", "createdAt", "createdBy", "driver", "driverId", "id", "number", "places", "plateNumber", "refrigerator", "status", "stops", "total", "tripDate", "vehicle", "vehicleId" ]
+        "required" : [ "branchId", "createdAt", "createdBy", "driver", "driverId", "id", "number", "places", "plateNumber", "points", "refrigerator", "status", "stops", "total", "tripDate", "vehicle", "vehicleId" ]
       },
       "TripOptions" : {
         "type" : "object",
@@ -39454,6 +39603,35 @@
           }
         },
         "required" : [ "drivers", "vehicles" ]
+      },
+      "TripPoint" : {
+        "type" : "object",
+        "properties" : {
+          "accuracy" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Aniqlik, metr"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "ARRIVED", "DELIVERED", "PARTIAL", "UNDELIVERED" ]
+          },
+          "lat" : {
+            "type" : "string"
+          },
+          "lng" : {
+            "type" : "string"
+          },
+          "recordedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "stopId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "kind", "lat", "lng", "recordedAt" ]
       },
       "TripRequest" : {
         "type" : "object",
