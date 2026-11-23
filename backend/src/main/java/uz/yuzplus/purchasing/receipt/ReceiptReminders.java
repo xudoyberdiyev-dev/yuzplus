@@ -8,7 +8,9 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -73,20 +75,26 @@ public class ReceiptReminders {
                 .param("limit", Date.valueOf(today.plusDays(3)))
                 .query(Due.class)
                 .list();
+        // S1 (23.11.2026): avval YB saldosi (> 0) tekshirilardi — saldoda qarz bo'lsa, allaqachon to'langan eski kirimlar ham har kuni
+        // «kechikdi» deb eslatilardi (va har kirimga alohida saldo so'rovi). Endi — hujjatning FIFO dan keyingi qoldig'i (kontragent
+        // bo'yicha bir marta hisoblanadi); to'langan kirim eslatilmaydi, summa — qolgan qarz.
+        Map<String, Map<String, Money>> remaining = new HashMap<>();
         for (Due d : dues) {
             LocalDate due = d.dueDate().toLocalDate();
             long days = ChronoUnit.DAYS.between(today, due);
             if (days == 1 || days == 2) {
                 continue;
             }
-            // To'lovlar (YT) 9-bosqichda: hozircha YB saldosi qarz bo'lmasa (avans yoki to'langan) — eslatma yo'q.
-            if (parties.balance(d.branchId(), d.supplierId(), Side.SUPPLIER).amount().signum() <= 0) {
+            Money left = remaining.computeIfAbsent(d.branchId() + ":" + d.supplierId(),
+                            k -> parties.remainingDebts(d.branchId(), d.supplierId(), Side.SUPPLIER))
+                    .get(Receipts.DOC_TYPE + ":" + d.id());
+            if (left == null) {
                 continue;
             }
             String text = days == 3 ? "receipt.dueSoon" : days == 0 ? "receipt.dueToday" : "receipt.dueLate";
             created += notifications.notify("supplierPay.notify", d.branchId(), owner(d.ownerId()),
                     notifications.message("receipt.due", text, "/receipts", "receipt.due:" + d.id() + ":" + today, d.number(), d.supplier(),
-                            new Money(d.debtAmount()).format(), due.format(DAY), -days));
+                            left.format(), due.format(DAY), -days));
         }
         List<BonusDue> bonuses = jdbc.sql("""
                 SELECT r.id, r.number, r.branch_id, c.name AS supplier, r.owner_id, r.discount_date

@@ -647,6 +647,36 @@ class ReceiptIT {
         assertThat(jdbc.sql("SELECT employee_id FROM notification WHERE id = :id").param("id", notif).query(Long.class).single()).isEqualTo(ownerId);
     }
 
+    /** S1 8-qism (23.11.2026): YB saldosida qarz qolsa ham, to'langan (FIFO) eski kirim «kechikdi» deb eslatilmaydi. */
+    @Test
+    void paidReceiptIsNotRemindedWhileOtherDebtRemains() throws Exception {
+        Place p = place();
+        long sup = supplier(p.branchId(), 3);
+        long a = product("KR FIFO eslatma", false);
+        Cookie admin = loginAs("ADMIN", null);
+        String kr1 = postedReceipt(admin, doc(p, sup, false, line(a, "F-1", p.main(), 2, 0, "5000")));
+        send(post("/api/receipts/" + kr1 + "/post"), admin, "{}").andExpect(status().isOk());
+        String kr2 = postedReceipt(admin, doc(p, sup, false, line(a, "F-2", p.main(), 3, 0, "5000")));
+        send(post("/api/receipts/" + kr2 + "/post"), admin, "{}").andExpect(status().isOk());
+        // Taqsimlanmagan to'lov = birinchi kirim qarzi — FIFO bo'yicha uni to'liq yopadi, ikkinchisi ochiq qoladi
+        java.math.BigDecimal first = jdbc.sql("SELECT debt_amount FROM receipt WHERE id = :id").param("id", Long.parseLong(kr1))
+                .query(java.math.BigDecimal.class).single();
+        java.math.BigDecimal second = jdbc.sql("SELECT debt_amount FROM receipt WHERE id = :id").param("id", Long.parseLong(kr2))
+                .query(java.math.BigDecimal.class).single();
+        tx.executeWithoutResult(st -> parties.record(new uz.yuzplus.finance.PartyLedger.DocRef("YT", 900_001, "YT-TST-900001"), p.branchId(),
+                sup, uz.yuzplus.finance.PartyLedger.Side.SUPPLIER, new uz.yuzplus.shared.money.Money(first.negate()), null, "sinov"));
+        assertThat(new java.math.BigDecimal(debt(p.branchId(), sup))).isEqualByComparingTo(second);
+
+        reminders.run(today().plusDays(5));
+        java.util.function.Function<String, Integer> count = kr -> jdbc.sql(
+                "SELECT count(*)::int FROM notification WHERE dedup_key LIKE :k").param("k", "receipt.due:" + kr + ":%").query(Integer.class).single();
+        assertThat(count.apply(kr1)).isZero();
+        assertThat(count.apply(kr2)).isGreaterThanOrEqualTo(1);
+        String body = jdbc.sql("SELECT body FROM notification WHERE dedup_key LIKE :k LIMIT 1").param("k", "receipt.due:" + kr2 + ":%")
+                .query(String.class).single();
+        assertThat(body).contains(new uz.yuzplus.shared.money.Money(second).format());
+    }
+
     @Test
     void idleBonusBalanceRemindsEveryThirtyDays() throws Exception {
         Place p = place();

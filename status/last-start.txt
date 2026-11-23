@@ -1,1 +1,1 @@
-▶️ 100+: 00:10 sessiya boshlandi — reja: S1 davomi (4 yillik hajm: markirovka kodlari qidiruvi, partitsiya/arxiv tahlili, production koʻrigi)
+▶️ 100+: 06:07 sessiya boshlandi — reja: S1 8-qism — fon vazifalar va tranzaksiya chegaralari koʻrigi (CI yashil, ochiq PR/issue yoʻq)

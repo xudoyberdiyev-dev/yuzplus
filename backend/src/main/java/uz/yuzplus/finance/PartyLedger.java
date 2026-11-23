@@ -142,6 +142,38 @@ public class PartyLedger {
                 .list();
     }
 
+    /**
+     * Hujjatlarning FIFO dan keyingi ochiq qarzi: taqsimlanmagan to'lov (avans) eng eski qarzlardan ayriladi ({@link #creditState}
+     * bilan bir xil qoida). Kalit — «turi:id»; faqat hali qarzi qolgan (&gt; 0) hujjatlar. S1 (23.11.2026): eslatmalar to'langan
+     * hujjatlarni qayta eslatmasin.
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Money> remainingDebts(long branchId, long counterpartyId, Side side) {
+        java.util.List<OpenDoc> docs = openDocs(branchId, counterpartyId, side);
+        Money left = Money.ZERO;
+        for (OpenDoc d : docs) {
+            if (d.open().isNegative()) {
+                left = left.minus(d.open());
+            }
+        }
+        java.util.Map<String, Money> out = new java.util.LinkedHashMap<>();
+        for (OpenDoc d : docs) {
+            if (!d.open().isPositive()) {
+                continue;
+            }
+            Money open = d.open();
+            if (left.isPositive()) {
+                Money used = left.compareTo(open) >= 0 ? open : left;
+                open = open.minus(used);
+                left = left.minus(used);
+            }
+            if (open.isPositive()) {
+                out.put(d.type() + ":" + d.id(), open);
+            }
+        }
+        return out;
+    }
+
     @Transactional(readOnly = true)
     public CreditState creditState(long branchId, long counterpartyId, Side side, LocalDate today) {
         java.util.List<OpenDoc> docs = openDocs(branchId, counterpartyId, side);
