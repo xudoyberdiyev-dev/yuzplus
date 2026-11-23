@@ -18,7 +18,7 @@ class SchedulerConfigTest {
         ThreadPoolTaskScheduler scheduler = new SchedulerConfig().taskScheduler(errors);
         scheduler.initialize();
         try {
-            assertThat(scheduler.getPoolSize()).isEqualTo(SchedulerConfig.POOL_SIZE);
+            assertThat(scheduler.getScheduledThreadPoolExecutor().getCorePoolSize()).isEqualTo(SchedulerConfig.POOL_SIZE);
             IllegalStateException e = new IllegalStateException("sinov");
             scheduler.schedule(() -> {
                 throw e;
