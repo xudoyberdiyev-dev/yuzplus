@@ -33,7 +33,5 @@
   "favAdd": "«{name}» — sevimlilarga qoʻshish",
   "favRemove": "«{name}» — sevimlilardan olib tashlash",
   "offlineTitle": "Internet yoʻq.",
-  "offlineText": "Kiritganlaringiz saqlanib turadi va ulanish tiklangach yuboriladi.",
-  "maintenanceTitle": "Saytda texnik ishlar olib borilmoqda",
-  "maintenanceText": "Taxminan {time} da yakunlanadi. Shu vaqtgacha dasturda ishlab boʻlmaydi — kiritilgan maʼlumotlaringiz saqlangan. Ishlar tugagach sahifa oʻzi ochiladi."
+  "offlineText": "Kiritganlaringiz saqlanib turadi va ulanish tiklangach yuboriladi."
 }

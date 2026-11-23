@@ -1,4 +1,3 @@
-import { MaintenanceOverlay } from "@/components/shell/maintenance-overlay";
 import { OfflineBanner } from "@/components/shell/offline-banner";
 import { Sidebar } from "@/components/shell/sidebar";
 import { AuthGate } from "@/features/auth/auth-gate";
@@ -9,7 +8,6 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
     <AuthGate>
       <div className="relative flex h-dvh overflow-hidden print:block print:h-auto print:overflow-visible">
         <ThemeSync />
-        <MaintenanceOverlay />
         <Sidebar />
         <div data-app-content className="flex min-w-0 flex-1 flex-col">
           <OfflineBanner />
