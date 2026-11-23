@@ -268,6 +268,9 @@ class CashOps {
         if (OpSource.SHORTAGE.name().equals(source)) {
             throw YuzplusException.conflict("cash.shortageOp");
         }
+        if (OpSource.ADVANCE.name().equals(source) || OpSource.TRIP_EXPENSE.name().equals(source)) {
+            throw YuzplusException.conflict("cash.tripOp");
+        }
         String why = reason.strip();
         Money back = h.direction() == Direction.OUT ? h.amount() : Money.ZERO.minus(h.amount());
         money.post(h.accountId(), today(), back, new MoneyLedger.DocRef(h.docType(), h.id(), h.number()), "Bekor: " + why);

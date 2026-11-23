@@ -321,6 +321,7 @@
     "kk_create": "Kutilayotgan kirim: yaratish va tahrirlash",
     "kk_approve": "Kutilayotgan kirim: tasdiqlash (qarz yoziladi), bekor qilish",
     "shortage_view": "Xodim kamomadlari: koʻrish",
-    "shortage_writeOff": "Xodim kamomadi: hisobdan chiqarish"
+    "shortage_writeOff": "Xodim kamomadi: hisobdan chiqarish",
+    "tripExpenses_view": "Yoʻl xarajatlari: koʻrish va hisobot"
   }
 }

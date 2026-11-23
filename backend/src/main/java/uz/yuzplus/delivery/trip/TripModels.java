@@ -102,5 +102,8 @@ final class TripModels {
     /** Reys bo'yicha qabul natijasi: kutilgan, sanalgan, farq (sanalgan − kutilgan) va yozilgan MT raqamlari. */
     record TripCashAccepted(String expected, String received, String diff, List<String> payments,
             @io.swagger.v3.oas.annotations.media.Schema(description = "«Mijoz toʻlamagan» jami") String unpaid,
-            @io.swagger.v3.oas.annotations.media.Schema(description = "«Haydovchi kamomadi»") String shortage) {}
+            @io.swagger.v3.oas.annotations.media.Schema(description = "«Haydovchi kamomadi»") String shortage,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "Qaytgan avans (HD2)") String advance,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "Tasdiqlangan yoʻl xarajatlari (HD2)") String expenses,
+            @io.swagger.v3.oas.annotations.media.Schema(description = "Avans/xarajat KO raqamlari") List<String> cashOps) {}
 }
