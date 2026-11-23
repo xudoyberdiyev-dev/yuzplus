@@ -48,6 +48,9 @@
     "description" : "Mijozlar va yetkazib beruvchilar qarzi (muddat guruhlari)",
     "name" : "debts"
   }, {
+    "description" : "Xodim (haydovchi) kamomadlari: qoldiq, jurnal, qaytarish, hisobdan chiqarish",
+    "name" : "shortages"
+  }, {
     "description" : "Yetkazib beruvchi bonus balansi",
     "name" : "supplier-bonuses"
   }, {
@@ -497,7 +500,7 @@
     },
     "/api/audit" : {
       "get" : {
-        "operationId" : "list_37",
+        "operationId" : "list_38",
         "parameters" : [ {
           "in" : "query",
           "name" : "view",
@@ -4475,7 +4478,7 @@
     },
     "/api/employee-lookup" : {
       "get" : {
-        "operationId" : "list_36",
+        "operationId" : "list_37",
         "responses" : {
           "200" : {
             "content" : {
@@ -6336,7 +6339,7 @@
     "/api/invoice-tasks" : {
       "get" : {
         "description" : "Filtrlar: filial (barcha filiallar doirasida), holat, davr (navbatga tushgan sana), qidiruv (buyurtma, mijoz, STIR, HF, e-faktura №). Kutilayotganlar — eng uzoq kutayotgani birinchi.",
-        "operationId" : "list_35",
+        "operationId" : "list_36",
         "parameters" : [ {
           "in" : "query",
           "name" : "branchId",
@@ -8040,7 +8043,7 @@
     },
     "/api/notifications" : {
       "get" : {
-        "operationId" : "list_34",
+        "operationId" : "list_35",
         "responses" : {
           "200" : {
             "content" : {
@@ -14705,7 +14708,7 @@
     "/api/reports/marking-codes" : {
       "get" : {
         "description" : "Davr — skanerlangan sana (standart: oy boshidan bugungacha); mijoz, mahsulot, egasi (mijoz / zaxira), holat, qidiruv. Olib tashlangan kodlar — faqat status=REMOVED bilan.",
-        "operationId" : "list_33",
+        "operationId" : "list_34",
         "parameters" : [ {
           "in" : "query",
           "name" : "branchId",
@@ -15499,7 +15502,7 @@
     "/api/reserve-codes" : {
       "get" : {
         "description" : "Filtrlar: filial (barcha filiallar doirasida), mahsulot, holat, davr (zaxiraga tushgan sana), qidiruv.",
-        "operationId" : "list_32",
+        "operationId" : "list_33",
         "parameters" : [ {
           "in" : "query",
           "name" : "branchId",
@@ -15675,7 +15678,7 @@
     },
     "/api/reserve-codes/{id}/write-off" : {
       "post" : {
-        "operationId" : "writeOff",
+        "operationId" : "writeOff_1",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -15706,7 +15709,7 @@
     },
     "/api/roles" : {
       "get" : {
-        "operationId" : "list_31",
+        "operationId" : "list_32",
         "responses" : {
           "200" : {
             "content" : {
@@ -16582,6 +16585,104 @@
         },
         "summary" : "Ombor kartasini saqlash (tur, masʼul, zonalar)",
         "tags" : [ "setup" ]
+      }
+    },
+    "/api/shortages" : {
+      "get" : {
+        "description" : "Qoldiqlar (ochiq / hammasi) va jurnal (oxirgi 300 ta).",
+        "operationId" : "list_31",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "branchId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "employeeId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "openOnly",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ShortageOverview"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Xodim kamomadlari",
+        "tags" : [ "shortages" ]
+      }
+    },
+    "/api/shortages/repay" : {
+      "post" : {
+        "description" : "Kassa kirimi (KO, «Haydovchi kamomadini qaytardi»), kamomad qoldig'i kamayadi.",
+        "operationId" : "repay",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RepayRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RepayResult"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Kamomadni qaytardi",
+        "tags" : [ "shortages" ]
+      }
+    },
+    "/api/shortages/write-off" : {
+      "post" : {
+        "description" : "Sabab majburiy; kassa harakati yo'q.",
+        "operationId" : "writeOff",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/WriteOffRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "summary" : "Kamomadni hisobdan chiqarish",
+        "tags" : [ "shortages" ]
       }
     },
     "/api/stock" : {
@@ -18180,7 +18281,7 @@
     },
     "/api/trips/{id}/cash/accept" : {
       "post" : {
-        "description" : "Sanalgan summa to'xtashlar bo'yicha taqsimlanadi, har ulush — MT. Farq bo'lsa izoh majburiy.",
+        "description" : "Kassir sanagan summa. Farq bo'lsa izoh majburiy; kam bo'lsa sabab: (a) mijoz to'lamagan (bekat bo'yicha) va/yoki (b) haydovchi kamomadi; ortiqcha — tanlangan bekat mijoziga.",
         "operationId" : "acceptTripCash",
         "parameters" : [ {
           "in" : "path",
@@ -22781,7 +22882,7 @@
           },
           "source" : {
             "type" : "string",
-            "enum" : [ "MANUAL", "CLOSE" ]
+            "enum" : [ "MANUAL", "CLOSE", "SHORTAGE" ]
           },
           "status" : {
             "type" : "string",
@@ -35705,6 +35806,44 @@
         },
         "required" : [ "name" ]
       },
+      "RepayRequest" : {
+        "type" : "object",
+        "properties" : {
+          "accountId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "amount" : {
+            "type" : "string",
+            "description" : "Summa, masalan «200000.00»",
+            "maxLength" : 24,
+            "minLength" : 0
+          },
+          "branchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "employeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "note" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "accountId", "amount", "branchId", "employeeId" ]
+      },
+      "RepayResult" : {
+        "type" : "object",
+        "properties" : {
+          "cashOp" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "cashOp" ]
+      },
       "ReportCode" : {
         "type" : "object",
         "properties" : {
@@ -37082,6 +37221,83 @@
         },
         "required" : [ "name", "rows" ]
       },
+      "ShortageBalance" : {
+        "type" : "object",
+        "properties" : {
+          "balance" : {
+            "type" : "string"
+          },
+          "branch" : {
+            "type" : "string"
+          },
+          "branchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "closed" : {
+            "type" : "string"
+          },
+          "employee" : {
+            "type" : "string"
+          },
+          "employeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "balance", "branch", "branchId", "closed", "employee", "employeeId", "total" ]
+      },
+      "ShortageEntry" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "string"
+          },
+          "branchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "cashOp" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "createdBy" : {
+            "type" : "string"
+          },
+          "employee" : {
+            "type" : "string"
+          },
+          "employeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "SHORTAGE", "REPAID", "WRITTEN_OFF" ]
+          },
+          "note" : {
+            "type" : "string"
+          },
+          "trip" : {
+            "type" : "string"
+          },
+          "tripId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "amount", "branchId", "createdAt", "createdBy", "employee", "employeeId", "id", "kind" ]
+      },
       "ShortageInfo" : {
         "type" : "object",
         "properties" : {
@@ -37107,6 +37323,24 @@
           }
         },
         "required" : [ "history", "number", "open", "shortageQty", "transferId" ]
+      },
+      "ShortageOverview" : {
+        "type" : "object",
+        "properties" : {
+          "balances" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ShortageBalance"
+            }
+          },
+          "entries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ShortageEntry"
+            }
+          }
+        },
+        "required" : [ "balances", "entries" ]
       },
       "ShortageResolution" : {
         "type" : "object",
@@ -39039,9 +39273,29 @@
             "maxLength" : 300,
             "minLength" : 0
           },
+          "overageStopId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Ortiqcha bo'lsa — qaysi bekat mijoziga (standart — oxirgisi)"
+          },
           "received" : {
             "type" : "string",
             "description" : "Kassir sanagan summa"
+          },
+          "shortage" : {
+            "type" : "string",
+            "description" : "Kam bo'lsa (b) «Haydovchi kamomadi» summasi; (a)+(b) = farq",
+            "maxLength" : 24,
+            "minLength" : 0
+          },
+          "unpaid" : {
+            "type" : "array",
+            "description" : "Kam bo'lsa (a) «Mijoz toʻlamagan»: bekat va summa",
+            "items" : {
+              "$ref" : "#/components/schemas/UnpaidShare"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
           }
         },
         "required" : [ "accountId", "received" ]
@@ -39063,9 +39317,17 @@
           },
           "received" : {
             "type" : "string"
+          },
+          "shortage" : {
+            "type" : "string",
+            "description" : "«Haydovchi kamomadi»"
+          },
+          "unpaid" : {
+            "type" : "string",
+            "description" : "«Mijoz toʻlamagan» jami"
           }
         },
-        "required" : [ "diff", "expected", "payments", "received" ]
+        "required" : [ "diff", "expected", "payments", "received", "shortage", "unpaid" ]
       },
       "TripDetail" : {
         "type" : "object",
@@ -39447,6 +39709,21 @@
           }
         },
         "required" : [ "confirmed", "lineId", "lineNo", "productCode", "productName", "qty", "unit" ]
+      },
+      "UnpaidShare" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "string",
+            "maxLength" : 24,
+            "minLength" : 0
+          },
+          "stopId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "amount", "stopId" ]
       },
       "UnreadCounts" : {
         "type" : "object",

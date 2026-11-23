@@ -153,7 +153,7 @@ export interface paths {
             cookie?: never;
         };
         /** Audit yozuvlari (yangilari birinchi), yorliqlar soni bilan */
-        get: operations["list_37"];
+        get: operations["list_38"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1882,7 +1882,7 @@ export interface paths {
             cookie?: never;
         };
         /** Faol xodimlar (tanlash uchun) */
-        get: operations["list_36"];
+        get: operations["list_37"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2780,7 +2780,7 @@ export interface paths {
          * Faktura navbati
          * @description Filtrlar: filial (barcha filiallar doirasida), holat, davr (navbatga tushgan sana), qidiruv (buyurtma, mijoz, STIR, HF, e-faktura №). Kutilayotganlar — eng uzoq kutayotgani birinchi.
          */
-        get: operations["list_35"];
+        get: operations["list_36"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3670,7 +3670,7 @@ export interface paths {
             cookie?: never;
         };
         /** Oxirgi 50 ta bildirishnoma va o'qilmaganlar soni */
-        get: operations["list_34"];
+        get: operations["list_35"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6496,7 +6496,7 @@ export interface paths {
          * Markirovka kodlari hisoboti
          * @description Davr — skanerlangan sana (standart: oy boshidan bugungacha); mijoz, mahsulot, egasi (mijoz / zaxira), holat, qidiruv. Olib tashlangan kodlar — faqat status=REMOVED bilan.
          */
-        get: operations["list_33"];
+        get: operations["list_34"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6720,7 +6720,7 @@ export interface paths {
          * Zaxira kodlar
          * @description Filtrlar: filial (barcha filiallar doirasida), mahsulot, holat, davr (zaxiraga tushgan sana), qidiruv.
          */
-        get: operations["list_32"];
+        get: operations["list_33"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6773,7 +6773,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Hisobdan chiqarish */
-        post: operations["writeOff"];
+        post: operations["writeOff_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6788,7 +6788,7 @@ export interface paths {
             cookie?: never;
         };
         /** Rollar ro'yxati */
-        get: operations["list_31"];
+        get: operations["list_32"];
         put?: never;
         post?: never;
         delete?: never;
@@ -7258,6 +7258,66 @@ export interface paths {
         post?: never;
         /** Ishlatilmagan omborni oʻchirish */
         delete: operations["deleteWarehouse"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shortages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Xodim kamomadlari
+         * @description Qoldiqlar (ochiq / hammasi) va jurnal (oxirgi 300 ta).
+         */
+        get: operations["list_31"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shortages/repay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kamomadni qaytardi
+         * @description Kassa kirimi (KO, «Haydovchi kamomadini qaytardi»), kamomad qoldig'i kamayadi.
+         */
+        post: operations["repay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shortages/write-off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kamomadni hisobdan chiqarish
+         * @description Sabab majburiy; kassa harakati yo'q.
+         */
+        post: operations["writeOff"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -7908,7 +7968,7 @@ export interface paths {
         put?: never;
         /**
          * Haydovchidan pulni reys bo'yicha qabul qilish
-         * @description Sanalgan summa to'xtashlar bo'yicha taqsimlanadi, har ulush — MT. Farq bo'lsa izoh majburiy.
+         * @description Kassir sanagan summa. Farq bo'lsa izoh majburiy; kam bo'lsa sabab: (a) mijoz to'lamagan (bekat bo'yicha) va/yoki (b) haydovchi kamomadi; ortiqcha — tanlangan bekat mijoziga.
          */
         post: operations["acceptTripCash"];
         delete?: never;
@@ -9881,7 +9941,7 @@ export interface components {
             opDate: string;
             party?: string;
             /** @enum {string} */
-            source: "MANUAL" | "CLOSE";
+            source: "MANUAL" | "CLOSE" | "SHORTAGE";
             /** @enum {string} */
             status: "PENDING" | "POSTED" | "REJECTED" | "CANCELLED";
             /** Format: int64 */
@@ -15056,6 +15116,20 @@ export interface components {
         RenameZoneRequest: {
             name: string;
         };
+        RepayRequest: {
+            /** Format: int64 */
+            accountId: number;
+            /** @description Summa, masalan «200000.00» */
+            amount: string;
+            /** Format: int64 */
+            branchId: number;
+            /** Format: int64 */
+            employeeId: number;
+            note?: string;
+        };
+        RepayResult: {
+            cashOp: string;
+        };
         ReportCode: {
             batch?: string;
             branch: string;
@@ -15613,6 +15687,37 @@ export interface components {
             name: string;
             rows: string[][];
         };
+        ShortageBalance: {
+            balance: string;
+            branch: string;
+            /** Format: int64 */
+            branchId: number;
+            closed: string;
+            employee: string;
+            /** Format: int64 */
+            employeeId: number;
+            total: string;
+        };
+        ShortageEntry: {
+            amount: string;
+            /** Format: int64 */
+            branchId: number;
+            cashOp?: string;
+            /** Format: date-time */
+            createdAt: string;
+            createdBy: string;
+            employee: string;
+            /** Format: int64 */
+            employeeId: number;
+            /** Format: int64 */
+            id: number;
+            /** @enum {string} */
+            kind: "SHORTAGE" | "REPAID" | "WRITTEN_OFF";
+            note?: string;
+            trip?: string;
+            /** Format: int64 */
+            tripId?: number;
+        };
         ShortageInfo: {
             history: components["schemas"]["ShortageResolution"][];
             number: string;
@@ -15621,6 +15726,10 @@ export interface components {
             shortageQty: number;
             /** Format: int64 */
             transferId: number;
+        };
+        ShortageOverview: {
+            balances: components["schemas"]["ShortageBalance"][];
+            entries: components["schemas"]["ShortageEntry"][];
         };
         ShortageResolution: {
             /** @enum {string} */
@@ -16436,14 +16545,27 @@ export interface components {
             accountId: number;
             /** @description Farq bo'lsa majburiy */
             note?: string;
+            /**
+             * Format: int64
+             * @description Ortiqcha bo'lsa — qaysi bekat mijoziga (standart — oxirgisi)
+             */
+            overageStopId?: number;
             /** @description Kassir sanagan summa */
             received: string;
+            /** @description Kam bo'lsa (b) «Haydovchi kamomadi» summasi; (a)+(b) = farq */
+            shortage?: string;
+            /** @description Kam bo'lsa (a) «Mijoz toʻlamagan»: bekat va summa */
+            unpaid?: components["schemas"]["UnpaidShare"][];
         };
         TripCashAccepted: {
             diff: string;
             expected: string;
             payments: string[];
             received: string;
+            /** @description «Haydovchi kamomadi» */
+            shortage: string;
+            /** @description «Mijoz toʻlamagan» jami */
+            unpaid: string;
         };
         TripDetail: {
             /** Format: int64 */
@@ -16606,6 +16728,11 @@ export interface components {
             /** Format: int32 */
             qty: number;
             unit: string;
+        };
+        UnpaidShare: {
+            amount: string;
+            /** Format: int64 */
+            stopId: number;
         };
         UnreadCounts: {
             /** Format: int64 */
@@ -17504,7 +17631,7 @@ export interface operations {
             };
         };
     };
-    list_37: {
+    list_38: {
         parameters: {
             query?: {
                 view?: "ALL" | "CANCEL" | "FAIL" | "PERM" | "CTRL";
@@ -20020,7 +20147,7 @@ export interface operations {
             };
         };
     };
-    list_36: {
+    list_37: {
         parameters: {
             query?: never;
             header?: never;
@@ -21283,7 +21410,7 @@ export interface operations {
             };
         };
     };
-    list_35: {
+    list_36: {
         parameters: {
             query?: {
                 branchId?: number;
@@ -22475,7 +22602,7 @@ export interface operations {
             };
         };
     };
-    list_34: {
+    list_35: {
         parameters: {
             query?: never;
             header?: never;
@@ -26558,7 +26685,7 @@ export interface operations {
             };
         };
     };
-    list_33: {
+    list_34: {
         parameters: {
             query?: {
                 branchId?: number;
@@ -26890,7 +27017,7 @@ export interface operations {
             };
         };
     };
-    list_32: {
+    list_33: {
         parameters: {
             query?: {
                 branchId?: number;
@@ -26968,7 +27095,7 @@ export interface operations {
             };
         };
     };
-    writeOff: {
+    writeOff_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -26992,7 +27119,7 @@ export interface operations {
             };
         };
     };
-    list_31: {
+    list_32: {
         parameters: {
             query?: never;
             header?: never;
@@ -27696,6 +27823,76 @@ export interface operations {
         responses: {
             /** @description No Content */
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    list_31: {
+        parameters: {
+            query?: {
+                branchId?: number;
+                employeeId?: number;
+                openOnly?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShortageOverview"];
+                };
+            };
+        };
+    };
+    repay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RepayRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepayResult"];
+                };
+            };
+        };
+    };
+    writeOff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WriteOffRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -24,16 +24,16 @@ import uz.yuzplus.shared.security.CurrentActor;
 @Tag(name = "shortages", description = "Xodim (haydovchi) kamomadlari: qoldiq, jurnal, qaytarish, hisobdan chiqarish")
 class ShortageController {
 
-    record RepayRequest(@NotNull(message = "{validation.required}") Long branchId, @NotNull(message = "{validation.required}") Long employeeId,
+    record ShortageRepayRequest(@NotNull(message = "{validation.required}") Long branchId, @NotNull(message = "{validation.required}") Long employeeId,
             @NotNull(message = "{validation.required}") Long accountId,
             @NotBlank(message = "{validation.required}") @Size(max = 24) @Schema(description = "Summa, masalan «200000.00»") String amount,
             @Schema(nullable = true) @Size(max = 300) String note) {}
 
-    record WriteOffRequest(@NotNull(message = "{validation.required}") Long branchId, @NotNull(message = "{validation.required}") Long employeeId,
+    record ShortageWriteOffRequest(@NotNull(message = "{validation.required}") Long branchId, @NotNull(message = "{validation.required}") Long employeeId,
             @NotBlank(message = "{validation.required}") @Size(max = 24) String amount,
             @NotBlank(message = "{validation.required}") @Size(max = 300) String reason) {}
 
-    record RepayResult(String cashOp) {}
+    record ShortageRepayResult(String cashOp) {}
 
     private final Shortages shortages;
     private final CurrentActor currentActor;
@@ -58,15 +58,15 @@ class ShortageController {
     @PostMapping("/api/shortages/repay")
     @PreAuthorize("hasAuthority('cash.io')")
     @Operation(summary = "Kamomadni qaytardi", description = "Kassa kirimi (KO, «Haydovchi kamomadini qaytardi»), kamomad qoldig'i kamayadi.")
-    RepayResult repay(@Valid @RequestBody RepayRequest r) {
-        return new RepayResult(shortages.repay(actor(), r.branchId(), r.employeeId(), r.accountId(), CashOps.parseAmount(r.amount(), "payment.amountInvalid"),
+    ShortageRepayResult repay(@Valid @RequestBody ShortageRepayRequest r) {
+        return new ShortageRepayResult(shortages.repay(actor(), r.branchId(), r.employeeId(), r.accountId(), CashOps.parseAmount(r.amount(), "payment.amountInvalid"),
                 r.note()));
     }
 
     @PostMapping("/api/shortages/write-off")
     @PreAuthorize("hasAuthority('shortage.writeOff')")
     @Operation(summary = "Kamomadni hisobdan chiqarish", description = "Sabab majburiy; kassa harakati yo'q.")
-    void writeOff(@Valid @RequestBody WriteOffRequest r) {
+    void writeOff(@Valid @RequestBody ShortageWriteOffRequest r) {
         shortages.writeOff(actor(), r.branchId(), r.employeeId(), CashOps.parseAmount(r.amount(), "payment.amountInvalid"), r.reason());
     }
 }

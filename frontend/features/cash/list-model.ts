@@ -69,3 +69,51 @@ export function handoverDiff(got: string, expected: string): string | null {
   if (!/^\d+(\.\d+)?$/.test(got.trim())) return null;
   return fromCents(toCents(got) - toCents(expected));
 }
+
+/** KT1: kam topshirilgan naqd sababi — (a) mijoz toʻlamagan, (b) haydovchi kamomadi, yoki aralash. */
+export type ShortReason = "customer" | "driver" | "mixed";
+
+export type SplitError = "row" | "sum" | "mixed";
+
+export interface ShortSplit {
+  unpaid: { stopId: number; amount: string }[];
+  shortage: string;
+  error: SplitError | null;
+}
+
+/**
+ * Kamomad taqsimoti (SPEC 5.4): `deficit` — musbat kanonik satr. «customer» — bekatlar boʻyicha toʻlanmagan summalar yigʻindisi = kamomad;
+ * «driver» — butun kamomad haydovchida; «mixed» — bekatlar yigʻindisi 0 dan katta va kamomaddan kichik, qolgani haydovchida.
+ * `inputs` — bekat → kiritilgan summa (kanonik satr yoki boʻsh).
+ */
+export function shortSplit(
+  deficit: string,
+  reason: ShortReason,
+  rows: readonly { stopId: number; amount: string }[],
+  inputs: Readonly<Record<number, string>>,
+): ShortSplit {
+  const total = toCents(deficit);
+  if (reason === "driver") return { unpaid: [], shortage: fromCents(total), error: null };
+  const unpaid: { stopId: number; amount: string }[] = [];
+  let sum = 0n;
+  let rowError = false;
+  for (const r of rows) {
+    const raw = (inputs[r.stopId] ?? "").trim();
+    if (!raw) continue;
+    if (!/^\d+(\.\d+)?$/.test(raw)) {
+      rowError = true;
+      continue;
+    }
+    const c = toCents(raw);
+    if (c === 0n) continue;
+    if (c > toCents(r.amount)) rowError = true;
+    unpaid.push({ stopId: r.stopId, amount: fromCents(c) });
+    sum += c;
+  }
+  const rest = total - sum;
+  const shortage = fromCents(reason === "mixed" && rest > 0n ? rest : 0n);
+  if (rowError) return { unpaid, shortage, error: "row" };
+  if (reason === "customer" && rest !== 0n) return { unpaid, shortage, error: "sum" };
+  if (reason === "mixed" && (sum === 0n || rest <= 0n)) return { unpaid, shortage, error: "mixed" };
+  return { unpaid, shortage, error: null };
+}

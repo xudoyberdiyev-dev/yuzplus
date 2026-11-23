@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { ArrowLeftRight, Banknote, Landmark, LockKeyhole, Plus, UserRound } from "lucide-react";
+import { ArrowLeftRight, Banknote, Landmark, LockKeyhole, Plus, UserRound, UserRoundX } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -108,6 +108,11 @@ export function CashPage() {
           {canAssign && !overall && accountList.some((a) => a.kind === "CASH") ? (
             <Button variant="secondary" icon={UserRound} onClick={() => setDialog("cashiers")}>
               {t("cashiers")}
+            </Button>
+          ) : null}
+          {can(me.data, "shortage.view") ? (
+            <Button variant="secondary" icon={UserRoundX} onClick={() => router.push("/cash/shortages")}>
+              {t("shortages")}
             </Button>
           ) : null}
           {canClose && !overall && kassas.length > 0 ? (
