@@ -270,7 +270,9 @@ function AcceptForm(props: { trip: DriverTrip<DriverCash>; money: TripMoneyView 
   // Kutilgan: naqd + avans − tasdiqlangan xarajatlar; manfiy — kassa haydovchiga aynan shu summani toʻlaydi
   const expected = money.expected;
   const payout = toCents(expected) < 0n;
-  const [got, setGot] = useState(expected);
+  // Kassir oʻzgartirmaguncha — kutilgan summaga ergashadi (avans/xarajat yangilansa ham)
+  const [gotRaw, setGot] = useState<string | null>(null);
+  const got = gotRaw ?? expected;
   const [kassa, setKassa] = useState<string | null>(props.kassas[0] ? String(props.kassas[0].id) : null);
   const [reason, setReason] = useState<ShortReason>(trip.rows.length === 0 || toCents(money.rejectedOwed) > 0n ? "driver" : "customer");
   const [unpaid, setUnpaid] = useState<Record<number, string>>({});
@@ -299,9 +301,6 @@ function AcceptForm(props: { trip: DriverTrip<DriverCash>; money: TripMoneyView 
 
   function setDecision(id: number, d: ExpenseDecision) {
     setDecisions((m) => ({ ...m, [id]: d }));
-    // Qaror oʻzgarsa — topshiriladigan summa ham yangilanadi (kassir hali qoʻlda oʻzgartirmagan boʻlsa)
-    const next = settlement(trip.total, props.money?.advanceOpen ?? "0.00", pending, { ...decisions, [id]: d }).expected;
-    if (got === expected) setGot(next);
   }
 
   function check() {

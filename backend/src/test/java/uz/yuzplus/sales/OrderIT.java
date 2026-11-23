@@ -3070,4 +3070,25 @@ class OrderIT {
                 .isEqualTo("0.00");
         assertThat(balanceOf(k)).isEqualTo("2500.00");
     }
+
+    /** HD2 koʻrik: xarajat naqdning katta qismini yesa va mijoz kam toʻlagan boʻlsa — kassa haydovchiga toʻlaydi, (a) taqsimot bilan. */
+    @Test
+    void negativeReceivedWithUnpaidSplit() throws Exception {
+        Place p = place();
+        CashTrip ct = cashTrip(p, 1, "1000");
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        long k = kassa(p.branchId());
+        jdbc.sql("UPDATE money_account SET balance = 1000 WHERE id = :a").param("a", k).update();
+        long repair = expense(ct, "{\"kind\":\"REPAIR\",\"amount\":\"900\",\"source\":\"COLLECTED\",\"note\":\"Shina\"}");
+        String accept = "/api/trips/" + ct.trip() + "/cash/accept";
+        String dec = ",\"expenses\":[{\"expenseId\":" + repair + ",\"approve\":true}]}";
+        // Kutilgan 100; mijoz 300 kam toʻlagan — kassa haydovchiga 200 beradi
+        send(post(accept), cashier, "{\"accountId\":" + k + ",\"received\":\"-200\",\"note\":\"mijoz kam\",\"unpaid\":[{\"stopId\":" + ct.stops()[0]
+                + ",\"amount\":\"300\"}]" + dec)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expected").value("100.00"))
+                .andExpect(jsonPath("$.diff").value("-300.00"));
+        assertThat(debt(ct.customers()[0])).isEqualTo("300.00");
+        assertThat(balanceOf(k)).isEqualTo("800.00");
+    }
 }
