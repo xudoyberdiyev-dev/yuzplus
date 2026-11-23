@@ -16640,7 +16640,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/RepayRequest"
+                "$ref" : "#/components/schemas/ShortageRepayRequest"
               }
             }
           },
@@ -16651,7 +16651,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/RepayResult"
+                  "$ref" : "#/components/schemas/ShortageRepayResult"
                 }
               }
             },
@@ -16670,7 +16670,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/WriteOffRequest"
+                "$ref" : "#/components/schemas/ShortageWriteOffRequest"
               }
             }
           },
@@ -35806,44 +35806,6 @@
         },
         "required" : [ "name" ]
       },
-      "RepayRequest" : {
-        "type" : "object",
-        "properties" : {
-          "accountId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "amount" : {
-            "type" : "string",
-            "description" : "Summa, masalan «200000.00»",
-            "maxLength" : 24,
-            "minLength" : 0
-          },
-          "branchId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "employeeId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "note" : {
-            "type" : "string",
-            "maxLength" : 300,
-            "minLength" : 0
-          }
-        },
-        "required" : [ "accountId", "amount", "branchId", "employeeId" ]
-      },
-      "RepayResult" : {
-        "type" : "object",
-        "properties" : {
-          "cashOp" : {
-            "type" : "string"
-          }
-        },
-        "required" : [ "cashOp" ]
-      },
       "ReportCode" : {
         "type" : "object",
         "properties" : {
@@ -37342,6 +37304,44 @@
         },
         "required" : [ "balances", "entries" ]
       },
+      "ShortageRepayRequest" : {
+        "type" : "object",
+        "properties" : {
+          "accountId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "amount" : {
+            "type" : "string",
+            "description" : "Summa, masalan «200000.00»",
+            "maxLength" : 24,
+            "minLength" : 0
+          },
+          "branchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "employeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "note" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "accountId", "amount", "branchId", "employeeId" ]
+      },
+      "ShortageRepayResult" : {
+        "type" : "object",
+        "properties" : {
+          "cashOp" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "cashOp" ]
+      },
       "ShortageResolution" : {
         "type" : "object",
         "properties" : {
@@ -37391,6 +37391,30 @@
           }
         },
         "required" : [ "kind", "note" ]
+      },
+      "ShortageWriteOffRequest" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "string",
+            "maxLength" : 24,
+            "minLength" : 0
+          },
+          "branchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "employeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "amount", "branchId", "employeeId", "reason" ]
       },
       "SignerOption" : {
         "type" : "object",

@@ -15116,20 +15116,6 @@ export interface components {
         RenameZoneRequest: {
             name: string;
         };
-        RepayRequest: {
-            /** Format: int64 */
-            accountId: number;
-            /** @description Summa, masalan «200000.00» */
-            amount: string;
-            /** Format: int64 */
-            branchId: number;
-            /** Format: int64 */
-            employeeId: number;
-            note?: string;
-        };
-        RepayResult: {
-            cashOp: string;
-        };
         ReportCode: {
             batch?: string;
             branch: string;
@@ -15731,6 +15717,20 @@ export interface components {
             balances: components["schemas"]["ShortageBalance"][];
             entries: components["schemas"]["ShortageEntry"][];
         };
+        ShortageRepayRequest: {
+            /** Format: int64 */
+            accountId: number;
+            /** @description Summa, masalan «200000.00» */
+            amount: string;
+            /** Format: int64 */
+            branchId: number;
+            /** Format: int64 */
+            employeeId: number;
+            note?: string;
+        };
+        ShortageRepayResult: {
+            cashOp: string;
+        };
         ShortageResolution: {
             /** @enum {string} */
             kind: "WRITE_OFF" | "RETURN";
@@ -15750,6 +15750,14 @@ export interface components {
             /** @enum {string} */
             kind: "WRITE_OFF" | "RETURN";
             note: string;
+        };
+        ShortageWriteOffRequest: {
+            amount: string;
+            /** Format: int64 */
+            branchId: number;
+            /** Format: int64 */
+            employeeId: number;
+            reason: string;
         };
         SignerOption: {
             /** Format: int64 */
@@ -27863,7 +27871,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RepayRequest"];
+                "application/json": components["schemas"]["ShortageRepayRequest"];
             };
         };
         responses: {
@@ -27873,7 +27881,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RepayResult"];
+                    "application/json": components["schemas"]["ShortageRepayResult"];
                 };
             };
         };
@@ -27887,7 +27895,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["WriteOffRequest"];
+                "application/json": components["schemas"]["ShortageWriteOffRequest"];
             };
         };
         responses: {
