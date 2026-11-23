@@ -343,7 +343,7 @@ public class TripExpenses {
                        v.plate_number AS vehicle
                 FROM trip_expense x JOIN trip t ON t.id = x.trip_id JOIN employee d ON d.id = t.driver_id JOIN vehicle v ON v.id = t.vehicle_id
                 LEFT JOIN employee db ON db.id = x.decided_by LEFT JOIN cash_op c ON c.id = x.cash_op_id
-                WHERE """ + where + " ORDER BY x.spent_at DESC, x.id DESC LIMIT " + limit);
+                WHERE\s""" + where + " ORDER BY x.spent_at DESC, x.id DESC LIMIT " + limit);
         for (var e : params.entrySet()) {
             q = q.param(e.getKey(), e.getValue());
         }

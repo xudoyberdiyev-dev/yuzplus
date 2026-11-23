@@ -117,3 +117,63 @@ export function shortSplit(
   if (reason === "mixed" && (sum === 0n || rest <= 0n)) return { unpaid, shortage, error: "mixed" };
   return { unpaid, shortage, error: null };
 }
+
+/** HD2: yoʻl xarajati (kassir qarori uchun kerakli maydonlar). */
+export interface ExpenseLike {
+  id: number;
+  kind: string;
+  amount: string;
+  source: string;
+  photos: number;
+  status: string;
+  settled: boolean;
+}
+
+/** Kassir qarori: tasdiqlash yoki rad etish (sabab bilan). */
+export interface ExpenseDecision {
+  approve: boolean;
+  reason: string;
+}
+
+/** Hisob-kitob kutayotgan xarajatlar (hali qabulga kirmagan). */
+export function openExpenses<T extends ExpenseLike>(list: readonly T[]): T[] {
+  return list.filter((x) => !x.settled && x.status === "PENDING");
+}
+
+/** Boshlangʻich qaror: chekli yoki yoqilgʻi boʻlmagan — tasdiqlash; yoqilgʻi chek rasmisiz — rad etish (tasdiqlab boʻlmaydi). */
+export function defaultDecision(x: ExpenseLike): ExpenseDecision {
+  return x.kind === "FUEL" && x.photos === 0 ? { approve: false, reason: "" } : { approve: true, reason: "" };
+}
+
+/**
+ * Topshiriladigan summa (SPEC 5.4, HD2): yigʻilgan naqd + ochiq avans − tasdiqlangan xarajatlar. Manfiy — kassa haydovchiga toʻlaydi.
+ * `rejectedOwed` — rad etilgan, lekin avans yoki yigʻilgan naqddan sarflangan summa (haydovchi topshirmasa — kamomad).
+ */
+export function settlement(
+  cash: string,
+  advance: string,
+  expenses: readonly ExpenseLike[],
+  decisions: Readonly<Record<number, ExpenseDecision>>,
+): { expected: string; approved: string; rejectedOwed: string; missingReason: boolean; fuelWithoutPhoto: boolean } {
+  let approved = 0n;
+  let owed = 0n;
+  let missingReason = false;
+  let fuelWithoutPhoto = false;
+  for (const x of expenses) {
+    const d = decisions[x.id] ?? defaultDecision(x);
+    if (d.approve) {
+      approved += toCents(x.amount);
+      if (x.kind === "FUEL" && x.photos === 0) fuelWithoutPhoto = true;
+    } else {
+      if (!d.reason.trim()) missingReason = true;
+      if (x.source !== "OWN") owed += toCents(x.amount);
+    }
+  }
+  return {
+    expected: fromCents(toCents(cash) + toCents(advance) - approved),
+    approved: fromCents(approved),
+    rejectedOwed: fromCents(owed),
+    missingReason,
+    fuelWithoutPhoto,
+  };
+}

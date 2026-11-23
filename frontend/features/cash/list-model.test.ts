@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { dayBadge, groupTrips, handoverDiff, prevIsoDay, shortSplit, sumMoney } from "./list-model";
+import {
+  dayBadge,
+  defaultDecision,
+  groupTrips,
+  handoverDiff,
+  openExpenses,
+  prevIsoDay,
+  settlement,
+  shortSplit,
+  sumMoney,
+} from "./list-model";
 
 const row = (stopId: number, tripId: number, amount: string) => ({
   stopId,
@@ -75,5 +85,36 @@ describe("KT1: kamomad taqsimoti", () => {
     });
     expect(shortSplit("1500.00", "mixed", rows, {}).error).toBe("mixed");
     expect(shortSplit("1500.00", "mixed", rows, { 1: "1500" }).error).toBe("mixed");
+  });
+});
+
+describe("HD2: yoʻl xarajatlari hisob-kitobi", () => {
+  const fuel = { id: 1, kind: "FUEL", amount: "1200.00", source: "ADVANCE", photos: 1, status: "PENDING", settled: false };
+  const meal = { id: 2, kind: "MEAL", amount: "300.00", source: "OWN", photos: 0, status: "PENDING", settled: false };
+  const other = { id: 3, kind: "OTHER", amount: "500.00", source: "COLLECTED", photos: 0, status: "PENDING", settled: false };
+
+  it("boshlangʻich qaror: yoqilgʻi chek rasmisiz — rad etiladi", () => {
+    expect(defaultDecision(fuel).approve).toBe(true);
+    expect(defaultDecision({ ...fuel, photos: 0 }).approve).toBe(false);
+    expect(defaultDecision(meal).approve).toBe(true);
+  });
+
+  it("kutilgan = naqd + avans − tasdiqlangan; rad etilgan (oʻz pulidan emas) — haydovchidan qarz", () => {
+    const r = settlement("4000.00", "3000.00", [fuel, meal, other], { 3: { approve: false, reason: "Chek yoʻq" } });
+    expect(r.expected).toBe("5500.00");
+    expect(r.approved).toBe("1500.00");
+    expect(r.rejectedOwed).toBe("500.00");
+    expect(r.missingReason).toBe(false);
+    const r2 = settlement("4000.00", "0.00", [meal], { 2: { approve: false, reason: " " } });
+    expect(r2.missingReason).toBe(true);
+    expect(r2.rejectedOwed).toBe("0.00");
+  });
+
+  it("xarajat naqddan koʻp — manfiy (kassa haydovchiga toʻlaydi)", () => {
+    expect(settlement("1000.00", "0.00", [{ ...meal, kind: "REPAIR", amount: "1500.00" }], {}).expected).toBe("-500.00");
+  });
+
+  it("faqat hisob-kitob kutayotganlar", () => {
+    expect(openExpenses([fuel, { ...meal, settled: true, status: "APPROVED" }]).map((x) => x.id)).toEqual([1]);
   });
 });
