@@ -765,7 +765,8 @@ class Trips {
         // HD2: topshiriladigan = yig'ilgan naqd + avans − tasdiqlangan xarajatlar (manfiy — kassa haydovchiga to'laydi, aynan shu summa)
         Money expected = collected.plus(open.advance()).minus(open.approved());
         // Manfiy — kassa haydovchiga to'laydi: ortiqcha bo'lmaydi (sanalgan ≤ kutilgan); kam bo'lsa (a)/(b) taqsimoti pastda tekshiriladi
-        if (received.isNegative() && received.compareTo(expected) > 0) {
+        // (tasdiqlangan xarajat bo'lmasa kassa haydovchiga to'lamaydi)
+        if (received.isNegative() && (open.approved().isZero() || received.compareTo(expected) > 0)) {
             throw YuzplusException.badRequest("trip.cashReceivedInvalid");
         }
         Money diff = received.minus(expected);
