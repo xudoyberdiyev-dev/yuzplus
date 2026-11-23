@@ -243,6 +243,8 @@ Eslatma: oldingi «Omborchi» va «Ombor nazoratchisi» («Ombor menejeri») rol
   - Hammasi bitta tranzaksiyada (`FOR UPDATE`, audit); ruxsat — kassa ruxsatlari.
   - **Kamomadni yopish:** kassa kirimi «Haydovchi kamomadini qaytardi» (xodim bo'yicha) yoki Direktor «Hisobdan chiqarish» (sabab bilan). Oylikdan ushlash yo'q (dasturda ish haqi moduli yo'q). Hisobot: Xodimlar → kamomadlar (ochiq/yopilgan), xodim kartasida qoldiq.
   - Keyin (HD2): reysdagi yo'l xarajatlari shu qabul oynasida tasdiqlanadi/rad etiladi; rad etilgan xarajat — haydovchi kamomadi; topshiriladigan = yig'ilgan naqd + avans − tasdiqlangan xarajatlar.
+  - Amalga oshirish (23.11): kamomad KO chiqim «Haydovchi kamomadi» (manba SHORTAGE — xarajat hisobotiga kirmaydi, qo'lda bekor qilinmaydi) + `employee_shortage` jurnali va qoldig'i; «Qaytardi» — KO kirim «Haydovchi kamomadini qaytardi»; sahifa Kassa → «Kamomadlar» (`/cash/shortages`).
+- **GPS, push, APK (HD1, 23.11.2026).** Joylashuv faqat «Yetib keldim» va bekat natijasida bir martalik olinadi (ruxsat so'raladi, bermasa ham ishlaydi; fon kuzatuvi yo'q), oflayn navbat orqali; rahbar reys sahifasida xronologiyani ko'radi. Push — Expo Notifications: qurilma tokeni serverda, har bildirishnoma (yangi reys, reys o'zgardi/bekor qilindi, kamomad …) xodimning qurilmasiga ham ketadi; Android uchun FCM kaliti Expo loyihasiga egasi yuklaydi. APK — GitHub Releases; ommaviy sahifa `/app` (QR kod, o'rnatish yo'riqnomasi uch tilda).
 
 ### 5.5 Pul
 
