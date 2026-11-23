@@ -235,6 +235,14 @@ Eslatma: oldingi «Omborchi» va «Ombor nazoratchisi» («Ombor menejeri») rol
 - **Haydovchi mobil ilovasi (20.11.2026).** Login + parol bir marta → qurilma tokeni, keyin 4 xonali PIN (telefonda; 5 xato → login qayta). Ekranlar: Bosh (faol reys yo'q / oxirgi reyslar), Yuklash (qutilarni sanab «Qabul qildim» → «Reysni boshlash»), Keyingi manzil (yo'l, qo'ng'iroq, «Yetib keldim»), Bekatda (rasm majburiy, mijoz imzosi ixtiyoriy, naqd summa), Qisman / Yetkazilmadi (sabab), Reys yakuni (Kassirga topshiriladigan naqd, omborga qaytadigan tovar), Tarix, Profil. **Naqd kam olinsa** — farq mijoz qarzida qoladi (sotuv qarzi faqat olingan naqd bilan kamayadi); ko'p olish mumkin emas. Internet yo'q bo'lsa amallar telefonda navbatga yoziladi va tartib bilan yuboriladi.
 - **Qaytgan tovar** ikki bosqichda o'tadi: «Qaytmoqda» → Ombor mudiri sanab qabul qiladi → Karantin. Farq bo'lsa muammo sifatida yoziladi. Qisman qaytgan tovar asl sotuv narxida qaytarish (QM) sifatida yoziladi.
 - **Haydovchidagi pul:** naqd pul → «Haydovchidagi pul» → Kassir qabul qiladi → MT yoziladi, mijoz qarzi kamayadi.
+- **Naqdni kam/ortiq qabul qilish (egasi qarori 23.11.2026, KT1).** Kassir HAQIQATDA SANAGAN summani qabul qiladi. Farq ≠ 0 bo'lsa izoh majburiy va sabab tanlanadi:
+  - **(a) «Mijoz toʻlamagan»** — kassir buyurtma(lar) va summani tanlaydi → o'sha bekat(lar)ning olingan naqdi kamayadi (audit: eski/yangi qiymat), farq mijoz qarzida qoladi (sotuv qarzi o'zgarmaydi, faqat to'lov kam yoziladi).
+  - **(b) «Haydovchi kamomadi»** — mijozlar to'lovi haydovchi aytgan summada TO'LIQ yoziladi, farq haydovchi (xodim) kamomadi sifatida qo'shiladigan jurnalga yoziladi (summa, reys, sabab, qabul qilgan kassir); Filial rahbari va Direktorga bildirishnoma.
+  - (a) va (b) aralash bo'lishi mumkin — summalar yig'indisi farqqa teng bo'lishi shart.
+  - **Ortiqcha** — izoh bilan mijoz avansi/to'lovi sifatida yoziladi (kassir mijozni tanlaydi; standart — reysning oxirgi bekati).
+  - Hammasi bitta tranzaksiyada (`FOR UPDATE`, audit); ruxsat — kassa ruxsatlari.
+  - **Kamomadni yopish:** kassa kirimi «Haydovchi kamomadini qaytardi» (xodim bo'yicha) yoki Direktor «Hisobdan chiqarish» (sabab bilan). Oylikdan ushlash yo'q (dasturda ish haqi moduli yo'q). Hisobot: Xodimlar → kamomadlar (ochiq/yopilgan), xodim kartasida qoldiq.
+  - Keyin (HD2): reysdagi yo'l xarajatlari shu qabul oynasida tasdiqlanadi/rad etiladi; rad etilgan xarajat — haydovchi kamomadi; topshiriladigan = yig'ilgan naqd + avans − tasdiqlangan xarajatlar.
 
 ### 5.5 Pul
 
