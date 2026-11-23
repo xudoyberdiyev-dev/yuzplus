@@ -2788,6 +2788,29 @@ class OrderIT {
     void tripCashOverageGoesToChosenCustomerAndParallelAcceptIsSingle() throws Exception {
         Place p = place();
         CashTrip ct = cashTrip(p, 1, "1000", "1000");
+        // HD1: bir martalik GPS nuqta — faqat o'z reysi, koordinata chegarasi; reys kartasida ko'rinadi
+        String points = "/api/trips/" + ct.trip() + "/points";
+        send(post(points), ct.driverSession(), "{\"stopId\":" + ct.stops()[0] + ",\"kind\":\"ARRIVED\",\"lat\":41.311081,\"lng\":69.240562,\"accuracy\":12}")
+                .andExpect(status().isNoContent());
+        send(post(points), ct.driverSession(), "{\"kind\":\"DELIVERED\",\"lat\":91,\"lng\":69.2}").andExpect(status().isBadRequest());
+        send(post(points), ct.driverSession(), "{\"stopId\":999999999,\"kind\":\"DELIVERED\",\"lat\":41.3,\"lng\":69.2}").andExpect(status().isNotFound());
+        send(post(points), loginAs("DRIVER", p.branchId()), "{\"kind\":\"DELIVERED\",\"lat\":41.3,\"lng\":69.2}").andExpect(status().isForbidden());
+        mvc.perform(get("/api/trips/" + ct.trip()).cookie(loginAs("WAREHOUSE_MANAGER", p.branchId())))
+                .andExpect(jsonPath("$.points.length()").value(1))
+                .andExpect(jsonPath("$.points[0].kind").value("ARRIVED"))
+                .andExpect(jsonPath("$.points[0].lat").value("41.311081"))
+                .andExpect(jsonPath("$.points[0].stopId").value(ct.stops()[0]));
+        // HD1: yangi reys haqida haydovchiga bildirishnoma; push tokeni ro'yxatdan o'tadi
+        assertThat(jdbc.sql("SELECT count(*) FROM notification WHERE employee_id = :e AND kind = 'trip.assigned'").param("e", ct.driver())
+                        .query(Long.class).single())
+                .isEqualTo(1);
+        String token = "ExponentPushToken[t" + UUID.randomUUID().toString().substring(0, 8) + "]";
+        send(post("/api/devices"), ct.driverSession(), "{\"token\":\"" + token + "\",\"platform\":\"ANDROID\"}").andExpect(status().isNoContent());
+        send(post("/api/devices"), ct.driverSession(), "{\"token\":\"abc\",\"platform\":\"ANDROID\"}").andExpect(status().isBadRequest());
+        assertThat(jdbc.sql("SELECT employee_id FROM device_token WHERE token = :t AND active").param("t", token).query(Long.class).single())
+                .isEqualTo(ct.driver());
+        send(post("/api/devices/remove"), ct.driverSession(), "{\"token\":\"" + token + "\"}").andExpect(status().isNoContent());
+        assertThat(jdbc.sql("SELECT active FROM device_token WHERE token = :t").param("t", token).query(Boolean.class).single()).isFalse();
         Cookie cashier = loginAs("CASHIER", p.branchId());
         long k = kassa(p.branchId());
         String accept = "/api/trips/" + ct.trip() + "/cash/accept";

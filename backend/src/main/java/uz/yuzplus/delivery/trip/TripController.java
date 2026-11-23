@@ -257,6 +257,22 @@ class TripController {
         return trips.find(actor(), id);
     }
 
+    record PointRequest(@Schema(nullable = true) Long stopId, @jakarta.validation.constraints.NotNull(message = "{validation.required}") TripModels.PointKind kind,
+            @jakarta.validation.constraints.NotNull(message = "{validation.required}") @jakarta.validation.constraints.DecimalMin("-90")
+            @jakarta.validation.constraints.DecimalMax("90") java.math.BigDecimal lat,
+            @jakarta.validation.constraints.NotNull(message = "{validation.required}") @jakarta.validation.constraints.DecimalMin("-180")
+            @jakarta.validation.constraints.DecimalMax("180") java.math.BigDecimal lng,
+            @Schema(nullable = true) @jakarta.validation.constraints.Min(0) Integer accuracy,
+            @Schema(nullable = true, description = "Qurilma vaqti (oflayn navbat)") java.time.Instant recordedAt) {}
+
+    @PostMapping("/{id}/points")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('trip.driver')")
+    @Operation(summary = "GPS nuqta (HD1)", description = "Bir martalik joylashuv: «Yetib keldim» yoki bekat natijasi. Fon kuzatuvi yoʻq.")
+    void point(@PathVariable long id, @Valid @RequestBody PointRequest r) {
+        trips.addPoint(actor(), id, r.stopId(), r.kind(), r.lat(), r.lng(), r.accuracy(), r.recordedAt());
+    }
+
     @PostMapping("/{id}/finish")
     @PreAuthorize("hasAuthority('trip.driver')")
     @Operation(summary = "«Reysni yakunlash»", description = "Qaytgan tovar yoki naqd pul bo'lsa — «Qaytish kutilmoqda».")

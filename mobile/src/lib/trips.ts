@@ -49,3 +49,11 @@ export function partial(tripId: number, stopId: number, reason: string, lines: {
 export function finishTrip(tripId: number): Promise<{ status: TripDetail["status"] }> {
   return api<{ status: TripDetail["status"] }>(`/api/trips/${tripId}/finish`, { method: "POST" });
 }
+
+/** HD1: bir martalik GPS nuqta (fon kuzatuvi yoʻq). */
+export function postPoint(
+  tripId: number,
+  body: { stopId: number | null; kind: string; lat: number; lng: number; accuracy: number | null; recordedAt: string },
+): Promise<void> {
+  return api<void>(`/api/trips/${tripId}/points`, { method: "POST", body });
+}

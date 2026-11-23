@@ -1,11 +1,17 @@
+import { useEffect } from "react";
 import { Tabs } from "expo-router";
 import { CalendarClock, Truck, UserRound } from "lucide-react-native";
 import { useT } from "../../i18n";
+import { registerPush } from "../../lib/push";
 import { color, font } from "../../ui/theme";
 
 /** Pastki menyu (dizayn: Reys · Tarix · Profil). */
 export default function TabsLayout() {
   const { t } = useT();
+  // HD1: kirgan haydovchi — push tokeni (bir marta, ekran ochilganda)
+  useEffect(() => {
+    void registerPush();
+  }, []);
   return (
     <Tabs
       screenOptions={{

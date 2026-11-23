@@ -51,7 +51,21 @@
           "microphonePermission": false
         }
       ],
-      "./plugins/with-release-signing"
+      "./plugins/with-release-signing",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Yetkazish joyini belgilash uchun joylashuv kerak (faqat «Yetib keldim» va natija belgilanganda).",
+          "isAndroidBackgroundLocationEnabled": false,
+          "isIosBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#123C3A"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

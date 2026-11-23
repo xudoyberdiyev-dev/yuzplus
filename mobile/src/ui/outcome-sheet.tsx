@@ -6,6 +6,7 @@ import { ApiError } from "../lib/api";
 import { formatMoney, formatTiyin, toTiyin } from "../lib/format";
 import { returnedAmount, tiyinToApi } from "../lib/stop-view";
 import { enqueue, isNetworkError } from "../lib/queue";
+import { recordPoint } from "../lib/location";
 import { partial, stopLines, undeliver } from "../lib/trips";
 import type { TripStop } from "../lib/trip-view";
 import { useAsync } from "../lib/use-async";
@@ -52,6 +53,7 @@ export function OutcomeSheet({
       const body = (lines.data ?? []).map((l) => ({ saleLineId: l.id, qty: Math.min(returned[l.id] ?? 0, l.qty) })).filter((l) => l.qty > 0);
       // Naqd toʻlovda mijoz qolgan summani toʻlaydi (taxminiy; server oshib ketsa rad etadi)
       const cash = stop.paymentType === "CASH" ? tiyinToApi(pays) : null;
+      void recordPoint(tripId, stop.id, tab === "partial" ? "PARTIAL" : "UNDELIVERED");
       try {
         if (tab === "partial") await partial(tripId, stop.id, t("sheet.partialReason"), body, cash);
         else await undeliver(tripId, stop.id, reasonText);

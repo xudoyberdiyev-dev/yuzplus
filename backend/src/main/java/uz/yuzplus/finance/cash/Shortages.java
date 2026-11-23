@@ -73,7 +73,7 @@ class Shortages implements DriverShortages {
         Money next = move(branchId, employeeId, amount);
         audit.record(AuditEntry.of("shortage.recorded", "employee_shortage", id)
                 .change(null, Map.of("employee", employeeId, "trip", tripNumber, "amount", amount.toString(), "balance", next.toString(), "ko", ko.number())));
-        notifications.notify("cash.approve", branchId, List.of(), notifications.message("shortage.recorded", "shortage.recorded", "/cash/shortages",
+        notifications.notify("cash.approve", branchId, List.of(employeeId), notifications.message("shortage.recorded", "shortage.recorded", "/cash/shortages",
                 "shortage.recorded:" + id, employee, amount.format(), tripNumber));
     }
 

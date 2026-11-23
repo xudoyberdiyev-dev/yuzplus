@@ -5,6 +5,7 @@ import { loginErrorKind, type LoginErrorKind } from "./api-errors";
 import { clearPin } from "./pin-store";
 import type { components } from "./api-schema";
 import { clearSession, getToken, saveSession } from "./session";
+import { unregisterPush } from "./push";
 
 // Mobil kirish (M2): POST /api/mobile/auth/login → qurilma tokeni (faqat haydovchi). Keyin ilovada PIN.
 export type { LoginErrorKind };
@@ -62,6 +63,7 @@ export async function hasSession(): Promise<boolean> {
 
 /** Chiqish: server tokenni bekor qiladi (internet boʻlmasa ham telefondagi maʼlumot oʻchiriladi). */
 export async function logout(): Promise<void> {
+  await unregisterPush();
   try {
     await api("/api/mobile/auth/logout", { method: "POST" });
   } catch {

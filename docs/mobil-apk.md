@@ -66,3 +66,10 @@ Secrets qoʻyilgach keyingi yigʻishdan boshlab APK egasining kaliti bilan chiqa
 1. Sozlamalar → Xodimlar: haydovchiga login va **vaqtinchalik parol** bering (rol — Haydovchi).
 2. Haydovchi APK ni oʻrnatib, shu login va vaqtinchalik parol bilan kiradi → ilova oʻsha ekranning oʻzida **yangi parol** soʻraydi (kamida 8 belgi, harf va raqam) → keyin 4 raqamli PIN oʻrnatadi.
 3. Brauzerga kirish shart emas. Yangi parol keyin brauzerda ham ishlaydi.
+
+## Yuklab olish sahifasi va push (HD1, 23.11)
+
+- **Yuklab olish:** `https://<sayt>/app` — ommaviy sahifa (kirishsiz): QR kod, «APK yuklab olish» tugmasi (GitHub Releases → oxirgi barqaror reliz `haydovchi-v…`), sinov versiyasi havolasi va oʻrnatish yoʻriqnomasi (uz-Latn / uz-Cyrl / ru). QR ni chop etib omborga osib qoʻyish mumkin.
+- **GPS:** «Yetib keldim» va bekat natijasi («Yetkazildi», «Qisman», «Yetkazilmadi») bosilganda **bir martalik** joylashuv olinadi (`POST /api/trips/{id}/points`, oflayn navbat bilan). Fon kuzatuvi yoʻq. Ruxsat berilmasa ilova ishlayveradi. Rahbar reys sahifasida «Reys kuzatuvi (GPS)» boʻlimida koʻradi (xaritada ochish havolasi).
+- **Push (Expo Notifications):** ilova kirgach qurilma tokenini `POST /api/devices` ga yozadi; chiqishda oʻchiradi. Bildirishnoma (yangi reys, reys oʻzgardi/bekor qilindi, haydovchi kamomadi va boshqalar) yozilganda backend Expo push xizmatiga yuboradi. Oʻchirish: `YUZPLUS_PUSH_ENABLED=false`.
+- **Android uchun FCM kaliti (egasi, bir marta):** Firebase konsolida loyiha → Android ilova `uz.yuzplus.haydovchi` → «Service account» JSON kalitini yuklab oling → `expo.dev` → loyiha `diriver-app` → Credentials → Android → «FCM V1 service account key» ga yuklang. Kalit yuklanmaguncha push telefonga yetmaydi, lekin ilova ichidagi va veb bildirishnomalar ishlayveradi. Kalit fayli repoga/chatga **qoʻyilmaydi**.

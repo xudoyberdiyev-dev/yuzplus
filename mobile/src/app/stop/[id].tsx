@@ -9,6 +9,7 @@ import { ApiError } from "../../lib/api";
 import { formatTiyin } from "../../lib/format";
 import { cashDigits, checkCash, digitsToTiyin, groupDigits, tiyinToApi, tiyinToDigits } from "../../lib/stop-view";
 import { enqueue, isNetworkError } from "../../lib/queue";
+import { recordPoint } from "../../lib/location";
 import { loadTrip } from "../../lib/trip-source";
 import { deliver, uploadPhoto } from "../../lib/trips";
 import { stops, stopToCollect, type TripStop } from "../../lib/trip-view";
@@ -84,6 +85,7 @@ export default function Stop() {
   async function markDelivered() {
     setBusy("deliver");
     setError(null);
+    void recordPoint(tripId, stop!.id, "DELIVERED");
     try {
       await deliver(tripId, stop!.id, isCash ? tiyinToApi(collected) : null);
       router.replace("/home");

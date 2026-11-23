@@ -8,6 +8,7 @@ import { formatDate, formatTiyin, weekday } from "../../lib/format";
 import { getMe, type Me } from "../../lib/session";
 import { ApiError } from "../../lib/api";
 import { finishTrip, myHistory } from "../../lib/trips";
+import { recordPoint } from "../../lib/location";
 import { TripSummary } from "../../ui/trip-summary";
 import { isOffline, loadTrip } from "../../lib/trip-source";
 import { useQueueInfo } from "../../lib/use-queue";
@@ -221,7 +222,13 @@ function NextStopCard({ trip, stop }: { trip: TripDetail; stop: TripStop }) {
         <Button label={t("route.road")} icon={Navigation} variant="secondary" disabled={!map} onPress={() => map && void Linking.openURL(map)} style={{ flex: 1, height: 44 }} />
         <Button label={t("route.call")} icon={Phone} variant="secondary" disabled={!tel} onPress={() => tel && void Linking.openURL(tel)} style={{ flex: 1, height: 44 }} />
       </View>
-      <Button label={t("route.arrived")} onPress={() => router.push({ pathname: "/stop/[id]", params: { id: String(stop.id), trip: String(trip.id) } })} />
+      <Button
+        label={t("route.arrived")}
+        onPress={() => {
+          void recordPoint(trip.id, stop.id, "ARRIVED");
+          router.push({ pathname: "/stop/[id]", params: { id: String(stop.id), trip: String(trip.id) } });
+        }}
+      />
     </Card>
   );
 }

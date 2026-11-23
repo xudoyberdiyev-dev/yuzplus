@@ -5,7 +5,11 @@ export type QueuedAction =
   | { kind: "photo"; tripId: number; stopId: number; uri: string; signature: boolean }
   | { kind: "deliver"; tripId: number; stopId: number; cash: string | null }
   | { kind: "undeliver"; tripId: number; stopId: number; reason: string }
-  | { kind: "partial"; tripId: number; stopId: number; reason: string; lines: { saleLineId: number; qty: number }[]; cash: string | null };
+  | { kind: "partial"; tripId: number; stopId: number; reason: string; lines: { saleLineId: number; qty: number }[]; cash: string | null }
+  | { kind: "point"; tripId: number; stopId: number | null; point: PointKind; lat: number; lng: number; accuracy: number | null; recordedAt: string };
+
+/** HD1: bir martalik GPS nuqta turi («Yetib keldim» yoki bekat natijasi). */
+export type PointKind = "ARRIVED" | "DELIVERED" | "PARTIAL" | "UNDELIVERED";
 
 export type Queued = QueuedAction & { id: string; at: string };
 

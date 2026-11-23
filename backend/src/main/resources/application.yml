@@ -59,6 +59,9 @@ yuzplus:
   telegram:
     bot-token: ${YUZPLUS_TELEGRAM_BOT_TOKEN:}
     chat-id: ${YUZPLUS_TELEGRAM_CHAT_ID:}
+  # HD1: Expo push (mobil haydovchi ilovasi); oʻchirish — YUZPLUS_PUSH_ENABLED=false
+  push:
+    enabled: ${YUZPLUS_PUSH_ENABLED:true}
   trips:
     # «Qaytish kutilmoqda»da shuncha soatdan ortiq tursa — Ombor mudiri / kassirga eslatma (T12-audit №23)
     return-wait-hours: 4

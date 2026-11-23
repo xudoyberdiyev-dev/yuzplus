@@ -49,9 +49,11 @@ class Trips {
     private final uz.yuzplus.finance.CustomerPayments payments;
     private final TripOrderListener settle;
     private final uz.yuzplus.finance.DriverShortages shortages;
+    private final uz.yuzplus.notification.Notifications notifications;
 
     Trips(JdbcClient jdbc, OrderDispatch dispatch, DocumentSequenceService numbers, AuditLog audit, uz.yuzplus.finance.CustomerPayments payments,
-            TripOrderListener settle, uz.yuzplus.finance.DriverShortages shortages) {
+            TripOrderListener settle, uz.yuzplus.finance.DriverShortages shortages, uz.yuzplus.notification.Notifications notifications) {
+        this.notifications = notifications;
         this.shortages = shortages;
         this.payments = payments;
         this.settle = settle;
@@ -211,6 +213,7 @@ class Trips {
             dispatch.toLoading(actor, o.id());
         }
         audit.record(AuditEntry.of("trip.create", "trip", id).change(null, Map.of("number", number, "orders", orders.size(), "places", places)));
+        driverNotice(id, "trip.assigned", String.valueOf(orders.size()));
         return id;
     }
 
@@ -259,6 +262,7 @@ class Trips {
                 .param("id", id)
                 .update();
         audit.record(AuditEntry.of("trip.cancel", "trip", id).withReason(reason.strip()));
+        driverNotice(id, "trip.cancelled", reason.strip());
     }
 
     private record Planned(long id, long branchId, long vehicleId) {}
@@ -312,6 +316,7 @@ class Trips {
                 .param("p", places).param("t", tripId).update();
         audit.record(AuditEntry.of("trip.addOrders", "trip", tripId)
                 .change(null, Map.of("orders", orders.stream().map(DispatchOrder::number).toList(), "places", places)));
+        driverNotice(tripId, "trip.changed", "+" + orderIds.size());
     }
 
     /**
@@ -367,6 +372,7 @@ class Trips {
                 .update();
         audit.record(AuditEntry.of("trip.update", "trip", tripId)
                 .change(null, Map.of("vehicleId", r.vehicleId(), "driverId", r.driverId(), "tripDate", r.tripDate().toString())));
+        driverNotice(tripId, "trip.changed", "");
     }
 
     /** Bekatlar tartibi (prototip TripPage — sudrab): faqat «Rejalashtirilgan», ro'yxat reysning faol bekatlari bilan aynan mos. */
@@ -391,6 +397,7 @@ class Trips {
         }
         jdbc.sql("UPDATE trip SET updated_at = now(), version = version + 1 WHERE id = :t").param("t", tripId).update();
         audit.record(AuditEntry.of("trip.reorder", "trip", tripId).change(null, Map.of("stops", stopIds)));
+        driverNotice(tripId, "trip.changed", "");
     }
 
     /**
@@ -419,6 +426,7 @@ class Trips {
                 .param("p", s.places()).param("t", tripId).update();
         dispatch.backToDocumenting(actor, orderId, reason.strip());
         audit.record(AuditEntry.of("trip.removeOrder", "trip", tripId).change(Map.of("order", orderId), null).withReason(reason.strip()));
+        driverNotice(tripId, "trip.changed", "−1");
     }
 
     // ===== Haydovchi (SPEC 5.2 №8–9) =====
@@ -883,7 +891,7 @@ class Trips {
                                 rs.getTimestamp("created_at").toInstant(),
                                 rs.getTimestamp("started_at") == null ? null : rs.getTimestamp("started_at").toInstant(), rs.getString("cancel_reason"),
                                 List.of(), rs.getString("expeditor"), rs.getString("driver_phone"), rs.getString("plate_number"),
-                                rs.getString("vehicle_model"), rs.getBoolean("has_refrigerator"))
+                                rs.getString("vehicle_model"), rs.getBoolean("has_refrigerator"), List.of())
                         : null)
                 .list()
                 .stream()
@@ -915,7 +923,58 @@ class Trips {
         return new TripDetail(head.id(), head.number(), head.branchId(), head.tripDate(), head.status(), head.vehicleId(), head.vehicle(),
                 head.driverId(), head.driver(), head.note(), head.places(), head.total(), head.createdBy(), head.createdAt(),
                 head.startedAt(), head.cancelReason(), stops, head.expeditor(), head.driverPhone(), head.plateNumber(), head.vehicleModel(),
-                head.refrigerator());
+                head.refrigerator(), points(id));
+    }
+
+    private List<TripModels.TripPoint> points(long tripId) {
+        return jdbc.sql("SELECT stop_id, kind, lat, lng, accuracy_m, recorded_at FROM trip_point WHERE trip_id = :t ORDER BY recorded_at, id")
+                .param("t", tripId)
+                .query((rs, n) -> new TripModels.TripPoint(rs.getObject("stop_id", Long.class), TripModels.PointKind.valueOf(rs.getString("kind")),
+                        rs.getBigDecimal("lat").toPlainString(), rs.getBigDecimal("lng").toPlainString(), rs.getObject("accuracy_m", Integer.class),
+                        rs.getTimestamp("recorded_at").toInstant()))
+                .list();
+    }
+
+    /**
+     * HD1: bir martalik GPS nuqta (haydovchi o'z reysida; «Yetib keldim» yoki bekat natijasi). Oflayn navbatdan kech kelishi mumkin:
+     * qurilma vaqti 7 kundan eski yoki kelajakda bo'lsa — server vaqti olinadi. Bekor qilingan reysga yozilmaydi.
+     */
+    @Transactional
+    void addPoint(Actor actor, long tripId, Long stopId, TripModels.PointKind kind, BigDecimal lat, BigDecimal lng, Integer accuracy,
+            java.time.Instant recordedAt) {
+        record T(long branchId, long driverId, String status) {}
+        T t = jdbc.sql("SELECT branch_id, driver_id, status FROM trip WHERE id = :id")
+                .param("id", tripId)
+                .query((rs, n) -> new T(rs.getLong("branch_id"), rs.getLong("driver_id"), rs.getString("status")))
+                .optional()
+                .filter(x -> actor.canAccessBranch(x.branchId()) && x.driverId() == actor.employeeId())
+                .orElseThrow(() -> YuzplusException.forbidden("trip.notDriver"));
+        if (TripStatus.CANCELLED.name().equals(t.status())) {
+            throw YuzplusException.conflict("trip.notInTransit");
+        }
+        if (stopId != null && jdbc.sql("SELECT count(*) FROM trip_stop WHERE id = :s AND trip_id = :t").param("s", stopId).param("t", tripId)
+                .query(Long.class).single() == 0) {
+            throw YuzplusException.notFound("error.notFound");
+        }
+        java.time.Instant now = java.time.Instant.now();
+        java.time.Instant at = recordedAt == null || recordedAt.isAfter(now.plusSeconds(300)) || recordedAt.isBefore(now.minus(java.time.Duration.ofDays(7)))
+                ? now : recordedAt;
+        jdbc.sql("""
+                INSERT INTO trip_point (trip_id, stop_id, kind, lat, lng, accuracy_m, recorded_at, created_by)
+                VALUES (:t, :s, :k, :lat, :lng, :acc, :at, :by)""")
+                .param("t", tripId).param("s", stopId).param("k", kind.name())
+                .param("lat", lat.setScale(6, java.math.RoundingMode.HALF_UP)).param("lng", lng.setScale(6, java.math.RoundingMode.HALF_UP))
+                .param("acc", accuracy).param("at", java.sql.Timestamp.from(at)).param("by", actor.employeeId())
+                .update();
+    }
+
+    /** HD1: haydovchiga bildirishnoma (ilova ichida va push): yangi reys / reys o'zgardi / bekor qilindi. */
+    private void driverNotice(long tripId, String text, String detail) {
+        record D(long driverId, String number) {}
+        D d = jdbc.sql("SELECT driver_id, number FROM trip WHERE id = :t").param("t", tripId)
+                .query((rs, n) -> new D(rs.getLong("driver_id"), rs.getString("number"))).single();
+        notifications.notifyEmployees(List.of(d.driverId()), notifications.message(text, text, "/driver",
+                text + ":" + tripId + ":" + java.util.UUID.randomUUID(), d.number(), detail));
     }
 
     private static String money(BigDecimal v) {

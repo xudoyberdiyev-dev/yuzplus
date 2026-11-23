@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 /** Spring Session cookie nomi (backend: SecurityConfig.SESSION_COOKIE). */
 export const SESSION_COOKIE = "YUZPLUS_SESSION";
 
-const PUBLIC_PATHS = ["/login", "/ui-kit"];
+const PUBLIC_PATHS = ["/login", "/ui-kit", "/app"];
 
 /**
  * Optimistik tekshiruv: sessiya cookie'si boʻlmasa — login sahifasiga.

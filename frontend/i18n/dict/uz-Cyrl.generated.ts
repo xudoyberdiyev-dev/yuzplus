@@ -20,6 +20,7 @@ import m_inventoryCounts from "@/messages/uz-Cyrl/inventoryCounts.json";
 import m_invoices from "@/messages/uz-Cyrl/invoices.json";
 import m_language from "@/messages/uz-Cyrl/language.json";
 import m_login from "@/messages/uz-Cyrl/login.json";
+import m_mobileApp from "@/messages/uz-Cyrl/mobileApp.json";
 import m_nav from "@/messages/uz-Cyrl/nav.json";
 import m_navGroups from "@/messages/uz-Cyrl/navGroups.json";
 import m_notifications from "@/messages/uz-Cyrl/notifications.json";
@@ -75,6 +76,7 @@ export const uzCyrl = {
   invoices: m_invoices,
   language: m_language,
   login: m_login,
+  mobileApp: m_mobileApp,
   nav: m_nav,
   navGroups: m_navGroups,
   notifications: m_notifications,

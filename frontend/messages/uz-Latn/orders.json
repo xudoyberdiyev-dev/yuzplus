@@ -1023,7 +1023,15 @@
     "bCtrl": "Nazoratdagi",
     "bShort": "{n} dona yetishmadi",
     "dateWarn": "Yetkazish sanasi: {d}",
-    "more": "Boshqa amallar"
+    "more": "Boshqa amallar",
+    "gpsTitle": "Reys kuzatuvi (GPS)",
+    "gpsOpen": "Xaritada ochish",
+    "gps": {
+      "ARRIVED": "Yetib keldi",
+      "DELIVERED": "Yetkazildi",
+      "PARTIAL": "Qisman yetkazildi",
+      "UNDELIVERED": "Yetkazilmadi"
+    }
   },
   "markImport": {
     "open": "Excel'dan yuklash",
