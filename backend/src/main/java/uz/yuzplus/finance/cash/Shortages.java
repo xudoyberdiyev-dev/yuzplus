@@ -35,13 +35,13 @@ class Shortages implements DriverShortages {
 
     enum Kind { SHORTAGE, REPAID, WRITTEN_OFF }
 
-    record Balance(long employeeId, String employee, long branchId, String branch, String balance, String total, String closed) {}
+    record ShortageBalance(long employeeId, String employee, long branchId, String branch, String balance, String total, String closed) {}
 
-    record Entry(long id, long employeeId, String employee, long branchId, Kind kind, String amount, @Schema(nullable = true) Long tripId,
+    record ShortageEntry(long id, long employeeId, String employee, long branchId, Kind kind, String amount, @Schema(nullable = true) Long tripId,
             @Schema(nullable = true) String trip, @Schema(nullable = true) String cashOp, @Schema(nullable = true) String note, String createdBy,
             Instant createdAt) {}
 
-    record Overview(List<Balance> balances, List<Entry> entries) {}
+    record ShortageOverview(List<ShortageBalance> balances, List<ShortageEntry> entries) {}
 
     private final JdbcClient jdbc;
     private final CashOps ops;
@@ -125,11 +125,11 @@ class Shortages implements DriverShortages {
     }
 
     @Transactional(readOnly = true)
-    Overview overview(Actor actor, Long branchId, Long employeeId, boolean openOnly) {
+    ShortageOverview overview(Actor actor, Long branchId, Long employeeId, boolean openOnly) {
         if (branchId != null && !actor.canAccessBranch(branchId)) {
             throw YuzplusException.forbidden("auth.forbidden");
         }
-        List<Balance> balances = jdbc.sql("""
+        List<ShortageBalance> balances = jdbc.sql("""
                 SELECT s.employee_id, e.full_name, s.branch_id, b.name AS branch, s.balance,
                        coalesce((SELECT sum(amount) FROM employee_shortage x WHERE x.branch_id = s.branch_id AND x.employee_id = s.employee_id
                                  AND x.kind = 'SHORTAGE'), 0) AS total
@@ -144,11 +144,11 @@ class Shortages implements DriverShortages {
                     }
                     BigDecimal bal = rs.getBigDecimal("balance");
                     BigDecimal total = rs.getBigDecimal("total");
-                    return new Balance(rs.getLong("employee_id"), rs.getString("full_name"), rs.getLong("branch_id"), rs.getString("branch"),
+                    return new ShortageBalance(rs.getLong("employee_id"), rs.getString("full_name"), rs.getLong("branch_id"), rs.getString("branch"),
                             new Money(bal).toString(), new Money(total).toString(), new Money(total.subtract(bal)).toString());
                 })
                 .list().stream().filter(Objects::nonNull).toList();
-        List<Entry> entries = jdbc.sql("""
+        List<ShortageEntry> entries = jdbc.sql("""
                 SELECT x.id, x.employee_id, e.full_name, x.branch_id, x.kind, x.amount, x.trip_id, t.number AS trip, c.number AS cash_op, x.note,
                        cb.full_name AS created_by, x.created_at
                 FROM employee_shortage x JOIN employee e ON e.id = x.employee_id JOIN employee cb ON cb.id = x.created_by
@@ -157,13 +157,13 @@ class Shortages implements DriverShortages {
                 ORDER BY x.id DESC LIMIT 300""")
                 .param("b", branchId).param("e", employeeId)
                 .query((rs, n) -> actor.canAccessBranch(rs.getLong("branch_id"))
-                        ? new Entry(rs.getLong("id"), rs.getLong("employee_id"), rs.getString("full_name"), rs.getLong("branch_id"),
+                        ? new ShortageEntry(rs.getLong("id"), rs.getLong("employee_id"), rs.getString("full_name"), rs.getLong("branch_id"),
                                 Kind.valueOf(rs.getString("kind")), new Money(rs.getBigDecimal("amount")).toString(),
                                 rs.getObject("trip_id", Long.class), rs.getString("trip"), rs.getString("cash_op"), rs.getString("note"),
                                 rs.getString("created_by"), rs.getTimestamp("created_at").toInstant())
                         : null)
                 .list().stream().filter(Objects::nonNull).toList();
-        return new Overview(balances, entries);
+        return new ShortageOverview(balances, entries);
     }
 
     private Accounts.Account cashAccount(long branchId, long accountId) {

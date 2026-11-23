@@ -50,7 +50,7 @@ class ShortageController {
     @GetMapping("/api/shortages")
     @PreAuthorize("hasAuthority('shortage.view')")
     @Operation(summary = "Xodim kamomadlari", description = "Qoldiqlar (ochiq / hammasi) va jurnal (oxirgi 300 ta).")
-    Shortages.Overview list(@RequestParam(required = false) Long branchId, @RequestParam(required = false) Long employeeId,
+    Shortages.ShortageOverview list(@RequestParam(required = false) Long branchId, @RequestParam(required = false) Long employeeId,
             @RequestParam(defaultValue = "false") boolean openOnly) {
         return shortages.overview(actor(), branchId, employeeId, openOnly);
     }
