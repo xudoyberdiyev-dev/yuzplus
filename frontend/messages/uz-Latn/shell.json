@@ -33,5 +33,9 @@
   "favAdd": "«{name}» — sevimlilarga qoʻshish",
   "favRemove": "«{name}» — sevimlilardan olib tashlash",
   "offlineTitle": "Internet yoʻq.",
-  "offlineText": "Kiritganlaringiz saqlanib turadi va ulanish tiklangach yuboriladi."
+  "offlineText": "Kiritganlaringiz saqlanib turadi va ulanish tiklangach yuboriladi.",
+  "sleepTitle": "Dastur uyqu rejimida",
+  "sleepText": "Bugun, {date} kuni soat {time} gacha dasturda muhim texnik ishlar olib borilmoqda. {time} dan keyin ishni davom ettirishingiz mumkin.",
+  "sleepLeft": "Ochilishiga qoldi:",
+  "sleepSaved": "Kiritgan maʼlumotlaringiz saqlangan."
 }

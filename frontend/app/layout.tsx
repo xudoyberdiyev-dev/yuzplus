@@ -5,6 +5,7 @@ import "@fontsource/inter/600.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "./globals.css";
 import { Suspense } from "react";
+import { SleepGate } from "@/components/shell/sleep-gate";
 import { LocaleProvider } from "@/i18n/locale-provider";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-init";
 import { Providers } from "./providers";
@@ -25,7 +26,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Til cookie'dan oʻqiladi (dinamik) — shu sabab Suspense ichida. */}
         <Suspense>
           <LocaleProvider>
-            <Providers>{children}</Providers>
+            <SleepGate>
+              <Providers>{children}</Providers>
+            </SleepGate>
           </LocaleProvider>
         </Suspense>
       </body>
