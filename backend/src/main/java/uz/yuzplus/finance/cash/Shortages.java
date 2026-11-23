@@ -195,6 +195,14 @@ class Shortages implements DriverShortages {
     }
 
     private Money move(long branchId, long employeeId, Money delta) {
+        if (delta.isNegative()) {
+            // Qatorni lockBalance qulflagan; INSERT … ON CONFLICT da CHECK manfiy taklif qatorida yiqiladi — shuning uchun UPDATE
+            return new Money(jdbc.sql("""
+                    UPDATE employee_shortage_balance SET balance = balance + :d, updated_at = now()
+                    WHERE branch_id = :b AND employee_id = :e RETURNING balance""")
+                    .param("b", branchId).param("e", employeeId).param("d", delta.amount())
+                    .query(BigDecimal.class).single());
+        }
         BigDecimal next = jdbc.sql("""
                 INSERT INTO employee_shortage_balance (branch_id, employee_id, balance) VALUES (:b, :e, :d)
                 ON CONFLICT (branch_id, employee_id) DO UPDATE SET balance = employee_shortage_balance.balance + :d, updated_at = now()
