@@ -622,7 +622,18 @@
     "photoNeeded": "Kamida 1 ta rasm kerak",
     "deliverTitle": "Yetkazildi · {customer}",
     "markDelivered": "Yetkazildi deb belgilash",
-    "cashExp": "Olinadigan: {amount} soʻm"
+    "cashExp": "Olinadigan: {amount} soʻm",
+    "next": "Keyingi manzil",
+    "road": "Yoʻl",
+    "arrived": "Yetib keldim",
+    "arrivedAt": "Yetib keldingiz · {t}",
+    "handTitle": "Topshirish",
+    "handCash": "Naqd: olinishi kerak {due} · olindi {got}",
+    "handCashWait": "Kassir qabul qilishi kutilmoqda",
+    "handCashDone": "Kassirga topshirildi",
+    "handGoods": "Omborga qaytadigan tovar: {n} ta buyurtma",
+    "handGoodsWait": "Ombor mudiri qabul qilishi kutilmoqda",
+    "handGoodsDone": "Omborga topshirildi"
   },
   "shipments": {
     "tripStatus": {

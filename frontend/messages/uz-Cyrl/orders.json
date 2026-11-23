@@ -622,7 +622,18 @@
     "photoNeeded": "Камида 1 та расм керак",
     "deliverTitle": "Етказилди · {customer}",
     "markDelivered": "Етказилди деб белгилаш",
-    "cashExp": "Олинадиган: {amount} сўм"
+    "cashExp": "Олинадиган: {amount} сўм",
+    "next": "Кейинги манзил",
+    "road": "Йўл",
+    "arrived": "Етиб келдим",
+    "arrivedAt": "Етиб келдингиз · {t}",
+    "handTitle": "Топшириш",
+    "handCash": "Нақд: олиниши керак {due} · олинди {got}",
+    "handCashWait": "Кассир қабул қилиши кутилмоқда",
+    "handCashDone": "Кассирга топширилди",
+    "handGoods": "Омборга қайтадиган товар: {n} та буюртма",
+    "handGoodsWait": "Омбор мудири қабул қилиши кутилмоқда",
+    "handGoodsDone": "Омборга топширилди"
   },
   "shipments": {
     "tripStatus": {

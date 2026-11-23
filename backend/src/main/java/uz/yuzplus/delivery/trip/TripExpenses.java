@@ -350,7 +350,7 @@ public class TripExpenses {
         for (var e : params.entrySet()) {
             q = q.param(e.getKey(), e.getValue());
         }
-        BigDecimal limit = settings.value(uz.yuzplus.shared.settings.SettingKey.tripExpenseLimit);
+        BigDecimal cap = settings.value(uz.yuzplus.shared.settings.SettingKey.tripExpenseLimit);
         return q.query((rs, n) -> new TripExpense(rs.getLong("id"), rs.getLong("trip_id"), rs.getString("trip"), Kind.valueOf(rs.getString("kind")),
                         new Money(rs.getBigDecimal("amount")).toString(), Source.valueOf(rs.getString("source")), rs.getString("note"),
                         rs.getBigDecimal("liters") == null ? null : rs.getBigDecimal("liters").toPlainString(),
@@ -359,7 +359,7 @@ public class TripExpenses {
                         rs.getTimestamp("spent_at").toInstant(), Status.valueOf(rs.getString("status")), rs.getString("reject_reason"),
                         rs.getString("decided_by"), rs.getObject("accept_id") != null, rs.getString("ko"), rs.getInt("photos"),
                         rs.getString("driver"), rs.getString("vehicle"),
-                        limit.signum() > 0 && rs.getBigDecimal("amount").compareTo(limit) > 0))
+                        cap.signum() > 0 && rs.getBigDecimal("amount").compareTo(cap) > 0))
                 .list();
     }
 
