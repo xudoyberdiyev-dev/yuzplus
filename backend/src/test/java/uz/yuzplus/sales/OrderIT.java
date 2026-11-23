@@ -2992,4 +2992,82 @@ class OrderIT {
         assertThat(debt(ct.customers()[0])).isEqualTo("0.00");
         assertThat(jdbc.sql("SELECT status FROM trip WHERE id = :t").param("t", ct.trip()).query(String.class).single()).isEqualTo("DONE");
     }
+
+    /**
+     * HD4: haydovchi kuni oxirigacha (API darajasida) — yuklash → 3 bekat (toʻliq / qisman / yetkazilmadi) → yoʻl xarajati → yakun →
+     * kassir kam qabul: (a) mijoz toʻlamagan + (b) haydovchi kamomadi → kamomadni «Qaytardi» bilan yopish.
+     */
+    @Test
+    void driverFullDayFromLoadToShortageClosed() throws Exception {
+        Place p = place();
+        Cookie operator = loginAs("OPERATOR", p.branchId());
+        Cookie keeper = loginAs("WAREHOUSE_MANAGER", p.branchId());
+        Cookie picker = loginAs("PICKER", p.branchId());
+        Cookie drv = loginAs("DRIVER", p.branchId());
+        long driver = jdbc.sql("SELECT max(id) FROM employee WHERE full_name = 'Sinov DRIVER' AND branch_id = :b").param("b", p.branchId())
+                .query(Long.class).single();
+        long prod = product(p, "BY Haydovchi kuni", "1000", 20, null, null);
+        long[] customers = new long[3];
+        long[] orders = new long[3];
+        for (int i = 0; i < 3; i++) {
+            customers[i] = customer(p.branchId(), null);
+            orders[i] = documenting(p, customers[i], prod, 2, 1, "DELIVERY", operator, keeper, picker);
+        }
+        long vehicle = jdbc.sql("INSERT INTO vehicle (branch_id, plate_number, model) VALUES (:b, :p, 'Labo') RETURNING id")
+                .param("b", p.branchId()).param("p", "60" + ThreadLocalRandom.current().nextInt(100_000, 999_999)).query(Long.class).single();
+        long trip = id(send(post("/api/trips"), keeper, "{\"vehicleId\":" + vehicle + ",\"driverId\":" + driver + ",\"tripDate\":\"" + today()
+                + "\",\"orderIds\":[" + orders[0] + "," + orders[1] + "," + orders[2] + "]}").andExpect(status().isCreated()).andReturn());
+        String t = "/api/trips/" + trip;
+        long[] stops = new long[3];
+        for (int i = 0; i < 3; i++) {
+            stops[i] = jdbc.sql("SELECT id FROM trip_stop WHERE trip_id = :t AND order_id = :o").param("t", trip).param("o", orders[i])
+                    .query(Long.class).single();
+            send(post(t + "/stops/" + stops[i] + "/load"), drv, "{\"places\":1}").andExpect(status().isOk());
+        }
+        send(post(t + "/start"), drv, "").andExpect(status().isOk());
+        for (int i = 0; i < 2; i++) {
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart(t + "/stops/" + stops[i] + "/photos")
+                            .file(new org.springframework.mock.web.MockMultipartFile("file", "a.jpg", "image/jpeg", new byte[] {1, 2, 3}))
+                            .with(csrf()).cookie(drv))
+                    .andExpect(status().isCreated());
+        }
+        // 1) toʻliq, naqd 2 000; 2) qisman — 1 dona qaytdi, naqd 1 000; 3) yetkazilmadi
+        send(post(t + "/stops/" + stops[0] + "/deliver"), drv, "{\"cash\":\"2000\"}").andExpect(status().isOk());
+        MvcResult lines = mvc.perform(get(t + "/stops/" + stops[1] + "/lines").cookie(drv)).andReturn();
+        long saleLine = ((Number) JsonPath.read(lines.getResponse().getContentAsString(), "$[0].id")).longValue();
+        send(post(t + "/stops/" + stops[1] + "/partial"), drv,
+                "{\"reason\":\"1 tasini olmadi\",\"lines\":[{\"saleLineId\":" + saleLine + ",\"qty\":1}],\"cash\":\"1000\"}")
+                .andExpect(jsonPath("$.stops[1].outcome").value("PARTIAL"));
+        send(post(t + "/stops/" + stops[2] + "/undeliver"), drv, "{\"reason\":\"Doʻkon yopiq\"}").andExpect(status().isOk());
+        // Yoʻl xarajati — oʻz pulidan ovqatlanish 300
+        long meal = expense(new CashTrip(trip, driver, drv, stops, customers), "{\"kind\":\"MEAL\",\"amount\":\"300\",\"source\":\"OWN\"}");
+        send(post(t + "/finish"), drv, "").andExpect(jsonPath("$.status").value("RETURN_WAIT"));
+
+        // Kassir: kutilgan 3 000 − 300 = 2 700; sanaldi 2 400 — 1-mijoz 200 toʻlamagan (a), 100 haydovchi kamomadi (b)
+        Cookie cashier = loginAs("CASHIER", p.branchId());
+        long k = kassa(p.branchId());
+        send(post(t + "/cash/accept"), cashier, "{\"accountId\":" + k + ",\"received\":\"2400\",\"note\":\"300 kam\",\"unpaid\":[{\"stopId\":"
+                + stops[0] + ",\"amount\":\"200\"}],\"shortage\":\"100\",\"expenses\":[{\"expenseId\":" + meal + ",\"approve\":true}]}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expected").value("2700.00"))
+                .andExpect(jsonPath("$.unpaid").value("200.00"))
+                .andExpect(jsonPath("$.shortage").value("100.00"))
+                .andExpect(jsonPath("$.expenses").value("300.00"));
+        assertThat(debt(customers[0])).isEqualTo("200.00");
+        assertThat(debt(customers[1])).isEqualTo("0.00");
+        assertThat(debt(customers[2])).isEqualTo("0.00");
+        assertThat(balanceOf(k)).isEqualTo("2400.00");
+        // Qaytgan tovar hali omborga topshirilmagan — reys «Qaytish kutilmoqda»
+        assertThat(jdbc.sql("SELECT status FROM trip WHERE id = :tr").param("tr", trip).query(String.class).single()).isEqualTo("RETURN_WAIT");
+        mvc.perform(get("/api/trips/cash/extras").param("branchId", String.valueOf(p.branchId())).cookie(cashier))
+                .andExpect(jsonPath("$[?(@.tripId == " + trip + ")]").isEmpty());
+
+        // Kamomad yopildi — «Qaytardi»
+        send(post("/api/shortages/repay"), cashier, "{\"branchId\":" + p.branchId() + ",\"employeeId\":" + driver + ",\"accountId\":" + k
+                + ",\"amount\":\"100\"}").andExpect(status().isOk());
+        assertThat(jdbc.sql("SELECT balance::text FROM employee_shortage_balance WHERE employee_id = :e AND branch_id = :b")
+                        .param("e", driver).param("b", p.branchId()).query(String.class).single())
+                .isEqualTo("0.00");
+        assertThat(balanceOf(k)).isEqualTo("2500.00");
+    }
 }
