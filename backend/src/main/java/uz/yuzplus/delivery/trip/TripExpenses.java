@@ -133,6 +133,14 @@ public class TripExpenses {
         if (!actor.canAccessBranch(t.branchId()) || t.driverId() != actor.employeeId()) {
             throw YuzplusException.forbidden("trip.notDriver");
         }
+        if (e.clientUuid() != null) {
+            // Parallel takror (oflayn navbat) — qulfdan keyin yana tekshiriladi
+            Long again = jdbc.sql("SELECT id FROM trip_expense WHERE client_uuid = :u AND trip_id = :t")
+                    .param("u", e.clientUuid()).param("t", tripId).query(Long.class).optional().orElse(null);
+            if (again != null) {
+                return again;
+            }
+        }
         if (t.status() == TripModels.TripStatus.DONE || t.status() == TripModels.TripStatus.CANCELLED) {
             throw YuzplusException.conflict("trip.expenseClosed");
         }
@@ -236,6 +244,7 @@ public class TripExpenses {
         List<Long> ids = jdbc.sql("""
                 SELECT t.id FROM trip t
                 WHERE (CAST(:b AS BIGINT) IS NULL OR t.branch_id = :b)
+                  AND t.status <> 'PLANNED'
                   AND (EXISTS (SELECT 1 FROM trip_advance a WHERE a.trip_id = t.id AND a.accept_id IS NULL)
                        OR EXISTS (SELECT 1 FROM trip_expense x WHERE x.trip_id = t.id AND x.accept_id IS NULL))
                 ORDER BY t.id LIMIT 200""")
@@ -272,6 +281,11 @@ public class TripExpenses {
         if (branchId != null) {
             where.append(" AND t.branch_id = :b");
             p.put("b", branchId);
+        } else {
+            // Filial berilmagan — faqat xodimga ruxsat etilgan filiallar
+            List<Long> allowed = jdbc.sql("SELECT id FROM branch").query(Long.class).list().stream().filter(actor::canAccessBranch).toList();
+            where.append(" AND t.branch_id IN (:bs)");
+            p.put("bs", allowed.isEmpty() ? List.of(-1L) : allowed);
         }
         if (driverId != null) {
             where.append(" AND t.driver_id = :d");

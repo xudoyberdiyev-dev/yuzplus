@@ -699,6 +699,9 @@ class Trips {
     /** Kassir naqd pulni sanab qabul qiladi → MT o'tkaziladi (eng eski qarzdan), reys yakunlanishi tekshiriladi. */
     @Transactional
     String acceptCash(Actor actor, long stopId, long accountId) {
+        // Qulf tartibi reys bo'yicha qabul bilan bir xil: avval reys, keyin bekat (o'zaro qulflanish bo'lmasin)
+        jdbc.sql("SELECT t.id FROM trip t JOIN trip_stop s ON s.trip_id = t.id WHERE s.id = :s FOR UPDATE OF t").param("s", stopId)
+                .query(Long.class).optional();
         record C(long tripId, String trip, long branchId, long customerId, BigDecimal cash, String order) {}
         C c = jdbc.sql("""
                 SELECT s.trip_id, t.number AS trip, t.branch_id, o.customer_id, s.cash_collected, o.number AS order_number
@@ -761,7 +764,8 @@ class Trips {
         Money collected = stops.stream().map(s -> new Money(s.cash())).reduce(Money.ZERO, Money::plus);
         // HD2: topshiriladigan = yig'ilgan naqd + avans − tasdiqlangan xarajatlar (manfiy — kassa haydovchiga to'laydi, aynan shu summa)
         Money expected = collected.plus(open.advance()).minus(open.approved());
-        if (received.isNegative() && (!expected.isNegative() || received.compareTo(expected) != 0)) {
+        // Manfiy — kassa haydovchiga to'laydi: ortiqcha bo'lmaydi (sanalgan ≤ kutilgan); kam bo'lsa (a)/(b) taqsimoti pastda tekshiriladi
+        if (received.isNegative() && received.compareTo(expected) > 0) {
             throw YuzplusException.badRequest("trip.cashReceivedInvalid");
         }
         Money diff = received.minus(expected);
