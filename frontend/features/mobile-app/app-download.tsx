@@ -3,10 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Download, ShieldCheck, Smartphone } from "lucide-react";
 import { LoginLayout } from "@/features/auth/login-layout";
-
-/** Barqaror reliz (main) — GitHub Releases «latest»; sinov (develop) — «haydovchi-dev». */
-export const APK_URL = "https://github.com/xudoyberdiyev-dev/yuzplus/releases/latest";
-export const APK_DEV_URL = "https://github.com/xudoyberdiyev-dev/yuzplus/releases/tag/haydovchi-dev";
+import { APK_DEV_URL, APK_URL } from "./links";
 
 const STEPS = ["s1", "s2", "s3", "s4"] as const;
 

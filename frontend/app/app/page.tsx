@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import QRCode from "qrcode";
-import { APK_URL, AppDownload } from "@/features/mobile-app/app-download";
+import { AppDownload } from "@/features/mobile-app/app-download";
+import { APK_URL } from "@/features/mobile-app/links";
 
 export const metadata: Metadata = { title: "Haydovchi ilovasi — 100+" };
 
