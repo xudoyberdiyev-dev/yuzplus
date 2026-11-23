@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Redirect, router, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MapPin, Navigation, Phone, Truck, WifiOff, X } from "lucide-react-native";
+import { MapPin, Navigation, Phone, Truck, Wallet, WifiOff, X } from "lucide-react-native";
 import { useT, type MessageKey } from "../../i18n";
 import { formatDate, formatTiyin, weekday } from "../../lib/format";
 import { getMe, type Me } from "../../lib/session";
@@ -168,6 +168,7 @@ function RouteView({
             </Card>
           </>
         ) : null}
+        <Button label={t("exp.title")} icon={Wallet} variant="secondary" onPress={() => router.push(`/expenses?trip=${trip.id}`)} />
       </ScrollView>
     </View>
   );

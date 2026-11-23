@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Banknote, Package } from "lucide-react-native";
+import { Banknote, Package, Wallet } from "lucide-react-native";
+import { router } from "expo-router";
 import { useT } from "../i18n";
 import { formatMoney, formatTiyin } from "../lib/format";
 import { cashDue, cashInHand, outcomeCounts, stops, type TripDetail } from "../lib/trip-view";
@@ -73,6 +74,9 @@ export function TripSummary({ trip, onHome }: { trip: TripDetail; onHome: () => 
         </Card>
       </ScrollView>
       <View style={[styles.footer, { paddingBottom: 16 }]}>
+        {trip.status === "RETURN_WAIT" ? (
+          <Button label={t("exp.title")} icon={Wallet} variant="secondary" onPress={() => router.push(`/expenses?trip=${trip.id}`)} />
+        ) : null}
         <Button label={t("finish.home")} variant="secondary" onPress={onHome} />
       </View>
     </View>

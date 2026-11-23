@@ -15,6 +15,9 @@
     "description" : "Sozlamalar",
     "name" : "settings"
   }, {
+    "description" : "Yoʻl xarajatlari va reys avansi",
+    "name" : "trip-expenses"
+  }, {
     "description" : "Hisobdan chiqarish (HC)",
     "name" : "write-off"
   }, {
@@ -17889,6 +17892,104 @@
         "tags" : [ "transfer-overview" ]
       }
     },
+    "/api/trip-expenses" : {
+      "get" : {
+        "description" : "Haydovchi / mashina / oy / tur boʻyicha; 1 km ga soʻm — odometr boʻyicha.",
+        "operationId" : "report",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "branchId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "from",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "to",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "driverId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "vehicleId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "status",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExpenseReport"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Yoʻl xarajatlari: roʻyxat va hisobot",
+        "tags" : [ "trip-expenses" ]
+      }
+    },
+    "/api/trip-expenses/{expenseId}/photo" : {
+      "get" : {
+        "operationId" : "photoView",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "expenseId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Chek rasmini koʻrish",
+        "tags" : [ "trip-expenses" ]
+      }
+    },
     "/api/trips" : {
       "get" : {
         "description" : "active=true — Rejalashtirilgan, Yo'lda, Qaytish kutilmoqda.",
@@ -17987,6 +18088,38 @@
         },
         "summary" : "Haydovchidagi pul",
         "tags" : [ "trips" ]
+      }
+    },
+    "/api/trips/cash/extras" : {
+      "get" : {
+        "description" : "Kassa → «Haydovchilardan naqd» uchun.",
+        "operationId" : "extras",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "branchId",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TripMoneyView"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Hisob-kitob kutayotgan avans/xarajatli reyslar",
+        "tags" : [ "trip-expenses" ]
       }
     },
     "/api/trips/cash/{stopId}/accept" : {
@@ -18288,6 +18421,45 @@
         "tags" : [ "trips" ]
       }
     },
+    "/api/trips/{id}/advances" : {
+      "post" : {
+        "description" : "KO chiqim «Haydovchiga avans» (xarajat hisobotiga kirmaydi). Naqd qabulida qaytadi.",
+        "operationId" : "advance",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AdvanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripMoneyView"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Haydovchiga avans berish",
+        "tags" : [ "trip-expenses" ]
+      }
+    },
     "/api/trips/{id}/cancel" : {
       "post" : {
         "description" : "Faqat yuklash boshlanmagan «Rejalashtirilgan» reys.",
@@ -18329,7 +18501,7 @@
     },
     "/api/trips/{id}/cash/accept" : {
       "post" : {
-        "description" : "Kassir sanagan summa. Farq bo'lsa izoh majburiy; kam bo'lsa sabab: (a) mijoz to'lamagan (bekat bo'yicha) va/yoki (b) haydovchi kamomadi; ortiqcha — tanlangan bekat mijoziga.",
+        "description" : "Kassir sanagan summa. Kutilgan = bekatlar naqdi + ochiq avans − tasdiqlangan yoʻl xarajatlari (HD2; manfiy — kassa haydovchiga toʻlaydi, received = kutilgan). Farq bo'lsa izoh majburiy; kam bo'lsa sabab: (a) mijoz to'lamagan (bekat bo'yicha) va/yoki (b) haydovchi kamomadi; ortiqcha — tanlangan bekat mijoziga.",
         "operationId" : "acceptTripCash",
         "parameters" : [ {
           "in" : "path",
@@ -18366,6 +18538,98 @@
         "tags" : [ "trips" ]
       }
     },
+    "/api/trips/{id}/expenses" : {
+      "post" : {
+        "description" : "Yoqilgʻida chek rasmi majburiy (keyin yuklanadi; rasmsiz tasdiqlanmaydi).",
+        "operationId" : "addExpense",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ExpenseRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExpenseCreated"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Yoʻl xarajatini yozish (haydovchi)",
+        "tags" : [ "trip-expenses" ]
+      }
+    },
+    "/api/trips/{id}/expenses/{expenseId}/photo" : {
+      "post" : {
+        "description" : "JPEG/PNG/WEBP, ≤ 5 MB.",
+        "operationId" : "photo_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "path",
+          "name" : "expenseId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PhotoResult"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "summary" : "Chek rasmi",
+        "tags" : [ "trip-expenses" ]
+      }
+    },
     "/api/trips/{id}/finish" : {
       "post" : {
         "description" : "Qaytgan tovar yoki naqd pul bo'lsa — «Qaytish kutilmoqda».",
@@ -18393,6 +18657,34 @@
         },
         "summary" : "«Reysni yakunlash»",
         "tags" : [ "trips" ]
+      }
+    },
+    "/api/trips/{id}/money" : {
+      "get" : {
+        "operationId" : "money",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripMoneyView"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Reys avansi va yoʻl xarajatlari",
+        "tags" : [ "trip-expenses" ]
       }
     },
     "/api/trips/{id}/orders" : {
@@ -20901,6 +21193,27 @@
         },
         "required" : [ "type" ]
       },
+      "AdvanceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "accountId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "amount" : {
+            "type" : "string",
+            "description" : "Summa, masalan «300000.00»",
+            "maxLength" : 24,
+            "minLength" : 0
+          },
+          "note" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "accountId", "amount" ]
+      },
       "AllBranchesRequest" : {
         "type" : "object",
         "properties" : {
@@ -22962,7 +23275,7 @@
           },
           "source" : {
             "type" : "string",
-            "enum" : [ "MANUAL", "CLOSE", "SHORTAGE" ]
+            "enum" : [ "MANUAL", "CLOSE", "SHORTAGE", "ADVANCE", "TRIP_EXPENSE" ]
           },
           "status" : {
             "type" : "string",
@@ -26165,6 +26478,67 @@
         },
         "required" : [ "branchId", "createdAt", "createdBy", "id", "late", "lines", "number", "paymentKind", "qty", "receivedQty", "status", "supplier", "supplierId", "warehouse", "warehouseId", "waybillDate", "waybillNumber" ]
       },
+      "ExpenseCreated" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "id" ]
+      },
+      "ExpenseDecision" : {
+        "type" : "object",
+        "properties" : {
+          "approve" : {
+            "type" : "boolean"
+          },
+          "expenseId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reason" : {
+            "type" : "string",
+            "description" : "Rad etishda majburiy",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "approve", "expenseId" ]
+      },
+      "ExpenseGroup" : {
+        "type" : "object",
+        "properties" : {
+          "approved" : {
+            "type" : "string"
+          },
+          "count" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "key" : {
+            "type" : "string"
+          },
+          "km" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "liters" : {
+            "type" : "string"
+          },
+          "perKm" : {
+            "type" : "string"
+          },
+          "total" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "approved", "count", "key", "label", "total" ]
+      },
       "ExpenseItem" : {
         "type" : "object",
         "properties" : {
@@ -26187,6 +26561,52 @@
           }
         },
         "required" : [ "active", "direction", "id", "name", "system" ]
+      },
+      "ExpenseReport" : {
+        "type" : "object",
+        "properties" : {
+          "approved" : {
+            "type" : "string"
+          },
+          "byDriver" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpenseGroup"
+            }
+          },
+          "byKind" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpenseGroup"
+            }
+          },
+          "byMonth" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpenseGroup"
+            }
+          },
+          "byVehicle" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpenseGroup"
+            }
+          },
+          "pending" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rows" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TripExpense"
+            }
+          },
+          "total" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "approved", "byDriver", "byKind", "byMonth", "byVehicle", "pending", "rows", "total" ]
       },
       "ExpenseReportView" : {
         "type" : "object",
@@ -26222,6 +26642,70 @@
           }
         },
         "required" : [ "direction", "from", "groupBy", "rows", "to", "total" ]
+      },
+      "ExpenseRequest" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "string",
+            "maxLength" : 24,
+            "minLength" : 0
+          },
+          "clientUuid" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Takroriy yuborishdan himoya (oflayn navbat)"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "FUEL", "MEAL", "TOLL", "REPAIR", "OTHER" ]
+          },
+          "lat" : {
+            "type" : "number",
+            "maximum" : 90,
+            "minimum" : -90
+          },
+          "liters" : {
+            "type" : "number",
+            "description" : "Yoqilgʻi: litr",
+            "maximum" : 10000,
+            "minimum" : 0.01
+          },
+          "lng" : {
+            "type" : "number",
+            "maximum" : 180,
+            "minimum" : -180
+          },
+          "note" : {
+            "type" : "string",
+            "description" : "«Boshqa» turida majburiy",
+            "maxLength" : 300,
+            "minLength" : 0
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Spidometr, km",
+            "maximum" : 9999999,
+            "minimum" : 0
+          },
+          "price" : {
+            "type" : "string",
+            "description" : "Yoqilgʻi: 1 litr narxi",
+            "maxLength" : 24,
+            "minLength" : 0
+          },
+          "source" : {
+            "type" : "string",
+            "enum" : [ "ADVANCE", "OWN", "COLLECTED" ]
+          },
+          "spentAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Qurilma vaqti (oflayn navbat)"
+          }
+        },
+        "required" : [ "amount", "kind", "source" ]
       },
       "ExpenseRow" : {
         "type" : "object",
@@ -39426,12 +39910,50 @@
         },
         "required" : [ "branch", "branchId", "level", "products", "qty" ]
       },
+      "TripAdvance" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "string"
+          },
+          "cashOp" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "createdBy" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "note" : {
+            "type" : "string"
+          },
+          "settled" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "amount", "cashOp", "createdAt", "createdBy", "id", "settled" ]
+      },
       "TripCashAcceptRequest" : {
         "type" : "object",
         "properties" : {
           "accountId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "expenses" : {
+            "type" : "array",
+            "description" : "HD2: har kutilayotgan yoʻl xarajatiga qaror (tasdiqlash / rad etish sabab bilan)",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpenseDecision"
+            },
+            "maxItems" : 200,
+            "minItems" : 0
           },
           "note" : {
             "type" : "string",
@@ -39469,11 +39991,26 @@
       "TripCashAccepted" : {
         "type" : "object",
         "properties" : {
+          "advance" : {
+            "type" : "string",
+            "description" : "Qaytgan avans (HD2)"
+          },
+          "cashOps" : {
+            "type" : "array",
+            "description" : "Avans/xarajat KO raqamlari",
+            "items" : {
+              "type" : "string"
+            }
+          },
           "diff" : {
             "type" : "string"
           },
           "expected" : {
             "type" : "string"
+          },
+          "expenses" : {
+            "type" : "string",
+            "description" : "Tasdiqlangan yoʻl xarajatlari (HD2)"
           },
           "payments" : {
             "type" : "array",
@@ -39493,7 +40030,7 @@
             "description" : "«Mijoz toʻlamagan» jami"
           }
         },
-        "required" : [ "diff", "expected", "payments", "received", "shortage", "unpaid" ]
+        "required" : [ "advance", "cashOps", "diff", "expected", "expenses", "payments", "received", "shortage", "unpaid" ]
       },
       "TripDetail" : {
         "type" : "object",
@@ -39585,6 +40122,131 @@
           }
         },
         "required" : [ "branchId", "createdAt", "createdBy", "driver", "driverId", "id", "number", "places", "plateNumber", "points", "refrigerator", "status", "stops", "total", "tripDate", "vehicle", "vehicleId" ]
+      },
+      "TripExpense" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "string"
+          },
+          "cashOp" : {
+            "type" : "string"
+          },
+          "decidedBy" : {
+            "type" : "string"
+          },
+          "driver" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "kind" : {
+            "type" : "string",
+            "enum" : [ "FUEL", "MEAL", "TOLL", "REPAIR", "OTHER" ]
+          },
+          "lat" : {
+            "type" : "number"
+          },
+          "liters" : {
+            "type" : "string"
+          },
+          "lng" : {
+            "type" : "number"
+          },
+          "note" : {
+            "type" : "string"
+          },
+          "odometer" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "photos" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "price" : {
+            "type" : "string"
+          },
+          "rejectReason" : {
+            "type" : "string"
+          },
+          "settled" : {
+            "type" : "boolean"
+          },
+          "source" : {
+            "type" : "string",
+            "enum" : [ "ADVANCE", "OWN", "COLLECTED" ]
+          },
+          "spentAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED" ]
+          },
+          "tripId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tripNumber" : {
+            "type" : "string"
+          },
+          "vehicle" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "amount", "driver", "id", "kind", "photos", "settled", "source", "spentAt", "status", "tripId", "tripNumber", "vehicle" ]
+      },
+      "TripMoneyView" : {
+        "type" : "object",
+        "properties" : {
+          "advanceOpen" : {
+            "type" : "string",
+            "description" : "Qabul qilinmagan avanslar jami"
+          },
+          "advances" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TripAdvance"
+            }
+          },
+          "branchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "driver" : {
+            "type" : "string"
+          },
+          "expenses" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TripExpense"
+            }
+          },
+          "expensesOpen" : {
+            "type" : "string",
+            "description" : "Qabul qilinmagan xarajatlar jami (kutilayotgan + hal qilingan)"
+          },
+          "pending" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tripId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "tripNumber" : {
+            "type" : "string"
+          },
+          "tripStatus" : {
+            "type" : "string",
+            "enum" : [ "PLANNED", "IN_TRANSIT", "RETURN_WAIT", "DONE", "CANCELLED" ]
+          }
+        },
+        "required" : [ "advanceOpen", "advances", "branchId", "driver", "expenses", "expensesOpen", "pending", "tripId", "tripNumber", "tripStatus" ]
       },
       "TripOptions" : {
         "type" : "object",

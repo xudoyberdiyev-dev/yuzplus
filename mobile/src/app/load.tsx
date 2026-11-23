@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Package, Truck } from "lucide-react-native";
@@ -144,6 +144,9 @@ export default function Load() {
         {error ? <Notice>{error}</Notice> : <Notice>{t("load.hint")}</Notice>}
       </ScrollView>
       <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
+        <Pressable accessibilityRole="button" onPress={() => router.push(`/expenses?trip=${data.id}`)} hitSlop={8}>
+          <Text style={[text.label, { textAlign: "center", color: color.primaryButton }]}>{t("exp.title")}</Text>
+        </Pressable>
         <Text style={[text.caption, { textAlign: "center", fontSize: 13 }]}>{t("load.startHint")}</Text>
         <Button label={t("load.start")} icon={Truck} disabled={!ready || busy !== null} loading={busy === "start"} onPress={() => void start()} />
       </View>

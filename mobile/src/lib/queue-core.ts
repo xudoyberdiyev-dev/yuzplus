@@ -6,7 +6,24 @@ export type QueuedAction =
   | { kind: "deliver"; tripId: number; stopId: number; cash: string | null }
   | { kind: "undeliver"; tripId: number; stopId: number; reason: string }
   | { kind: "partial"; tripId: number; stopId: number; reason: string; lines: { saleLineId: number; qty: number }[]; cash: string | null }
-  | { kind: "point"; tripId: number; stopId: number | null; point: PointKind; lat: number; lng: number; accuracy: number | null; recordedAt: string };
+  | { kind: "point"; tripId: number; stopId: number | null; point: PointKind; lat: number; lng: number; accuracy: number | null; recordedAt: string }
+  // HD2: yoʻl xarajati (+ chek rasmi); stopId yoʻq — reys darajasida
+  | { kind: "expense"; tripId: number; stopId: null; expense: ExpenseBody; uri: string | null };
+
+/** HD2: navbatdagi xarajat tanasi (server bilan bir xil; clientUuid — takroriy yuborishdan himoya). */
+export type ExpenseBody = {
+  kind: string;
+  amount: string;
+  source: string;
+  note: string | null;
+  liters: string | null;
+  price: string | null;
+  odometer: number | null;
+  lat: number | null;
+  lng: number | null;
+  spentAt: string;
+  clientUuid: string;
+};
 
 /** HD1: bir martalik GPS nuqta turi («Yetib keldim» yoki bekat natijasi). */
 export type PointKind = "ARRIVED" | "DELIVERED" | "PARTIAL" | "UNDELIVERED";

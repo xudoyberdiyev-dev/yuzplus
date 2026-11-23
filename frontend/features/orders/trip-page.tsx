@@ -38,6 +38,7 @@ import { TextField } from "@/components/ui/text-field";
 import { toast } from "@/components/ui/toast";
 import { can } from "@/features/auth/can";
 import { ensureCsrf, useMe } from "@/features/auth/session";
+import { TripMoneySection } from "@/features/trip-expenses/trip-money-section";
 import { InvoiceFormsMenu } from "@/features/orders/invoice-forms";
 import { formatIsoDate, parseUzDate } from "@/features/counterparties/api";
 import { Steps } from "@/features/payments/payment-doc-page";
@@ -650,6 +651,7 @@ export function TripPage({ id }: { id: number }) {
           </div>
         </section>
         {data.points.length > 0 ? <TripPoints points={data.points} stops={stops} /> : null}
+        <TripMoneySection tripId={data.id} branchId={data.branchId} closed={data.status === "DONE" || data.status === "CANCELLED"} />
       </div>
 
       <Modal
