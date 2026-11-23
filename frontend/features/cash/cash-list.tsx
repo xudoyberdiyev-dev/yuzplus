@@ -119,8 +119,9 @@ export function DriverCashSection(props: {
         <ErrorState onRetry={props.onRetry} />
       </section>
     );
-  if (!props.list) return <Skeleton className="h-24 w-full" />;
-  const extras = props.extras ?? [];
+  // Avans/xarajatlar ham yuklanmaguncha — kutilgan summa notoʻgʻri chiqmasin
+  if (!props.list || !props.extras) return <Skeleton className="h-24 w-full" />;
+  const extras = props.extras;
   const trips: DriverTrip<DriverCash>[] = groupTrips(props.list);
   // Naqdsiz, lekin avans/xarajatli reyslar (masalan, faqat avans berilgan yoki bekor qilingan reys)
   for (const m of extras) {

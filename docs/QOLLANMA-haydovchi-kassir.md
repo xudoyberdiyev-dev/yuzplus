@@ -23,6 +23,8 @@ Haydovchi ishi ilovada (APK, `/app` sahifasidan) yoki brauzerdagi «Haydovchi pa
    Shundan keyin natijani tanlang: «Yetkazildi», «Qisman» yoki «Yetkazilmadi» (sabab bilan).
 4. Internet boʻlmasa ham ishlayvering. Amallar telefonda navbatga turadi va internet paydo boʻlganda yuboriladi.
 
+![Haydovchi paneli — keyingi manzil va yoʻl xarajatlari](screenshots/hd3-haydovchi-panel.png)
+
 ## 3. Yoʻl xarajatlari (haydovchi)
 
 1. Ilovadagi **«Yoʻl xarajatlari»** tugmasini bosing, keyin **«Xarajat qoʻshish»**.
@@ -58,6 +60,8 @@ Haydovchi ishi ilovada (APK, `/app` sahifasidan) yoki brauzerdagi «Haydovchi pa
    - **Haydovchi kamomadi** — farq haydovchi hisobiga yoziladi. Rad etilgan xarajat (oʻz pulidan boʻlmagan) odatda shu yerga tushadi.
    - **Aralash** — farqning bir qismi mijozda, qolgani haydovchida.
 5. Ortiqcha pul tanlangan mijozga toʻlov yoki avans boʻlib yoziladi.
+![Kassa — reys boʻyicha qabul, yoʻl xarajatlari](screenshots/hd2-kassa-qabul.png)
+
 6. «Pulni qabul qilish» bosilgach, hammasi bir vaqtda yoziladi:
    - mijoz toʻlovlari (MT);
    - avans qaytdi (KO kirim);
@@ -69,6 +73,8 @@ Haydovchi ishi ilovada (APK, `/app` sahifasidan) yoki brauzerdagi «Haydovchi pa
 - **Kassa → «Yoʻl xarajatlari»** sahifasi:
   - roʻyxat: chek, holat;
   - hisobot haydovchi / mashina / oy / tur boʻyicha: litr, km (spidometr boʻyicha) va 1 km ga soʻm.
+![Yoʻl xarajatlari sahifasi](screenshots/hd2-yol-xarajatlari.png)
+
 - **Kassa → «Kamomadlar»** sahifasi: haydovchi kamomadi qoldigʻi. Kamomad ikki yoʻl bilan yopiladi:
   - «Qaytardi» — pul kassaga kirim qilinadi;
   - «Hisobdan chiqarish» — faqat Direktor qila oladi.
