@@ -1,1 +1,1 @@
-▶️ 100+: 06:07 sessiya boshlandi — reja: S1 8-qism — fon vazifalar va tranzaksiya chegaralari koʻrigi (CI yashil, ochiq PR/issue yoʻq)
+▶️ 100+: 12:00 sessiya boshlandi — reja: KT1 backend (reys darajasida kam/ortiq qabul, xodim kamomadi jurnali, IT testlar) → frontend AcceptForm → HD
