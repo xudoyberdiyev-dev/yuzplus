@@ -607,6 +607,14 @@
       "emptyHint": "Haydovchi mobil ilovada «Xarajat qoʻshish» orqali yozadi."
     },
     "advanceKassa": "Kassa",
-    "advanceNote": "Izoh"
+    "advanceNote": "Izoh",
+    "add": "Xarajat qoʻshish",
+    "save": "Xarajatni saqlash",
+    "saved": "Xarajat yozildi — kassir naqd qabulida tasdiqlaydi",
+    "advanceGiven": "Berilgan avans: {s} soʻm",
+    "receiptTake": "Chek rasmini olish (majburiy)",
+    "receiptTaken": "Chek rasmi tanlandi",
+    "ePhoto": "Yoqilgʻi uchun chek rasmini oling",
+    "eNote": "«Boshqa» xarajat uchun izoh yozing"
   }
 }

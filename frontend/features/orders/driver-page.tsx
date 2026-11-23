@@ -16,6 +16,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { DriverExpenses } from "@/features/trip-expenses/driver-expenses";
 import { useState } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -503,6 +504,7 @@ function TripView(props: {
           </article>
         );
       })}
+      {planned || transit || t.status === "RETURN_WAIT" ? <DriverExpenses tripId={t.id} /> : null}
       {planned || transit ? (
         <div className="sticky bottom-0 z-[5] -mx-1 flex flex-col gap-1.5 border-t border-border bg-background px-1 pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom))]">
           <span className="text-center text-caption text-text-secondary">
