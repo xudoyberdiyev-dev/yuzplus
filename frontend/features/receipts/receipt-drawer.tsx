@@ -675,6 +675,7 @@ function Editor({
                 onChange={setDiscountValue}
                 suffix={discountKind === "PERCENT" ? "%" : tr("sum")}
                 inputMode="decimal"
+                grouped
                 disabled={!editable}
                 required
               />
@@ -734,6 +735,7 @@ function Editor({
             value={adding.qty}
             onChange={(v) => setAdding((a) => ({ ...a, qty: v }))}
             inputMode="numeric"
+            grouped
             suffix={tr("pcs")}
           />
           <TextField
@@ -741,6 +743,7 @@ function Editor({
             value={adding.bonus}
             onChange={(v) => setAdding((a) => ({ ...a, bonus: v }))}
             inputMode="numeric"
+            grouped
             suffix={tr("pcs")}
             hint={t("field.bonusHint")}
           />
@@ -750,6 +753,7 @@ function Editor({
               value={adding.price}
               onChange={(v) => setAdding((a) => ({ ...a, price: v }))}
               inputMode="decimal"
+              grouped
               suffix={tr("sum")}
               className="col-span-2"
             />
@@ -1245,6 +1249,7 @@ function AcceptDialog({ id, onClose }: { id: number; onClose: () => void }) {
                 value={r.received}
                 onChange={(v) => set(l.id, r, { received: v })}
                 inputMode="numeric"
+                grouped
               />
               <TextField
                 label={t("damaged")}
@@ -1252,6 +1257,7 @@ function AcceptDialog({ id, onClose }: { id: number; onClose: () => void }) {
                 value={r.damaged}
                 onChange={(v) => set(l.id, r, { damaged: v })}
                 inputMode="numeric"
+                grouped
               />
               <div className="flex flex-col gap-1">
                 <span className="text-caption text-text-secondary">{t("reason")}</span>
