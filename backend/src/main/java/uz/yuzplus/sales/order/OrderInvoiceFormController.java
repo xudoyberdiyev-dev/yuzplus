@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,23 +46,47 @@ class OrderInvoiceFormController {
 
     @GetMapping("/api/orders/{id}/invoice-forms")
     @PreAuthorize("hasAuthority('orders.view')")
-    @Operation(summary = "Faktura qatorlari (joriy va asl)", description = "Narx ko'rish ruxsatisiz (prices.view) — narx va summa null. fefo=true — O25: yig'ilmagan buyurtmada seriya/muddat zahira yoki FEFO taklifidan.")
-    OrderInvoiceForms.InvoiceForms get(@PathVariable long id, @RequestParam(defaultValue = "false") boolean fefo, Authentication auth) {
-        return forms.get(actor(), id, has(auth, "prices.view"), has(auth, "invoices.edit"), fefo);
+    @Operation(summary = "Faktura qatorlari (joriy va asl)", description = "Narx ko'rish ruxsatisiz (prices.view) — narx va summa null. fefo=true — O25: yig'ilmagan buyurtmada seriya/muddat zahira yoki FEFO taklifidan. type — FT5: tuzatilmagan fakturada mijozning shu turdagi shabloni qo'llanadi.")
+    OrderInvoiceForms.InvoiceForms get(@PathVariable long id, @RequestParam(defaultValue = "false") boolean fefo,
+            @RequestParam(required = false) OrderInvoiceForms.FormType type, Authentication auth) {
+        return forms.get(actor(), id, has(auth, "prices.view"), has(auth, "invoices.edit"), fefo, type);
     }
 
     @PutMapping("/api/orders/{id}/invoice-forms")
     @PreAuthorize("hasAuthority('invoices.edit') and hasAuthority('prices.view')")
     @Operation(summary = "Tuzatilgan holatni saqlash (avtosaqlash)", description = "Faqat faylga — buyurtma, qoldiq va qarz o'zgarmaydi; audit.")
-    OrderInvoiceForms.InvoiceForms save(@PathVariable long id, @Valid @RequestBody OrderInvoiceForms.InvoiceFormSave r, Authentication auth) {
-        return forms.save(actor(), id, r.rows(), has(auth, "prices.view"));
+    OrderInvoiceForms.InvoiceForms save(@PathVariable long id, @Valid @RequestBody OrderInvoiceForms.InvoiceFormSave r,
+            @RequestParam(required = false) OrderInvoiceForms.FormType type, Authentication auth) {
+        return forms.save(actor(), id, r, has(auth, "prices.view"), type);
     }
 
     @DeleteMapping("/api/orders/{id}/invoice-forms")
     @PreAuthorize("hasAuthority('invoices.edit')")
     @Operation(summary = "Asl holatiga qaytarish")
-    OrderInvoiceForms.InvoiceForms revert(@PathVariable long id, Authentication auth) {
-        return forms.revert(actor(), id, has(auth, "prices.view"));
+    OrderInvoiceForms.InvoiceForms revert(@PathVariable long id, @RequestParam(required = false) OrderInvoiceForms.FormType type,
+            Authentication auth) {
+        return forms.revert(actor(), id, has(auth, "prices.view"), type);
+    }
+
+    @PutMapping("/api/orders/{id}/invoice-forms/template/{type}")
+    @PreAuthorize("hasAuthority('invoices.edit') and hasAuthority('prices.view')")
+    @Operation(summary = "FT5: shablon sifatida saqlash", description = "Joriy ko'rinish (yashirin ustunlar, qo'shilgan ustunlar, bo'limlar) — mijoz + faktura turi uchun.")
+    OrderInvoiceForms.InvoiceForms saveTemplate(@PathVariable long id, @PathVariable OrderInvoiceForms.FormType type, Authentication auth) {
+        return forms.saveTemplate(actor(), id, type, has(auth, "prices.view"));
+    }
+
+    @PostMapping("/api/orders/{id}/invoice-forms/template/{type}/apply")
+    @PreAuthorize("hasAuthority('invoices.edit') and hasAuthority('prices.view')")
+    @Operation(summary = "FT5: shablonni tiklash", description = "Mijoz shablonini joriy qatorlarga qo'llaydi (kataklardagi tuzatishlar saqlanadi).")
+    OrderInvoiceForms.InvoiceForms applyTemplate(@PathVariable long id, @PathVariable OrderInvoiceForms.FormType type, Authentication auth) {
+        return forms.restoreTemplate(actor(), id, type, has(auth, "prices.view"));
+    }
+
+    @DeleteMapping("/api/orders/{id}/invoice-forms/template/{type}")
+    @PreAuthorize("hasAuthority('invoices.edit')")
+    @Operation(summary = "FT5: shablonni o'chirish")
+    OrderInvoiceForms.InvoiceForms deleteTemplate(@PathVariable long id, @PathVariable OrderInvoiceForms.FormType type, Authentication auth) {
+        return forms.deleteTemplate(actor(), id, type, has(auth, "prices.view"));
     }
 
     @GetMapping("/api/orders/{id}/invoice-forms/{type}/xlsx")
