@@ -15,7 +15,9 @@
         th, td { border: 0.6pt solid #9aa3ae; padding: 2px 4px; }
         th { text-align: center; }
         .r { text-align: right; }
-        .tot td { font-weight: 700; }
+        .tot td, .sub td, .sec td { font-weight: 700; }
+        /* FT3: boʻlim sarlavhasi */
+        .sec td { background: #eef6f3; }
         /* O25: FEFO zahira/taklif — och sariq; yetishmaydi — qizil */
         td.hint { background: #fff4cc; }
         td.miss { color: #c62828; font-weight: 700; }
@@ -31,15 +33,11 @@
     <div class="note" th:if="${!#strings.isEmpty(d.note)}" th:text="${d.note}">Серия ва муддат — тизим таклифи</div>
     <table>
         <thead>
-        <tr><th th:each="c : ${columns}" th:text="${c.name}">№</th></tr>
+        <tr><th th:each="c : ${d.columns}" th:text="${c.name}">№</th></tr>
         </thead>
         <tbody>
-        <tr th:each="r : ${d.rows}">
-            <td th:each="c : ${r}" th:classappend="${(c.right ? 'r ' : '') + c.cls}" th:text="${c.v}">1</td>
-        </tr>
-        <tr class="tot">
-            <td th:each="c, s : ${columns}" th:classappend="${c.right} ? 'r'"
-                th:text="${s.index == 0} ? 'Жами' : (${s.index == d.qtyCol} ? ${d.totalQty} : (${s.last} ? ${d.totalSum} : ''))"></td>
+        <tr th:each="r : ${d.rows}" th:class="${r.cls}">
+            <td th:each="c : ${r.cells}" th:attr="colspan=${c.span}" th:classappend="${(c.right ? 'r ' : '') + c.cls}" th:text="${c.v}">1</td>
         </tr>
         </tbody>
     </table>

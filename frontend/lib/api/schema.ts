@@ -4544,7 +4544,7 @@ export interface paths {
         };
         /**
          * Faktura qatorlari (joriy va asl)
-         * @description Narx ko'rish ruxsatisiz (prices.view) — narx va summa null. fefo=true — O25: yig'ilmagan buyurtmada seriya/muddat zahira yoki FEFO taklifidan.
+         * @description Narx ko'rish ruxsatisiz (prices.view) — narx va summa null. fefo=true — O25: yig'ilmagan buyurtmada seriya/muddat zahira yoki FEFO taklifidan. type — FT5: tuzatilmagan fakturada mijozning shu turdagi shabloni qo'llanadi.
          */
         get: operations["get_10"];
         /**
@@ -4555,6 +4555,47 @@ export interface paths {
         post?: never;
         /** Asl holatiga qaytarish */
         delete: operations["revert"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/invoice-forms/template/{type}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * FT5: shablon sifatida saqlash
+         * @description Joriy ko'rinish (yashirin ustunlar, qo'shilgan ustunlar, bo'limlar) — mijoz + faktura turi uchun.
+         */
+        put: operations["saveTemplate"];
+        post?: never;
+        /** FT5: shablonni o'chirish */
+        delete: operations["deleteTemplate"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/invoice-forms/template/{type}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * FT5: shablonni tiklash
+         * @description Mijoz shablonini joriy qatorlarga qo'llaydi (kataklardagi tuzatishlar saqlanadi).
+         */
+        post: operations["applyTemplate"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -11473,6 +11514,10 @@ export interface components {
             /** @description Tannarxda — faqat special.cost */
             value?: string;
         };
+        ExtraColumn: {
+            key: string;
+            title: string;
+        };
         Facet: {
             /** Format: int64 */
             count: number;
@@ -11545,13 +11590,21 @@ export interface components {
             batchHint?: string;
             /** @description Яроклик муддати — DD.MM.YYYY yoki erkin matn */
             expiry?: string;
+            /** @description FT4: qoʻshilgan ustunlar kataklari — kalit → matn */
+            extra?: {
+                [key: string]: string;
+            };
             farmId?: string;
+            /** @description FT3: SECTION — boʻlim sarlavhasi (name = boʻlim nomi); null yoki ROW — mahsulot qatori */
+            kind?: string;
             manufacturer?: string;
             name: string;
             /** @description ККС билан Нархи (narx ko'rish ruxsatisiz — null) */
             price?: string;
             /** Format: int32 */
             qty: number;
+            /** @description FT2: fakturadan olib tashlangan (faylga chiqmaydi) */
+            removed?: boolean;
             /** @description Серия (partiya) */
             series?: string;
             /**
@@ -12120,6 +12173,11 @@ export interface components {
             sizeBytes: number;
         };
         InvoiceFormSave: {
+            extraColumns?: components["schemas"]["ExtraColumn"][];
+            /** @description Faktura turi → yashirilgan ustun kalitlari */
+            hidden?: {
+                [key: string]: string[];
+            };
             rows: components["schemas"]["FormRow"][];
         };
         InvoiceForms: {
@@ -12132,8 +12190,14 @@ export interface components {
             /** Format: date-time */
             editedAt?: string;
             editedBy?: string;
+            /** @description FT4: qoʻshilgan ustunlar */
+            extraColumns: components["schemas"]["ExtraColumn"][];
             /** @description O25: seriya/muddat FEFO bo'yicha to'ldirildimi */
             fefo: boolean;
+            /** @description FT1: faktura turi → yashirilgan ustun kalitlari */
+            hidden: {
+                [key: string]: string[];
+            };
             /** Format: int64 */
             orderId: number;
             orderNumber: string;
@@ -12143,6 +12207,10 @@ export interface components {
             picked: boolean;
             /** @description Joriy qatorlar (tuzatilgan bo'lsa — tuzatilgani) */
             rows: components["schemas"]["FormRow"][];
+            /** @description FT5: tuzatilmagan faktura shablon boʻyicha koʻrsatildi */
+            templateApplied: boolean;
+            /** @description FT5: shu mijozda shabloni bor faktura turlari */
+            templates: string[];
             tin?: string;
             warehouse: string;
         };
@@ -24213,6 +24281,7 @@ export interface operations {
         parameters: {
             query?: {
                 fefo?: boolean;
+                type?: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
             };
             header?: never;
             path: {
@@ -24235,7 +24304,9 @@ export interface operations {
     };
     save_1: {
         parameters: {
-            query?: never;
+            query?: {
+                type?: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
+            };
             header?: never;
             path: {
                 id: number;
@@ -24261,10 +24332,81 @@ export interface operations {
     };
     revert: {
         parameters: {
+            query?: {
+                type?: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceForms"];
+                };
+            };
+        };
+    };
+    saveTemplate: {
+        parameters: {
             query?: never;
             header?: never;
             path: {
                 id: number;
+                type: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceForms"];
+                };
+            };
+        };
+    };
+    deleteTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                type: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceForms"];
+                };
+            };
+        };
+    };
+    applyTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                type: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
             };
             cookie?: never;
         };

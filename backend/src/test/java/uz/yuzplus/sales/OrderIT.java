@@ -1243,6 +1243,107 @@ class OrderIT {
                 .andExpect(jsonPath("$.rows[0].batchHint").doesNotExist());
     }
 
+    /**
+     * FT (egasi 24.11): ustunlarni yashirish, qatorni olib tashlash, bo'lim, qo'shilgan ustun — faqat faylga (buyurtma o'zgarmaydi), jami qayta
+     * hisoblanadi; shablon mijoz + faktura turi bo'yicha saqlanadi, tuzatilmagan fakturada qo'llanadi, «Shablonni tiklash» va o'chirish.
+     */
+    @Test
+    void invoiceFormsLayoutSectionsTemplate() throws Exception {
+        Place p = place();
+        long c = customer(p.branchId(), null);
+        Cookie operator = loginAs("OPERATOR", p.branchId());
+        Cookie keeper = loginAs("WAREHOUSE_MANAGER", p.branchId());
+        Cookie picker = loginAs("PICKER", p.branchId());
+        long prod = product(p, "FT Dori", "1000", 0, null, null);
+        jdbc.sql("UPDATE product SET marked = true WHERE id = :p").param("p", prod).update();
+        jdbc.sql("INSERT INTO product_barcode (product_id, barcode) VALUES (:p, :b)").param("p", prod).param("b", ean13()).update();
+        tx.executeWithoutResult(s -> {
+            long b = ledger.createBatch(prod, "LOT-FT", null, LocalDate.of(2029, 5, 31), Money.of("100"), false, "BQ", null);
+            ledger.post(new DocRef("BQ", prod, "BQ-FT"), List.of(Move.in(p.main(), b, 10)));
+        });
+        long o = markedOrder(p, c, prod, 3, operator, keeper, picker);
+        String price = jdbc.sql("SELECT price::text FROM sales_order_line WHERE order_id = :o").param("o", o).query(String.class).single();
+        String total = new java.math.BigDecimal(price).multiply(java.math.BigDecimal.valueOf(3)).setScale(2).toPlainString();
+        String body = "{\"rows\":[{\"name\":\"ДОРИ ВОСИТАЛАРИ\",\"qty\":0,\"kind\":\"SECTION\"},"
+                + "{\"name\":\"FT Dori\",\"series\":\"LOT-FT\",\"qty\":3,\"expiry\":\"31.05.2029\",\"price\":\"" + price + "\",\"extra\":{\"x1\":\"Aksiya\",\"x9\":\"yoʻq\"}},"
+                + "{\"name\":\"Olib tashlangan qator\",\"qty\":5,\"price\":\"10\",\"removed\":true}],"
+                + "\"extraColumns\":[{\"key\":\"x1\",\"title\":\"Изоҳ\"}],\"hidden\":{\"CLIENT1\":[\"series\",\"price\",\"name\"],\"NOPE\":[\"qty\"]}}";
+        send(put("/api/orders/" + o + "/invoice-forms"), operator, body)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.edited").value(true))
+                .andExpect(jsonPath("$.rows.length()").value(3))
+                .andExpect(jsonPath("$.rows[0].kind").value("SECTION"))
+                .andExpect(jsonPath("$.rows[0].name").value("ДОРИ ВОСИТАЛАРИ"))
+                .andExpect(jsonPath("$.rows[1].extra.x1").value("Aksiya"))
+                .andExpect(jsonPath("$.rows[1].extra.x9").doesNotExist())
+                .andExpect(jsonPath("$.rows[2].removed").value(true))
+                .andExpect(jsonPath("$.extraColumns[0].title").value("Изоҳ"))
+                .andExpect(jsonPath("$.hidden.CLIENT1.length()").value(2))
+                .andExpect(jsonPath("$.hidden.CLIENT1[0]").value("series"))
+                .andExpect(jsonPath("$.hidden.NOPE").doesNotExist());
+        assertThat(jdbc.sql("SELECT qty FROM sales_order_line WHERE order_id = :o").param("o", o).query(Integer.class).single()).isEqualTo(3);
+        assertThat(jdbc.sql("SELECT count(*) FROM sales_order_line WHERE order_id = :o").param("o", o).query(Long.class).single()).isEqualTo(1L);
+        // Excel (CLIENT1): seriya va narx ustuni yo'q, «Изоҳ» oxirida; bo'lim + «Бўлим жами»; olib tashlangan qator chiqmaydi, jami qayta hisob
+        MvcResult x = mvc.perform(get("/api/orders/" + o + "/invoice-forms/CLIENT1/xlsx").cookie(operator)).andExpect(status().isOk()).andReturn();
+        try (var wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(x.getResponse().getContentAsByteArray()))) {
+            var sh = wb.getSheetAt(0);
+            var head = sh.getRow(5);
+            assertThat(head.getLastCellNum()).isEqualTo((short) 8);
+            assertThat(head.getCell(1).getStringCellValue()).isEqualTo("Махсулот номи");
+            assertThat(head.getCell(3).getStringCellValue()).isEqualTo("Сони");
+            assertThat(head.getCell(7).getStringCellValue()).isEqualTo("Изоҳ");
+            assertThat(sh.getRow(6).getCell(0).getStringCellValue()).isEqualTo("ДОРИ ВОСИТАЛАРИ");
+            assertThat(sh.getRow(7).getCell(1).getStringCellValue()).isEqualTo("FT Dori");
+            assertThat(sh.getRow(7).getCell(7).getStringCellValue()).isEqualTo("Aksiya");
+            assertThat(sh.getRow(8).getCell(0).getStringCellValue()).isEqualTo("Бўлим жами");
+            assertThat(sh.getRow(9).getCell(0).getStringCellValue()).isEqualTo("Жами");
+            assertThat(sh.getRow(9).getCell(3).getNumericCellValue()).isEqualTo(3.0);
+            assertThat(sh.getRow(9).getCell(6).getNumericCellValue()).isEqualTo(Double.parseDouble(total));
+            assertThat(sh.getLastRowNum()).isEqualTo(9);
+        }
+        // Boshqa tur (CLIENT_SEND) — yashirish faqat CLIENT1 uchun: seriya bor
+        MvcResult send2 = mvc.perform(get("/api/orders/" + o + "/invoice-forms/CLIENT_SEND/xlsx").cookie(operator)).andExpect(status().isOk()).andReturn();
+        try (var wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(send2.getResponse().getContentAsByteArray()))) {
+            assertThat(wb.getSheetAt(0).getRow(5).getCell(4).getStringCellValue()).isEqualTo("Серия");
+        }
+        String pdf = pdfText("/api/orders/" + o + "/invoice-forms/CLIENT1/pdf", operator);
+        assertThat(pdf).contains("ДОРИ ВОСИТАЛАРИ", "Aksiya", "Бўлим жами", "Изоҳ").doesNotContain("Olib tashlangan qator", "LOT-FT");
+        // FT5: shablon — yig'uvchiga yo'q; saqlash → asl holatiga qaytarilsa ham shablon qo'llanadi
+        send(put("/api/orders/" + o + "/invoice-forms/template/CLIENT1"), picker, "").andExpect(status().isForbidden());
+        send(put("/api/orders/" + o + "/invoice-forms/template/CLIENT1"), operator, "")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.templates[0]").value("CLIENT1"));
+        send(delete("/api/orders/" + o + "/invoice-forms?type=CLIENT1"), operator, "")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.edited").value(false))
+                .andExpect(jsonPath("$.templateApplied").value(true))
+                .andExpect(jsonPath("$.rows.length()").value(2))
+                .andExpect(jsonPath("$.rows[0].kind").value("SECTION"))
+                .andExpect(jsonPath("$.rows[1].name").value("FT Dori"))
+                .andExpect(jsonPath("$.extraColumns[0].title").value("Изоҳ"))
+                .andExpect(jsonPath("$.hidden.CLIENT1.length()").value(2));
+        mvc.perform(get("/api/orders/" + o + "/invoice-forms").cookie(operator))
+                .andExpect(jsonPath("$.templateApplied").value(false))
+                .andExpect(jsonPath("$.rows[0].kind").doesNotExist());
+        // «Shablonni tiklash» — tuzatilgan qatorlarga qo'llanadi, katak tuzatishi saqlanadi
+        send(put("/api/orders/" + o + "/invoice-forms?type=CLIENT1"), operator,
+                "{\"rows\":[{\"name\":\"FT Dori\",\"qty\":2,\"price\":\"" + price + "\"}]}")
+                .andExpect(jsonPath("$.rows.length()").value(1));
+        send(post("/api/orders/" + o + "/invoice-forms/template/CLIENT1/apply"), operator, "")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.edited").value(true))
+                .andExpect(jsonPath("$.rows[0].kind").value("SECTION"))
+                .andExpect(jsonPath("$.rows[1].qty").value(2))
+                .andExpect(jsonPath("$.hidden.CLIENT1[1]").value("price"));
+        // Shablonni o'chirish; endi tiklash — 404
+        send(delete("/api/orders/" + o + "/invoice-forms/template/CLIENT1"), operator, "")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.templates.length()").value(0));
+        send(post("/api/orders/" + o + "/invoice-forms/template/CLIENT1/apply"), operator, "").andExpect(status().isNotFound());
+        assertThat(jdbc.sql("SELECT count(*) FROM audit_log WHERE entity_id = :o AND action IN ('order.invoiceTemplateSave', 'order.invoiceTemplateDelete')")
+                .param("o", String.valueOf(o)).query(Long.class).single()).isEqualTo(2L);
+    }
+
     /** O25: yig'ishdan oldingi faktura — FEFO taklifi (qoralama), zahira (navbatda), bo'linish va yetishmaslik. */
     @Test
     void invoiceFormsFefoBeforePicking() throws Exception {
