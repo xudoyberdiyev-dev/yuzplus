@@ -5,6 +5,7 @@ import { Eye, EyeOff, Search, X } from "lucide-react";
 import { useEffect, useId, useState, type InputHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 import { maskUzDate } from "@/lib/date-mask";
+import { groupDigits, onGroupedChange } from "@/lib/digit-group";
 import { formatMoney } from "@/lib/format";
 import { Field, controlClass, hintId, type ControlSize } from "./field";
 import { Icon } from "./icon";
@@ -21,6 +22,8 @@ export interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElemen
   size?: ControlSize;
   /** `search` uchun: «/» tugmasi maydonga fokus beradi va boʻsh maydonda «/» belgisi koʻrinadi (prototip FilterBar). */
   slashFocus?: boolean;
+  /** Raqam maydoni: minglar boʻsh joy bilan koʻrinadi («1 000 000»), `onChange` ga boʻsh joysiz qiymat keladi. */
+  grouped?: boolean;
 }
 
 /** «/» tugmasi qidiruvga oʻtishi kerakmi: matn maydonida yozilayotgan boʻlsa yoki modifikator bosilgan boʻlsa — yoʻq. */
@@ -57,6 +60,7 @@ export function TextField({
   error,
   size = "md",
   slashFocus = true,
+  grouped = false,
   required,
   disabled,
   id: idProp,
@@ -89,7 +93,7 @@ export function TextField({
   }, [slash]);
 
   const isAmount = variant === "amount";
-  const shown = isAmount ? (draft ?? (value === "" ? "" : formatMoney(value))) : value;
+  const shown = isAmount ? (draft ?? (value === "" ? "" : formatMoney(value))) : grouped ? groupDigits(value) : value;
 
   return (
     <Field id={id} label={label} required={required} hint={hint} error={error} className={className}>
@@ -108,7 +112,11 @@ export function TextField({
           aria-invalid={error ? true : undefined}
           aria-describedby={error || hint ? hintId(id) : undefined}
           onChange={(e) =>
-            isAmount ? setDraft(e.target.value) : onChange(variant === "date" ? maskUzDate(e.target.value, value) : e.target.value)
+            isAmount
+              ? setDraft(e.target.value)
+              : grouped
+                ? onGroupedChange(e, onChange)
+                : onChange(variant === "date" ? maskUzDate(e.target.value, value) : e.target.value)
           }
           onFocus={(e) => {
             if (isAmount) setDraft(value === "" ? "" : formatMoney(value));
@@ -125,6 +133,7 @@ export function TextField({
           className={cn(
             "h-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-text-disabled disabled:cursor-not-allowed",
             isAmount && "tabular text-right",
+            grouped && "tabular-nums",
             variant === "search" && "[&::-webkit-search-cancel-button]:hidden",
           )}
           {...rest}
