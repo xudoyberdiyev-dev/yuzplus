@@ -1,14 +1,33 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, FileSpreadsheet, FileText, GripVertical, Plus, RotateCcw, Trash2, Undo2 } from "lucide-react";
+import {
+  BookmarkPlus,
+  ChevronDown,
+  Columns3,
+  Copy,
+  EyeOff,
+  FileSpreadsheet,
+  FileText,
+  GripVertical,
+  History,
+  ListPlus,
+  MoveRight,
+  Plus,
+  RotateCcw,
+  Trash2,
+  Undo2,
+  X,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { RowMenu } from "@/components/ui/row-menu";
+import { Checkbox } from "@/components/ui/selection-controls";
 import { ErrorState, Skeleton } from "@/components/ui/system-states";
+import { toast } from "@/components/ui/toast";
 import { can } from "@/features/auth/can";
 import { ensureCsrf, useMe } from "@/features/auth/session";
 import { api, unwrap } from "@/lib/api/client";
@@ -16,8 +35,23 @@ import type { components } from "@/lib/api/schema";
 import { formatDateTime, formatMoney } from "@/lib/format";
 import { useFefoPref, withFefo } from "./fefo-invoice-pref";
 import { FefoQuestionBody, FefoQuestionModal, useFefoChoice } from "./fefo-question";
-
-type FormRow = components["schemas"]["FormRow"];
+import {
+  MAX_EXTRA_COLUMNS,
+  addSection,
+  duplicate,
+  grandTotal,
+  isRemoved,
+  isSection,
+  moveToSection,
+  nextExtraKey,
+  removeExtraColumn,
+  removeSection,
+  setRemoved,
+  toggleHidden,
+  viewLines,
+  type FormRow,
+  type InvoiceDoc,
+} from "./invoice-layout";
 export type FormType = "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
 
 /** O18: 5 faktura turi — nomlari va ustunlari shablondagidek (fakturaning oʻzi kirill). */
@@ -89,15 +123,21 @@ export function rowTotal(qty: number, price: string | null | undefined): string 
   return `${s.slice(0, -2)}.${s.slice(-2)}`;
 }
 
-/** Tuzatilgan kataklar soni: joriy va asl qatorlarni tartib boʻyicha solishtiradi (qoʻshilgan qator — barcha toʻldirilgan kataklari). */
+/**
+ * Tuzatilgan kataklar soni: mahsulot qatorlarini asl qatorlar bilan tartib boʻyicha solishtiradi (qoʻshilgan qator — barcha toʻldirilgan
+ * kataklari); FT: olib tashlangan qator, boʻlim va qoʻshilgan ustundagi toʻldirilgan katak — bittadan.
+ */
 export function changedCells(rows: FormRow[], original: FormRow[]): number {
   const cols: EditCol[] = ["area", "farmId", "name", "manufacturer", "series", "qty", "expiry", "unit", "price"];
-  let n = 0;
-  rows.forEach((r, i) => {
+  const items = rows.filter((r) => !isSection(r));
+  let n = rows.length - items.length;
+  items.forEach((r, i) => {
     const o = original[i];
     for (const c of cols) if (cellValue(r, c) !== (o ? cellValue(o, c) : "")) n++;
+    if (isRemoved(r)) n++;
+    n += Object.values(r.extra ?? {}).filter((v) => v.trim() !== "").length;
   });
-  return n + Math.max(0, original.length - rows.length);
+  return n + Math.max(0, original.length - items.length);
 }
 
 function cellValue(r: FormRow, c: EditCol): string {
@@ -133,57 +173,90 @@ export function InvoiceFormsModal(props: { orderId: number; initial: FormType; o
   const choice = fefoChoice ?? (pref === "yes" ? true : pref === "no" ? false : null);
   const fefoOn = isWarehouseForm(type) && choice === true;
   const base = ["orders", props.orderId, "invoice-forms"] as const;
-  const key = [...base, { fefo: fefoOn }];
+  const key = [...base, { fefo: fefoOn, type }];
   const data = useQuery({
     queryKey: key,
-    queryFn: () => unwrap(api.GET("/api/orders/{id}/invoice-forms", { params: { path: { id: props.orderId }, query: { fefo: fefoOn } } })),
+    queryFn: () =>
+      unwrap(api.GET("/api/orders/{id}/invoice-forms", { params: { path: { id: props.orderId }, query: { fefo: fefoOn, type } } })),
     placeholderData: (prev) => prev,
   });
-  const [rows, setRows] = useState<FormRow[] | null>(null);
-  const history = useRef<FormRow[][]>([]);
+  const [doc, setDoc] = useState<InvoiceDoc | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [columnsOpen, setColumnsOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
+  const history = useRef<InvoiceDoc[]>([]);
   const dirty = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [undoCount, setUndoCount] = useState(0);
 
+  function reset() {
+    history.current = [];
+    setUndoCount(0);
+    dirty.current = false;
+    setDoc(null);
+    setSelected(new Set());
+  }
+
   function setFefo(v: boolean) {
-    if (!dirty.current) {
-      setRows(null);
-      history.current = [];
-      setUndoCount(0);
-    }
+    if (!dirty.current) reset();
     setFefoChoice(v);
   }
   const ask = useFefoChoice(setFefo);
 
+  const done = (r: components["schemas"]["InvoiceForms"]) => {
+    void qc.invalidateQueries({ queryKey: base, refetchType: "none" });
+    qc.setQueryData(key, r);
+  };
   const save = useMutation({
-    mutationFn: async (next: FormRow[]) => {
+    mutationFn: async (next: InvoiceDoc) => {
       await ensureCsrf();
       return unwrap(
         api.PUT("/api/orders/{id}/invoice-forms", {
-          params: { path: { id: props.orderId } },
-          body: { rows: next.map((r) => ({ ...r, total: undefined })) },
+          params: { path: { id: props.orderId }, query: { type } },
+          body: { rows: next.rows.map((r) => ({ ...r, total: undefined })), extraColumns: next.extraColumns, hidden: next.hidden },
         }),
       );
     },
     onSuccess: (r) => {
       dirty.current = false;
-      void qc.invalidateQueries({ queryKey: base, refetchType: "none" });
-      qc.setQueryData(key, r);
+      done(r);
     },
   });
   const revert = useMutation({
     mutationFn: async () => {
       await ensureCsrf();
-      return unwrap(api.DELETE("/api/orders/{id}/invoice-forms", { params: { path: { id: props.orderId } } }));
+      return unwrap(api.DELETE("/api/orders/{id}/invoice-forms", { params: { path: { id: props.orderId }, query: { type } } }));
     },
     onSuccess: (r) => {
-      history.current = [];
-      setUndoCount(0);
-      dirty.current = false;
-      setRows(null);
-      void qc.invalidateQueries({ queryKey: base, refetchType: "none" });
-      qc.setQueryData(key, r);
+      reset();
+      done(r);
     },
+  });
+  const template = useMutation({
+    mutationFn: async (action: "save" | "apply" | "delete") => {
+      if (timer.current) clearTimeout(timer.current);
+      if (dirty.current && doc) await save.mutateAsync(doc);
+      await ensureCsrf();
+      const params = { path: { id: props.orderId, type } };
+      if (action === "save") return unwrap(api.PUT("/api/orders/{id}/invoice-forms/template/{type}", { params }));
+      if (action === "apply") return unwrap(api.POST("/api/orders/{id}/invoice-forms/template/{type}/apply", { params }));
+      return unwrap(api.DELETE("/api/orders/{id}/invoice-forms/template/{type}", { params }));
+    },
+    onSuccess: (r, action) => {
+      if (action === "apply") {
+        if (doc) history.current.push(doc);
+        setUndoCount(history.current.length);
+        dirty.current = false;
+        setDoc(null);
+        setSelected(new Set());
+      }
+      done(r);
+      toast({
+        tone: "success",
+        title: t(action === "save" ? "templateSaved" : action === "apply" ? "templateApplied" : "templateDeleted"),
+      });
+    },
+    onError: () => toast({ tone: "danger", title: t("saveError") }),
   });
 
   const f = data.data;
@@ -198,51 +271,73 @@ export function InvoiceFormsModal(props: { orderId: number; initial: FormType; o
   };
   const types = FORM_TYPES.filter((x) => !x.priced || f?.canSeePrices);
   const form = FORM_TYPES.find((x) => x.type === type) ?? FORM_TYPES[1];
-  const current = useMemo(() => rows ?? data.data?.rows ?? [], [rows, data.data]);
-  const changed = f ? changedCells(current, f.original) : 0;
-  const sumQty = current.reduce((a, r) => a + r.qty, 0);
-  const sum = current.reduce((a, r) => {
-    const [i, d = ""] = rowTotal(r.qty, r.price).split(".");
-    return a + BigInt(i) * 100n + BigInt((d + "00").slice(0, 2));
-  }, 0n);
-  const sumText = `${(sum / 100n).toString()}.${(sum % 100n).toString().padStart(2, "0")}`;
+  const current: InvoiceDoc = useMemo(
+    () => doc ?? { rows: f?.rows ?? [], extraColumns: f?.extraColumns ?? [], hidden: f?.hidden ?? {} },
+    [doc, f],
+  );
+  const rows = current.rows;
+  const hidden = new Set(current.hidden[type] ?? []);
+  const total = (r: FormRow) => (r.price == null ? "0.00" : rowTotal(r.qty, r.price));
+  const lines = viewLines(rows, total);
+  const grand = grandTotal(rows, total);
+  const removed = rows.map((r, i) => ({ r, i })).filter((x) => isRemoved(x.r));
+  const sections = rows.map((r, i) => ({ r, i })).filter((x) => isSection(x.r));
+  const changed = f ? changedCells(rows, f.original) : 0;
+  const allCols: { key: string; title: string; extra?: boolean }[] = [
+    { key: "no", title: "№" },
+    ...form.cols.map((c) => ({ key: c, title: COL_TITLES[c] })),
+    ...current.extraColumns.map((c) => ({ key: c.key, title: c.title, extra: true })),
+  ];
+  const hiddenTitles = allCols.filter((c) => hidden.has(c.key)).map((c) => c.title);
+  const visibleRowIndexes = lines.flatMap((l) => (l.kind === "row" ? [l.index] : []));
+  const hasTemplate = !!f?.templates.includes(type);
 
-  function update(next: FormRow[]) {
+  function update(next: InvoiceDoc) {
     history.current.push(current);
     if (history.current.length > 100) history.current.shift();
     setUndoCount(history.current.length);
-    setRows(next);
+    setDoc(next);
     dirty.current = true;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => save.mutate(next), 800);
   }
+  const updateRows = (next: FormRow[]) => update({ ...current, rows: next });
 
   function setCell(i: number, c: EditCol, v: string) {
-    const next = current.map((r, j) => {
-      if (j !== i) return r;
-      if (c === "qty") return withTotal({ ...r, qty: Math.max(0, Number(v.replace(/\D/g, "").slice(0, 7)) || 0) });
-      if (c === "price") return withTotal({ ...r, price: v.replace(",", ".").replace(/[^\d.]/g, "") || "0" });
-      return { ...r, [c]: v };
-    });
-    update(next);
+    updateRows(
+      rows.map((r, j) => {
+        if (j !== i) return r;
+        if (c === "qty") return withTotal({ ...r, qty: Math.max(0, Number(v.replace(/\D/g, "").slice(0, 7)) || 0) });
+        if (c === "price") return withTotal({ ...r, price: v.replace(",", ".").replace(/[^\d.]/g, "") || "0" });
+        return { ...r, [c]: v };
+      }),
+    );
+  }
+
+  function setExtra(i: number, k: string, v: string) {
+    updateRows(rows.map((r, j) => (j === i ? { ...r, extra: { ...r.extra, [k]: v } } : r)));
   }
 
   function undo() {
     const prev = history.current.pop();
     setUndoCount(history.current.length);
     if (!prev) return;
-    setRows(prev);
+    setDoc(prev);
+    setSelected(new Set());
     dirty.current = true;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => save.mutate(prev), 800);
   }
 
-  function move(i: number, d: -1 | 1) {
-    const j = i + d;
-    if (j < 0 || j >= current.length) return;
-    const next = [...current];
-    [next[i], next[j]] = [next[j], next[i]];
-    update(next);
+  function withSelection(next: FormRow[]) {
+    updateRows(next);
+    setSelected(new Set());
+    setMoveOpen(false);
+  }
+
+  function addColumn() {
+    if (current.extraColumns.length >= MAX_EXTRA_COLUMNS) return;
+    update({ ...current, extraColumns: [...current.extraColumns, { key: nextExtraKey(current.extraColumns), title: t("newColumn") }] });
   }
 
   const dragFrom = useRef<number | null>(null);
@@ -254,7 +349,7 @@ export function InvoiceFormsModal(props: { orderId: number; initial: FormType; o
   }
 
   /** Excel kabi: Enter — pastdagi katak, ↑/↓ — qatorlar boʻylab; Ctrl+Z — bekor qilish. */
-  function onKey(e: KeyboardEvent<HTMLInputElement>, i: number, c: EditCol) {
+  function onKey(e: KeyboardEvent<HTMLInputElement>, i: number, c: string) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
       e.preventDefault();
       undo();
@@ -264,8 +359,32 @@ export function InvoiceFormsModal(props: { orderId: number; initial: FormType; o
     const up = e.key === "ArrowUp";
     if (!down && !up) return;
     e.preventDefault();
-    const target = document.querySelector<HTMLInputElement>(`[data-cell="${i + (down ? 1 : -1)}:${c}"]`);
+    const at = visibleRowIndexes.indexOf(i) + (down ? 1 : -1);
+    const target = document.querySelector<HTMLInputElement>(`[data-cell="${visibleRowIndexes[at]}:${c}"]`);
     target?.focus();
+  }
+
+  const numeric = (c: string) => c === "qty" || c === "price" || c === "total";
+  const off = (c: string) => (hidden.has(c) ? "text-text-disabled line-through" : "");
+  const colSpan = allCols.length + (canEdit ? 1 : 0);
+  const qtyAt = allCols.findIndex((c) => c.key === "qty");
+  const totalAt = allCols.findIndex((c) => c.key === "total");
+
+  /** «Boʻlim jami» / «Жами» qatori: soni va summa oʻz ustunida. */
+  function totalsRow(label: string, qty: number, sum: string, strong: boolean) {
+    return (
+      <>
+        {canEdit ? <td /> : null}
+        {allCols.map((c, k) => (
+          <td
+            key={c.key}
+            className={`px-2 py-1 ${numeric(c.key) ? "text-right tabular-nums" : ""} ${strong ? "font-semibold" : "text-text-secondary"}`}
+          >
+            {k === 1 ? label : k === qtyAt ? qty : k === totalAt && form.priced ? formatMoney(sum) : ""}
+          </td>
+        ))}
+      </>
+    );
   }
 
   return (
@@ -289,7 +408,10 @@ export function InvoiceFormsModal(props: { orderId: number; initial: FormType; o
               type="button"
               role="tab"
               aria-selected={x.type === type}
-              onClick={() => setType(x.type)}
+              onClick={() => {
+                setType(x.type);
+                setColumnsOpen(false);
+              }}
               className={`rounded-full border px-3 py-1 text-caption ${x.type === type ? "border-primary bg-primary-soft text-primary" : "border-border"}`}
             >
               {x.title}
@@ -323,198 +445,474 @@ export function InvoiceFormsModal(props: { orderId: number; initial: FormType; o
               </div>
             ) : null}
             {f.fefo ? <Alert tone="warning" title={t("fefoNote")} /> : null}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-caption text-text-secondary">
-              <span aria-live="polite">
+            {f.templateApplied && !doc ? <p className="text-caption text-text-secondary">{t("templateInUse")}</p> : null}
+            <div className="flex flex-wrap items-center gap-x-1 gap-y-2 text-caption text-text-secondary">
+              <span aria-live="polite" className="mr-2">
                 {t("changed", { n: changed })}
-                {f.edited && f.editedBy && f.editedAt
-                  ? ` · ${t("savedBy", { who: f.editedBy, at: formatDateTime(new Date(f.editedAt)) })}`
-                  : ""}
                 {save.isPending ? ` · ${t("saving")}` : ""}
               </span>
               {canEdit ? (
-                <span className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="tertiary" icon={Undo2} disabled={undoCount === 0} onClick={undo}>
-                    {t("undo")}
-                  </Button>
+                <Button size="sm" variant="tertiary" icon={Undo2} disabled={undoCount === 0} onClick={undo}>
+                  {t("undo")}
+                </Button>
+              ) : null}
+              <div className="relative">
+                <Button size="sm" variant="secondary" icon={Columns3} aria-expanded={columnsOpen} onClick={() => setColumnsOpen((o) => !o)}>
+                  {hidden.size ? t("columnsHidden", { n: hidden.size }) : t("columns")}
+                </Button>
+                {columnsOpen ? (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setColumnsOpen(false)} aria-hidden />
+                    <div
+                      role="group"
+                      aria-label={t("columnsHint")}
+                      className="absolute top-9 left-0 z-50 max-h-[420px] w-[300px] overflow-y-auto rounded-card border border-border bg-surface p-2 shadow-overlay"
+                    >
+                      <div className="px-1 pb-1.5 text-caption font-semibold tracking-wide text-text-secondary uppercase">
+                        {t("columnsHint")}
+                      </div>
+                      {allCols.map((c) => (
+                        <div key={c.key} className="flex items-center gap-1">
+                          <Checkbox
+                            className="flex-1 py-1"
+                            label={c.extra ? `${c.title} (${t("added")})` : c.title}
+                            checked={!hidden.has(c.key)}
+                            disabled={!canEdit || c.key === "name"}
+                            onChange={() => update({ ...current, hidden: toggleHidden(current.hidden, type, c.key) })}
+                          />
+                          {c.extra && canEdit ? (
+                            <Button
+                              size="sm"
+                              variant="icon"
+                              icon={X}
+                              aria-label={t("removeColumn", { name: c.title })}
+                              onClick={() => update(removeExtraColumn(current, c.key))}
+                            />
+                          ) : null}
+                        </div>
+                      ))}
+                      {canEdit ? (
+                        <div className="mt-1 border-t border-border pt-1">
+                          <Button
+                            size="sm"
+                            variant="tertiary"
+                            icon={Plus}
+                            disabled={current.extraColumns.length >= MAX_EXTRA_COLUMNS}
+                            onClick={addColumn}
+                          >
+                            {t("addColumn")}
+                          </Button>
+                        </div>
+                      ) : null}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+              {canEdit ? (
+                <>
                   <Button
                     size="sm"
                     variant="tertiary"
                     icon={Plus}
-                    onClick={() => update([...current, { name: t("newRow"), qty: 1, price: "0", total: "0.00" }])}
+                    onClick={() => updateRows([...rows, { name: t("newRow"), qty: 1, price: "0", total: "0.00" }])}
                   >
                     {t("addRow")}
                   </Button>
                   <Button
                     size="sm"
                     variant="tertiary"
-                    icon={RotateCcw}
-                    disabled={!f.edited}
-                    loading={revert.isPending}
-                    onClick={() => revert.mutate()}
+                    icon={ListPlus}
+                    onClick={() => withSelection(addSection(rows, t("newSection"), selected))}
                   >
-                    {t("revert")}
+                    {t("addSection")}
                   </Button>
-                </span>
+                  <Button
+                    size="sm"
+                    variant="tertiary"
+                    icon={Columns3}
+                    disabled={current.extraColumns.length >= MAX_EXTRA_COLUMNS}
+                    onClick={addColumn}
+                  >
+                    {t("addColumn")}
+                  </Button>
+                </>
               ) : null}
-              <Button size="sm" variant="tertiary" icon={FileText} disabled={save.isPending} onClick={() => void download("pdf")}>
-                {t("pdf")}
-              </Button>
+              <span className="ml-auto flex flex-wrap items-center gap-1">
+                {canEdit ? (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="tertiary"
+                      icon={BookmarkPlus}
+                      loading={template.isPending}
+                      onClick={() => template.mutate("save")}
+                    >
+                      {t("templateSave")}
+                    </Button>
+                    {hasTemplate ? (
+                      <RowMenu
+                        label={t("templateMenu")}
+                        items={[
+                          {
+                            key: "apply",
+                            label: t("templateApply"),
+                            icon: <History size={16} strokeWidth={1.5} aria-hidden />,
+                            onSelect: () => template.mutate("apply"),
+                          },
+                          {
+                            key: "delete",
+                            label: t("templateDelete"),
+                            icon: <Trash2 size={16} strokeWidth={1.5} aria-hidden />,
+                            onSelect: () => template.mutate("delete"),
+                          },
+                        ]}
+                      />
+                    ) : null}
+                    <Button
+                      size="sm"
+                      variant="tertiary"
+                      icon={RotateCcw}
+                      disabled={!f.edited}
+                      loading={revert.isPending}
+                      onClick={() => revert.mutate()}
+                    >
+                      {t("revert")}
+                    </Button>
+                  </>
+                ) : null}
+                <Button size="sm" variant="tertiary" icon={FileText} disabled={save.isPending} onClick={() => void download("pdf")}>
+                  {t("pdf")}
+                </Button>
+              </span>
             </div>
+            {canEdit && selected.size > 0 ? (
+              <div
+                className="flex flex-wrap items-center gap-2 rounded-card bg-brand-900 px-3 py-2 text-caption text-on-solid"
+                role="toolbar"
+                aria-label={t("selection", { n: selected.size })}
+              >
+                <span className="mr-2 font-semibold">{t("selection", { n: selected.size })}</span>
+                <Button size="sm" variant="danger" icon={Trash2} onClick={() => withSelection(setRemoved(rows, selected, true))}>
+                  {t("removeRows")}
+                </Button>
+                <div className="relative">
+                  <Button size="sm" variant="secondary" icon={MoveRight} aria-expanded={moveOpen} onClick={() => setMoveOpen((o) => !o)}>
+                    {t("moveToSection")}
+                  </Button>
+                  {moveOpen ? (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setMoveOpen(false)} aria-hidden />
+                      <div
+                        role="menu"
+                        className="absolute top-9 left-0 z-50 w-[260px] rounded-card border border-border bg-surface p-1 text-text-primary shadow-overlay"
+                      >
+                        {sections.map((s) => (
+                          <button
+                            key={s.i}
+                            type="button"
+                            role="menuitem"
+                            onClick={() => withSelection(moveToSection(rows, selected, s.i))}
+                            className="flex h-8 w-full items-center rounded-[6px] px-2 text-left text-[13px] hover:bg-table-header"
+                          >
+                            {s.r.name}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => withSelection(addSection(rows, t("newSection"), selected))}
+                          className="flex h-8 w-full items-center gap-2 rounded-[6px] px-2 text-left text-[13px] font-medium text-link hover:bg-table-header"
+                        >
+                          <Plus size={16} strokeWidth={1.5} aria-hidden />
+                          {t("newSectionFromSelection")}
+                        </button>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+                <Button size="sm" variant="secondary" icon={Copy} onClick={() => withSelection(duplicate(rows, selected))}>
+                  {t("duplicate")}
+                </Button>
+                <Button size="sm" variant="secondary" className="ml-auto" onClick={() => setSelected(new Set())}>
+                  {t("clearSelection")}
+                </Button>
+              </div>
+            ) : null}
             <div className="max-h-[50vh] overflow-auto rounded-card border border-border">
               <table className="w-full min-w-[880px] text-caption">
-                <thead className="sticky top-0 bg-table-header">
+                <thead className="sticky top-0 z-10 bg-table-header">
                   <tr>
-                    <th className="px-2 py-1 text-left">№</th>
-                    {form.cols.map((c) => (
-                      <th key={c} className={`px-2 py-1 ${c === "qty" || c === "price" || c === "total" ? "text-right" : "text-left"}`}>
-                        {COL_TITLES[c]}
+                    {canEdit ? (
+                      <th className="w-8 px-2 py-1">
+                        <Checkbox
+                          aria-label={t("selectAll")}
+                          checked={visibleRowIndexes.length > 0 && selected.size === visibleRowIndexes.length}
+                          indeterminate={selected.size > 0 && selected.size < visibleRowIndexes.length}
+                          onChange={(v) => setSelected(new Set(v ? visibleRowIndexes : []))}
+                        />
+                      </th>
+                    ) : null}
+                    {allCols.map((c) => (
+                      <th
+                        key={c.key}
+                        className={`px-2 py-1 ${numeric(c.key) ? "text-right" : "text-left"} ${off(c.key)}`}
+                        title={hidden.has(c.key) ? t("hiddenColumn") : undefined}
+                      >
+                        {c.extra && canEdit ? (
+                          <input
+                            aria-label={t("columnName")}
+                            value={c.title}
+                            maxLength={60}
+                            onChange={(e) =>
+                              update({
+                                ...current,
+                                extraColumns: current.extraColumns.map((x) => (x.key === c.key ? { ...x, title: e.target.value } : x)),
+                              })
+                            }
+                            className="w-full min-w-24 rounded-control border border-transparent bg-transparent px-1 font-semibold focus:border-primary focus:outline-none"
+                          />
+                        ) : (
+                          c.title
+                        )}
                       </th>
                     ))}
-                    {canEdit ? <th className="px-2 py-1" aria-label={t("actions")} /> : null}
                   </tr>
                 </thead>
                 <tbody>
-                  {current.map((r, i) => (
-                    <tr
-                      key={i}
-                      className="border-t border-border"
-                      onDragOver={canEdit ? (e) => e.preventDefault() : undefined}
-                      onDrop={
-                        canEdit
-                          ? (e) => {
-                              e.preventDefault();
-                              const from = dragFrom.current;
-                              dragFrom.current = null;
-                              if (from != null && from !== i) update(moveRow(current, from, i));
-                            }
-                          : undefined
-                      }
-                    >
-                      <td className="px-2 py-1 tabular-nums">
+                  {lines.map((l) => {
+                    if (l.kind === "section")
+                      return (
+                        <tr key={`s${l.index}`} className="border-t border-border bg-success-bg">
+                          <td colSpan={colSpan} className="px-2 py-1">
+                            <span className="flex items-center gap-2">
+                              <ChevronDown size={14} strokeWidth={1.5} aria-hidden className="text-primary" />
+                              {canEdit ? (
+                                <input
+                                  aria-label={t("sectionName")}
+                                  value={l.title}
+                                  maxLength={300}
+                                  onChange={(e) => updateRows(rows.map((r, j) => (j === l.index ? { ...r, name: e.target.value } : r)))}
+                                  className="min-w-48 rounded-control border border-transparent bg-transparent px-1 font-semibold text-primary focus:border-primary focus:outline-none"
+                                />
+                              ) : (
+                                <span className="font-semibold text-primary">{l.title}</span>
+                              )}
+                              <span className="text-text-secondary">· {t("sectionRows", { n: l.count })}</span>
+                              {canEdit ? (
+                                <Button
+                                  size="sm"
+                                  variant="icon"
+                                  icon={Trash2}
+                                  className="ml-auto"
+                                  aria-label={t("removeSection", { name: l.title })}
+                                  onClick={() => withSelection(removeSection(rows, l.index))}
+                                />
+                              ) : null}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    if (l.kind === "subtotal")
+                      return (
+                        <tr key={`t${l.section}`} className="border-t border-border">
+                          {totalsRow(t("sectionTotal"), l.qty, l.sum, false)}
+                        </tr>
+                      );
+                    const i = l.index;
+                    const r = rows[i];
+                    const o = f.original[l.item];
+                    const isSel = selected.has(i);
+                    return (
+                      <tr
+                        key={i}
+                        className={`border-t border-border ${isSel ? "bg-danger-bg" : ""}`}
+                        onDragOver={canEdit ? (e) => e.preventDefault() : undefined}
+                        onDrop={
+                          canEdit
+                            ? (e) => {
+                                e.preventDefault();
+                                const from = dragFrom.current;
+                                dragFrom.current = null;
+                                if (from != null && from !== i) updateRows(moveRow(rows, from, i));
+                              }
+                            : undefined
+                        }
+                      >
                         {canEdit ? (
-                          <span
-                            draggable
-                            onDragStart={(e) => {
-                              dragFrom.current = i;
-                              e.dataTransfer.effectAllowed = "move";
-                            }}
-                            title={t("drag")}
-                            className="inline-flex cursor-grab items-center gap-1 text-text-secondary"
-                          >
-                            <GripVertical size={14} strokeWidth={1.5} aria-hidden />
-                            <span className="text-text-primary">{i + 1}</span>
-                          </span>
-                        ) : (
-                          i + 1
-                        )}
-                      </td>
-                      {form.cols.map((c) => {
-                        if (c === "total")
+                          <td className="px-2 py-1">
+                            <Checkbox
+                              aria-label={t("selectRow", { n: l.no })}
+                              checked={isSel}
+                              onChange={(v) => {
+                                const next = new Set(selected);
+                                if (v) next.add(i);
+                                else next.delete(i);
+                                setSelected(next);
+                              }}
+                            />
+                          </td>
+                        ) : null}
+                        {allCols.map((col) => {
+                          const c = col.key;
+                          if (c === "no")
+                            return (
+                              <td key={c} className={`px-2 py-1 tabular-nums ${off(c)}`}>
+                                {canEdit ? (
+                                  <span
+                                    draggable
+                                    onDragStart={(e) => {
+                                      dragFrom.current = i;
+                                      e.dataTransfer.effectAllowed = "move";
+                                    }}
+                                    title={t("drag")}
+                                    className="inline-flex cursor-grab items-center gap-1 text-text-secondary"
+                                  >
+                                    <GripVertical size={14} strokeWidth={1.5} aria-hidden />
+                                    <span className={hidden.has(c) ? "" : "text-text-primary"}>{l.no}</span>
+                                  </span>
+                                ) : (
+                                  l.no
+                                )}
+                              </td>
+                            );
+                          if (c === "total")
+                            return (
+                              <td key={c} className={`px-2 py-1 text-right tabular-nums ${off(c)}`}>
+                                {r.price == null ? "" : formatMoney(rowTotal(r.qty, r.price))}
+                              </td>
+                            );
+                          if (col.extra) {
+                            const v = r.extra?.[c] ?? "";
+                            return (
+                              <td key={c} className={`px-1 py-0.5 ${v ? "bg-warning-bg" : ""} ${off(c)}`}>
+                                {canEdit ? (
+                                  <input
+                                    data-cell={`${i}:${c}`}
+                                    aria-label={`${col.title} — ${l.no}`}
+                                    value={v}
+                                    maxLength={200}
+                                    onChange={(e) => setExtra(i, c, e.target.value)}
+                                    onKeyDown={(e) => onKey(e, i, c)}
+                                    className="w-full rounded-control border border-transparent bg-transparent px-1 py-0.5 focus:border-primary focus:outline-none"
+                                  />
+                                ) : (
+                                  v
+                                )}
+                              </td>
+                            );
+                          }
+                          const ec = c as EditCol;
+                          const value = cellValue(r, ec);
+                          const was = o ? cellValue(o, ec) : "";
+                          const edited = value !== was;
+                          const hinted = !!r.batchHint && (c === "series" || c === "expiry");
+                          const short = c === "series" && r.shortage != null;
                           return (
-                            <td key={c} className="px-2 py-1 text-right tabular-nums">
-                              {r.price == null ? "" : formatMoney(rowTotal(r.qty, r.price))}
+                            <td
+                              key={c}
+                              className={`px-1 py-0.5 ${c === "series" ? "min-w-32" : ""} ${(edited || hinted) && !hidden.has(c) ? "bg-warning-bg" : ""} ${off(c)}`}
+                              title={
+                                edited
+                                  ? t("original", { v: was || "—" })
+                                  : hinted
+                                    ? r.batchHint === "RESERVED"
+                                      ? labels.reserved
+                                      : labels.proposed
+                                    : undefined
+                              }
+                            >
+                              {canEdit ? (
+                                <input
+                                  data-cell={`${i}:${c}`}
+                                  aria-label={`${COL_TITLES[ec]} — ${l.no}`}
+                                  value={c === "price" ? (r.price ?? "") : c === "qty" ? String(r.qty) : (r[ec] ?? "")}
+                                  onChange={(e) => setCell(i, ec, e.target.value)}
+                                  onKeyDown={(e) => onKey(e, i, c)}
+                                  inputMode={c === "qty" || c === "price" ? "decimal" : undefined}
+                                  placeholder={short ? seriesLabel(r, labels) : undefined}
+                                  className={`w-full rounded-control border border-transparent bg-transparent px-1 py-0.5 focus:border-primary focus:outline-none ${
+                                    c === "qty" || c === "price" ? "text-right tabular-nums" : ""
+                                  } ${hidden.has(c) ? "line-through" : ""} ${short ? "placeholder:font-semibold placeholder:text-danger" : ""}`}
+                                />
+                              ) : null}
+                              {canEdit && hinted && c === "series" ? (
+                                <span className="block px-1 text-caption text-text-secondary">
+                                  {r.batchHint === "RESERVED" ? labels.reserved : labels.proposed}
+                                </span>
+                              ) : null}
+                              {canEdit ? null : (
+                                <span
+                                  className={
+                                    c === "qty" || c === "price"
+                                      ? "block text-right tabular-nums"
+                                      : short
+                                        ? "font-semibold text-danger"
+                                        : ""
+                                  }
+                                >
+                                  {c === "price"
+                                    ? r.price == null
+                                      ? ""
+                                      : formatMoney(r.price)
+                                    : c === "series"
+                                      ? seriesLabel(r, labels)
+                                      : value}
+                                </span>
+                              )}
                             </td>
                           );
-                        const o = f.original[i];
-                        const value = cellValue(r, c);
-                        const was = o ? cellValue(o, c) : "";
-                        const edited = value !== was;
-                        const hinted = !!r.batchHint && (c === "series" || c === "expiry");
-                        const short = c === "series" && r.shortage != null;
-                        return (
-                          <td
-                            key={c}
-                            className={`px-1 py-0.5 ${c === "series" ? "min-w-32" : ""} ${edited || hinted ? "bg-warning-bg" : ""}`}
-                            title={
-                              edited
-                                ? t("original", { v: was || "—" })
-                                : hinted
-                                  ? r.batchHint === "RESERVED"
-                                    ? labels.reserved
-                                    : labels.proposed
-                                  : undefined
-                            }
-                          >
-                            {canEdit ? (
-                              <input
-                                data-cell={`${i}:${c}`}
-                                aria-label={`${COL_TITLES[c]} — ${i + 1}`}
-                                value={c === "price" ? (r.price ?? "") : c === "qty" ? String(r.qty) : (r[c] ?? "")}
-                                onChange={(e) => setCell(i, c, e.target.value)}
-                                onKeyDown={(e) => onKey(e, i, c)}
-                                inputMode={c === "qty" || c === "price" ? "decimal" : undefined}
-                                placeholder={short ? seriesLabel(r, labels) : undefined}
-                                className={`w-full rounded-control border border-transparent bg-transparent px-1 py-0.5 focus:border-primary focus:outline-none ${
-                                  c === "qty" || c === "price" ? "text-right tabular-nums" : ""
-                                } ${short ? "placeholder:font-semibold placeholder:text-danger" : ""}`}
-                              />
-                            ) : null}
-                            {canEdit && hinted && c === "series" ? (
-                              <span className="block px-1 text-caption text-text-secondary">
-                                {r.batchHint === "RESERVED" ? labels.reserved : labels.proposed}
-                              </span>
-                            ) : null}
-                            {canEdit ? null : (
-                              <span
-                                className={
-                                  c === "qty" || c === "price" ? "block text-right tabular-nums" : short ? "font-semibold text-danger" : ""
-                                }
-                              >
-                                {c === "price"
-                                  ? r.price == null
-                                    ? ""
-                                    : formatMoney(r.price)
-                                  : c === "series"
-                                    ? seriesLabel(r, labels)
-                                    : value}
-                              </span>
-                            )}
-                          </td>
-                        );
-                      })}
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t border-border">{totalsRow("Жами", grand.qty, grand.sum, true)}</tr>
+                </tfoot>
+              </table>
+            </div>
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-text-secondary">
+              <span className="inline-flex items-center gap-1">
+                <Trash2 size={14} strokeWidth={1.5} aria-hidden />
+                {t("removedCount", { n: removed.length })}
+              </span>
+              {hiddenTitles.length ? (
+                <span className="inline-flex items-center gap-1">
+                  <EyeOff size={14} strokeWidth={1.5} aria-hidden />
+                  {t("hiddenNote", { cols: hiddenTitles.join(", ") })}
+                </span>
+              ) : null}
+              {f.edited && f.editedBy && f.editedAt ? (
+                <span>{t("savedBy", { who: f.editedBy, at: formatDateTime(new Date(f.editedAt)) })}</span>
+              ) : null}
+            </p>
+            {removed.length ? (
+              <section aria-label={t("removedTitle")} className="rounded-card border border-border">
+                <h3 className="border-b border-border bg-table-header px-3 py-1.5 text-caption font-semibold">{t("removedTitle")}</h3>
+                <ul>
+                  {removed.map(({ r, i }) => (
+                    <li key={i} className="flex items-center gap-3 border-t border-border px-3 py-1 text-caption first:border-t-0">
+                      <span className="flex-1 text-text-secondary line-through">{r.name}</span>
+                      <span className="tabular-nums text-text-secondary">{r.qty}</span>
                       {canEdit ? (
-                        <td className="px-1 py-0.5 whitespace-nowrap">
-                          <Button
-                            size="sm"
-                            variant="icon"
-                            icon={ArrowUp}
-                            aria-label={t("up")}
-                            disabled={i === 0}
-                            onClick={() => move(i, -1)}
-                          />
-                          <Button
-                            size="sm"
-                            variant="icon"
-                            icon={ArrowDown}
-                            aria-label={t("down")}
-                            disabled={i === current.length - 1}
-                            onClick={() => move(i, 1)}
-                          />
+                        <>
+                          <Button size="sm" variant="tertiary" icon={Undo2} onClick={() => updateRows(setRemoved(rows, [i], false))}>
+                            {t("restore")}
+                          </Button>
                           <Button
                             size="sm"
                             variant="icon"
                             icon={Trash2}
                             aria-label={t("deleteRow")}
-                            onClick={() => update(current.filter((_, j) => j !== i))}
+                            onClick={() => updateRows(rows.filter((_, j) => j !== i))}
                           />
-                        </td>
+                        </>
                       ) : null}
-                    </tr>
+                    </li>
                   ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t border-border font-semibold">
-                    <td className="px-2 py-1" colSpan={form.cols.indexOf("qty") + 1}>
-                      Жами
-                    </td>
-                    <td className="px-2 py-1 text-right tabular-nums">{sumQty}</td>
-                    <td colSpan={form.cols.length - form.cols.indexOf("qty") - 2} />
-                    {form.priced ? <td className="px-2 py-1 text-right tabular-nums">{formatMoney(sumText)}</td> : <td />}
-                    {canEdit ? <td /> : null}
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+                </ul>
+              </section>
+            ) : null}
             {save.error ? <p className="text-caption text-danger">{t("saveError")}</p> : null}
           </>
         )}
