@@ -692,7 +692,7 @@ export function InvoiceFormsModal(props: { orderId: number; initial: FormType; o
                                   value={l.title}
                                   maxLength={300}
                                   onChange={(e) => updateRows(rows.map((r, j) => (j === l.index ? { ...r, name: e.target.value } : r)))}
-                                  className="min-w-48 rounded-control border border-transparent bg-transparent px-1 font-semibold text-primary focus:border-primary focus:outline-none"
+                                  className="field-sizing-content min-w-24 rounded-control border border-transparent bg-transparent px-1 font-semibold text-primary focus:border-primary focus:outline-none"
                                 />
                               ) : (
                                 <span className="font-semibold text-primary">{l.title}</span>
