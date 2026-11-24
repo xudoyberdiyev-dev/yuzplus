@@ -2,6 +2,17 @@
 
 Manba: `docs/SPEC.md` 16-bo'lim. Har bosqich: kichik vazifalar → kod → testlar → CI yashil → hisobot. Bosqich tugasa — `develop → main` PR.
 
+## 🔴 FT — FAKTURA TAHRIRI (egasi tasdigʻi 24.11.2026 23:37) — 25.11 00:00 OYNASIDA BIRINCHI NAVBATDA
+Joy: buyurtma → «Chop etish» → «Faktura: …» tahrir oynasi (`frontend/features/orders/invoice-forms.tsx`, backend `/api/orders/{id}/invoice-forms`, jadval `order_invoice_edit(_row)`). Namuna rasmlar: `docs/notes/ft/` (11 — hozirgi, 12 va 13 — tasdiqlangan taklif). **Hamma tuzatish faqat faylga taʼsir qiladi** — buyurtma, ombor qoldigʻi, qarz oʻzgarmaydi. Barcha 5 faktura turida ishlaydi.
+- [ ] **FT1 Ustunlarni yashirish** (rasm 13): «Ustunlar» menyusi, har ustun checkbox; oʻchirilgan ustun oynada kulrang/chizilgan koʻrinadi (qaytarish oson), Excel/PDF faylga chiqmaydi. Saqlash yangi migratsiya bilan (eskisini oʻzgartirmang).
+- [ ] **FT2 Qatorlarni tanlab olib tashlash** (rasm 12): har qator boshida checkbox + «hammasini tanlash»; tanlanganda panel: «Fakturadan olib tashlash», «Boʻlimga koʻchirish», «Nusxa». Olib tashlanganlar pastda «Olib tashlangan qatorlar» roʻyxatida, «Qaytarish» bilan. Faylga chiqmaydi, jami qayta hisoblanadi.
+- [ ] **FT3 Boʻlimlar**: sarlavha qatorlari (masalan «ДОРИ ВОСИТАЛАРИ», «ТИББИЙ БУЮМЛАР»), nomi bosib tahrirlanadi, ostida «Бўлим жами» avtomatik; «＋ Boʻlim qoʻshish» tugmasi; qatorlarni boʻlimga koʻchirish.
+- [ ] **FT4 Ustun qoʻshish**: «＋ Ustun qoʻshish» — nomli yangi ustun (masalan «Изоҳ»), kataklarga erkin matn.
+- [ ] **FT5 Shablon**: «Shablon sifatida saqlash» — ustunlar tanlovi, qoʻshilgan ustunlar va boʻlimlar tartibi mijoz + faktura turi boʻyicha eslab qolinadi; keyingi safar shu mijoz fakturasi shu koʻrinishda ochiladi («Shablonni tiklash» ham).
+- ⏸ **FT6 Chiqadigan fayl koʻrinishi (rasm 14) — TASDIQLANMAGAN.** Egasi mijoz uchun va terish uchun chiqish fakturasi namunasini yuboradi; fayl dizayni oʻsha namunaga qarab qilinadi. Hozircha faylda faqat: yashirilgan ustunlar va olib tashlangan qatorlar chiqmaydi, jamilar qayta hisoblanadi; boʻlim/yangi ustun hozirgi uslubdagi oddiy qator/ustun boʻlib chiqadi. Fayl maketini oʻzgartirmang.
+- Talablar: backend testlar (saqlash/oʻqish, olib tashlangan qator faylga chiqmasligi, jami qayta hisob, buyurtma/qoldiq/qarz oʻzgarmasligi), frontend testlar, i18n uch tilda, OpenAPI yangilash, prototip uslubi (tokenlar, Lucide).
+- Oyna oxirida (FT tugasa ham, tugamasa ham): hisobot, 6a (CI yashil → main), soʻng **barcha oynalarni yana oʻchiring** (egasi «oynalarni qayta yoq» demaguncha).
+
 ## Egasi talabi (07.11.2026 21:45) — MUDDAT 11.11.2026
 - **UI prototip bilan AYNAN bir xil bo'lishi shart** (Claude Design prototipi → `design/prototype/` ✅ 07.11 22:45 qo'shildi; ko'rish: `scripts/prototype-shot.cjs`, yo'riqnoma: `design/prototype/README.md`). Har ekran prototip bilan yonma-yon solishtirilib qayta quriladi; Direktor panelidan boshlanadi.
 - **Prototipdagi UI'da bor, lekin backendda yo'q qismlar — majburiy yaratiladi** (API + baza + test). Har ekranni moslashda «UI'da bor / backendda yo'q» ro'yxati tuzilib, bajariladi.
@@ -740,3 +751,4 @@ _(07.11.2026 18:12 — 6 savolga javob berildi va 20:00–20:30 da joriy qilindi
 - 23.11 00:08–01:12 (tungi oyna, 1-sessiya; ochiq avtonom vazifa qolmagani uchun oyna erta yopildi): S1 6-qism — 2 yillik sintetik bazada zaxira oʻlchovi (dump 84 s / 0,95 GB, tiklash 273 → 193 s parallel), oʻsish/partitsiya xulosasi, `SlowRequestLog` + real vaqt hodisalarini birlashtirish, buyurtma filtr variantlari keshi (CI toʻliq yashil). Remote `medix` orqali push (yuzplus — 403).
 - 23.11 16:35–16:45 (kunduzgi oyna, zaxira tekshiruvi): oyna hisoboti 16:00 da yozilgan, egasi sessiyasi texnik ishlar oynasini qoʻshib-olib tashlagan (sof oʻzgarish yoʻq); develop CI yashil (35145b31) → PR #44 main'ga merge qilindi (6a). Ochiq avtonom vazifa yoʻq — oyna yopildi.
 - 24.11 00:34–00:45 (tungi oyna, zaxira tekshiruvi): CI yashil (1dadaf9a), issue/PR yoʻq; DB rejasi egasi tasdigʻini kutadi; ochiq avtonom vazifa yoʻq — oyna erta yopildi.
+- 24.11 23:40 — egasi FT (faktura tahriri, FT1–FT5) ni tasdiqladi, 25.11 00:00 oynasida bajariladi; FT6 (fayl koʻrinishi) egasi namunasini kutadi. Faqat 00:00–05:00 oynasi yoqildi.
