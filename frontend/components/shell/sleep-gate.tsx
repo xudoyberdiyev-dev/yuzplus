@@ -8,7 +8,7 @@ import { useEffect, useState, type ReactNode } from "react";
  * (login ham) animatsiyali banner bilan yopiladi, hech qanday maʼlumot qabul qilinmaydi.
  * SLEEP_UNTIL dan keyin oʻzi ochiladi. Keyingi safar: vaqtni oʻzgartiring yoki null qiling.
  */
-export const SLEEP_UNTIL: string | null = "2026-11-24T12:00:00+05:00";
+export const SLEEP_UNTIL: string | null = null; // egasi 24.11 11:11: muddatidan oldin olib tashlandi
 
 export function sleepLeftMs(now: number, until: string | null = SLEEP_UNTIL): number {
   if (until === null) return 0;
