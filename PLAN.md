@@ -2,6 +2,25 @@
 
 Manba: `docs/SPEC.md` 16-bo'lim. Har bosqich: kichik vazifalar → kod → testlar → CI yashil → hisobot. Bosqich tugasa — `develop → main` PR.
 
+## ⏸ V2 — MIJOZ TALABLARI (25.11.2026, egasi orqali) — V2 DA QILINADI, HOZIR BOSHLANMAYDI
+Manba: `docs/notes/v2/mijoz-talablari-25-11.docx`. Egasi qarorlari: 25.11 23:50 soʻrovnoma. Bajarishdan oldin egasi «boshla» deydi.
+- [ ] **V2-M1 Inventar (korxona mol-mulki)** — oddiy roʻyxat (egasi qarori): nomi, inventar raqami, toifa, qiymati, sotib olingan sana, joyi (filial/xona), mas'ul xodim, holati (ishlayapti/taʼmirda/hisobdan chiqarilgan); xodimga topshirish/qaytarish tarixi (jurnal), xodim ishdan ketsa — undagi buyumlar roʻyxati. Amortizatsiya yoʻq.
+- [ ] **V2-M2 Mas'ul menejer** — mijozga doimiy menejer biriktiriladi, buyurtmada avtomatik qoʻyiladi, kerak boʻlsa oʻzgartiriladi (egasi qarori). Barcha savdo/qarz hisobotlarida «Menejer» filtri va ustuni.
+- [ ] **V2-M3 Buxgalteriya paneli** — shu oy: kirim qilingan mahsulot summasi, chiqim (sotuv) summasi, yuborilishi kerak boʻlgan hisob-fakturalar, yuborilgan fakturalar (mavjud `invoice-tasks` hisoblagichlari asosida).
+- [ ] **V2-M4 PUL ZANJIRI (mijozning eng katta muammosi)** — «tovar ketdi, pul kelmadi / qaytdi, lekin vozvrat qilinmadi / pul olindi, lekin mijozga kiritilmadi». Tamoyil: **har bir soʻm va har bir quti har lahzada kimningdir qoʻlida** — javobgarlik dalil bilan aniqlanadi, taxmin bilan emas:
+  1. *Yetkazishda mijoz tasdigʻi* — haydovchi ilovasida har nuqta yopilganda: toʻlandi (naqd/karta/oʻtkazma, summa) · qarzga · qaytarildi (qaysi tovar, qancha). Mijoz (dorixona) buni SMS/Telegram kodi yoki imzo+foto bilan tasdiqlaydi. Mijoz tasdiqlagan qarz — mijozniki (undirish menejerda); mijoz «haydovchiga toʻladim» desa — pul haydovchi javobgarligida.
+  2. *Safarni yopish* — har nuqta yopilmaguncha safar tugamaydi; olingan naqd kassirga topshiriladi (mavjud HD2), kamomad — haydovchiga.
+  3. *Qaytarish* — «qaytarildi» belgisi avtomatik kutilayotgan vozvrat yaratadi; omborchi jismonan qabul qilmaguncha tovar haydovchi javobgarligida, farq — haydovchiga.
+  4. *Karta/onlayn toʻlov* — haydovchi chek skrinshotini yuklaydi; bank/Payme koʻchirmasi bilan avtomatik solishtiriladi (V2 bank integratsiyasi); mos kelmaganlar «Tasdiqlanmagan toʻlovlar» navbatiga.
+  5. *Bogʻlanmagan pul* — kassaga tushgan, lekin mijozga yozilmagan har summa «Taqsimlanmagan pullar» navbatida, necha kun turgani bilan; kim qabul qilgani koʻrinadi.
+  6. *Mijoz bilan solishtirish (akt sverka)* — har oy mijozga qarz qoldigʻi Telegram/SMS orqali yuboriladi; mijoz tasdiqlaydi yoki «men toʻlaganman» deb eʼtiroz bildiradi → ochiq ish (kim pul olgan, qachon, dalili). Eski «1 yil oldin toʻlagan» holatlar shu yerda chiqadi.
+  7. *Javobgarlik jurnali va paneli* — mijozning misolidagi jadval: mijoz turi · mijoz · menejer · kassir · haydovchi · qarz (naqd/oʻtkazma/onlayn) — **har yuk xati (yetkazish) alohida qator**, shuning uchun bitta mijoz bir necha qatorda chiqadi (kim qachon qarzga bergani koʻrinadi). Har odam boʻyicha: qoʻlidagi pul, tasdiqlanmagan qarzlar, muddati oʻtgan, ochiq eʼtirozlar.
+  8. *Ogohlantirish va cheklov* — mijoz tasdigʻisiz qarz, N kundan oshgan taqsimlanmagan pul, qaytmagan vozvrat — qizil; tasdiqlanmagan qarzi limitdan oshgan haydovchiga yangi safar berilmaydi (sozlanadi).
+- [ ] **V2-M5 CRM (savdo menejerlari)** — oylik/kunlik reja (summa, yangi mijoz, qoʻngʻiroqlar soni), sovuq mijozlar roʻyxati, kunlik qoʻngʻiroq vazifalari, har qoʻngʻiroq natijasi (tayyor izohlar roʻyxati + erkin matn), savdo tahlili. ❓ «5 ta izoh» nimani anglatishini mijozdan aniqlash.
+- [ ] **V2-M6 KPI va ish haqi tahlili** — keyinroq (mijoz: «hozir majburiy emas»); M2 va M5 maʼlumotlari asosida.
+- ❓ **V2-M7 «Oylik»** — mijoz nima nazarda tutganini egasi soʻrab beradi (xodimlar oyligi yoki oylik reja/hisobot).
+Navbat taklifi: M4 (pul zanjiri) → M2 → M3 → M1 → M5 → M6.
+
 ## 🔴 FT — FAKTURA TAHRIRI (egasi tasdigʻi 24.11.2026 23:37) — 25.11 00:00 OYNASIDA BIRINCHI NAVBATDA
 Joy: buyurtma → «Chop etish» → «Faktura: …» tahrir oynasi (`frontend/features/orders/invoice-forms.tsx`, backend `/api/orders/{id}/invoice-forms`, jadval `order_invoice_edit(_row)`). Namuna rasmlar: `docs/notes/ft/` (11 — hozirgi, 12 va 13 — tasdiqlangan taklif). **Hamma tuzatish faqat faylga taʼsir qiladi** — buyurtma, ombor qoldigʻi, qarz oʻzgarmaydi. Barcha 5 faktura turida ishlaydi.
 - [x] **FT1 Ustunlarni yashirish** (rasm 13): «Ustunlar» menyusi, har ustun checkbox; oʻchirilgan ustun oynada kulrang/chizilgan koʻrinadi (qaytarish oson), Excel/PDF faylga chiqmaydi. Saqlash yangi migratsiya bilan (eskisini oʻzgartirmang).
@@ -755,3 +774,4 @@ _(07.11.2026 18:12 — 6 savolga javob berildi va 20:00–20:30 da joriy qilindi
 - 24.11 23:40 — egasi FT (faktura tahriri, FT1–FT5) ni tasdiqladi, 25.11 00:00 oynasida bajariladi; FT6 (fayl koʻrinishi) egasi namunasini kutadi. Faqat 00:00–05:00 oynasi yoqildi.
 - 24.11 23:43–23:58 (egasi bilan): server koʻchirildi — Railway Postgres va backend US West → EU West (Amsterdam); oldin zaxira (23:43, 236 MB). Backend UP, brauzerdan (Toshkent) soʻrov ~130 ms. Vercel funksiya regioni iad1 → fra1 (Frankfurt) — qayta joylashda kuchga kiradi.
 - 25.11 00:01–00:50 (tungi oyna): FT1–FT5 (ustun yashirish, qator olib tashlash, boʻlimlar, ustun qoʻshish, mijoz shabloni) — V118, API, Excel/PDF, UI, IT/unit/e2e; CI #1623 toʻliq yashil. Remote — eski `medix` manzili (yuzplus — 403). Oyna hisoboti, 6a, soʻng oynalar oʻchirildi.
+- 25.11 23:55 (egasi bilan): mijozning 7 ta V2 talabi koʻrib chiqildi va PLAN.md → «V2 — MIJOZ TALABLARI» ga yozildi (pul zanjiri yechimi bilan); bajarilmaydi, V2 da egasi «boshla» deganda.
