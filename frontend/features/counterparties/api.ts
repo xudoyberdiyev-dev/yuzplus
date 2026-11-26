@@ -103,7 +103,7 @@ export function useCounterparty(id: number | null) {
 }
 
 export function usePriceTypes() {
-  return useQuery({ queryKey: ["price-types"], queryFn: () => unwrap(api.GET("/api/price-types")), staleTime: Infinity });
+  return useQuery({ queryKey: ["price-types"], queryFn: () => unwrap(api.GET("/api/price-types")), staleTime: 30_000 });
 }
 
 function useCpMutation<T>(fn: (v: T) => Promise<CounterpartyDetail>) {

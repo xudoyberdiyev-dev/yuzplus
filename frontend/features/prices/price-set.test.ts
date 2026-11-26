@@ -3,6 +3,8 @@ import { parseMoneyInput } from "@/features/counterparties/api";
 import {
   applyImport,
   applyMarkup,
+  defaultTypeId,
+  orderTypes,
   markupNetRounded,
   formatPct,
   fromCents,
@@ -167,5 +169,26 @@ describe("markupNetRounded (kirim boʻyicha ustama, FT6 namunasi)", () => {
   it("QQSsiz mahsulot: 1 400 + 15% → 1 610", () => {
     expect(fromCents(markupNetRounded(140000n, 1500n, "0"))).toBe("1610.00");
     expect(fromCents(markupNetRounded(140000n, 1500n, null))).toBe("1610.00");
+  });
+});
+
+describe("narx turlari tartibi (BG1 N1)", () => {
+  const types = [
+    { id: 1, name: "Bazaviy", base: true, batch: false },
+    { id: 2, name: "Ulgurji", base: false, batch: false },
+    { id: 3, name: "Partiya A", base: false, batch: true },
+    { id: 4, name: "Eski", base: false, batch: false, active: false },
+    { id: 5, name: "Yangi partiya", base: false, batch: true },
+  ];
+  it("mahsulot rejimida oddiylar birinchi, partiyaviylar keyin, nofaol oxirida — hech biri yashirilmaydi", () => {
+    expect(orderTypes(types, "prod").map((x) => x.id)).toEqual([1, 2, 3, 5, 4]);
+  });
+  it("kirim rejimida partiyaviylar birinchi", () => {
+    expect(orderTypes(types, "rc").map((x) => x.id)).toEqual([3, 5, 1, 2, 4]);
+  });
+  it("standart tur", () => {
+    expect(defaultTypeId(types, "prod")).toBe(1);
+    expect(defaultTypeId(types, "rc")).toBe(3);
+    expect(defaultTypeId([{ id: 9, name: "x", base: false, batch: false, active: false }], "prod")).toBeNull();
   });
 });

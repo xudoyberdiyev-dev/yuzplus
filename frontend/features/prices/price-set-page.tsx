@@ -59,6 +59,9 @@ import {
   withoutVat,
   type MarkupRel,
   type RoundStep,
+  type TypeLike,
+  defaultTypeId,
+  orderTypes,
   type SetFilter,
   type SetView,
 } from "./price-set";
@@ -68,6 +71,14 @@ type GridRow = components["schemas"]["PriceGridRow"];
 
 /** Bir martada chiziladigan qatorlar (5000 ta mahsulotda ham sahifa tez qolsin). */
 const CHUNK = 150;
+
+function useTypeOverview(branchId: number | null) {
+  return useQuery({
+    queryKey: ["price-types", "overview", branchId],
+    queryFn: () => unwrap(api.GET("/api/price-types/overview", { params: { query: { branchId: branchId ?? 0 } } })),
+    enabled: branchId !== null,
+  });
+}
 
 function usePriceGrid(branchId: number | null, priceTypeId: number | null) {
   return useQuery({
@@ -98,7 +109,6 @@ export function PriceSetPage() {
   const branches = useBranchList();
   const selected = useBranchStore((s) => s.branchId);
   const activeBranches = (branches.data ?? []).filter((b) => b.active);
-  const typeOptions = (types.data ?? []).filter((x) => !x.batch);
   const [typeId, setTypeId] = useState<number | null>(() => Number(params.get("type")) || null);
   // «Kirim boʻyicha» — shu sahifaning oʻzida (egasi 26.11.2026); ?mode=receipt bilan ham ochiladi
   const [mode, setMode] = useState<"prod" | "rc">(() => (params.get("mode") === "receipt" ? "rc" : "prod"));
@@ -107,8 +117,24 @@ export function PriceSetPage() {
   const [branchPick, setBranchPick] = useState<number | null>(() => Number(params.get("branch")) || null);
   const ownBranch = me.data && !me.data.allBranches ? (me.data.branchId ?? null) : null;
   const branchId = ownBranch ?? branchPick ?? selected ?? activeBranches[0]?.id ?? null;
-  const priceTypeId = typeId ?? typeOptions.find((x) => x.base)?.id ?? typeOptions[0]?.id ?? null;
-  const grid = usePriceGrid(branchId, priceTypeId);
+  // BG1 N1: barcha turlar (nofaollari ham — ogohlantirish bilan); «Narx turlari» jadvali keshidan, boʻlmasa faollar roʻyxatidan
+  const overview = useTypeOverview(branchId);
+  const allTypes: TypeLike[] = overview.data ?? types.data ?? [];
+  const ordered = orderTypes(allTypes, mode);
+  const picked = typeId !== null ? allTypes.find((x) => x.id === typeId && x.active !== false) : undefined;
+  const priceTypeId = picked?.id ?? defaultTypeId(allTypes, mode);
+  const pickedType = allTypes.find((x) => x.id === priceTypeId);
+  const batchInProd = mode === "prod" && pickedType?.batch === true;
+  const typeSelectOptions = ordered.map((x) => ({
+    value: String(x.id),
+    label: x.name,
+    disabled: x.active === false,
+    meta: x.active === false ? t("typeInactive") : x.batch ? t("typeBatch") : undefined,
+    metaWarning: x.active === false,
+  }));
+  const inactiveN = allTypes.filter((x) => x.active === false).length;
+  const typeHint = inactiveN ? t("typeInactiveHint", { n: inactiveN }) : undefined;
+  const grid = usePriceGrid(branchId, batchInProd ? null : priceTypeId);
 
   const [raw, setRaw] = useState<Record<number, string>>({});
   const [eff, setEff] = useState(() => formatIsoDate(todayTashkent()));
@@ -195,7 +221,7 @@ export function PriceSetPage() {
   if (me.data && !can(me.data, PRICE_CREATE)) return <ForbiddenState />;
   if (grid.error) return <ErrorState error={grid.error} onRetry={() => grid.refetch()} />;
 
-  const typeName = grid.data?.priceTypeName ?? typeOptions.find((x) => x.id === priceTypeId)?.name ?? "";
+  const typeName = grid.data?.priceTypeName ?? pickedType?.name ?? "";
   const branchName = activeBranches.find((b) => b.id === branchId)?.name ?? "";
 
   function guard(run: () => void) {
@@ -289,7 +315,7 @@ export function PriceSetPage() {
           <h1 className="text-[22px] leading-7 font-semibold tracking-[-0.01em]">{t("heading", { t: typeName, b: branchName })}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {mode === "prod" ? (
+          {mode === "prod" && !batchInProd ? (
             <>
               <input ref={fileRef} type="file" accept=".xlsx" className="hidden" onChange={onImportFile} />
               <Button variant="secondary" icon={Upload} disabled={importing || !rows.length} onClick={() => fileRef.current?.click()}>
@@ -303,7 +329,7 @@ export function PriceSetPage() {
           <Button variant="secondary" onClick={() => guard(() => router.push("/prices"))}>
             {t("close")}
           </Button>
-          {mode === "prod" ? (
+          {mode === "prod" && !batchInProd ? (
             <Button icon={Check} onClick={trySave}>
               {t("save")}
             </Button>
@@ -341,7 +367,8 @@ export function PriceSetPage() {
               label={t("type")}
               value={priceTypeId ? String(priceTypeId) : null}
               onChange={(v) => guard(() => (setTypeId(v ? Number(v) : null), resetAfterContextChange()))}
-              options={typeOptions.map((x) => ({ value: String(x.id), label: x.name }))}
+              options={typeSelectOptions}
+              hint={typeHint}
             />
             <Select
               label={t("branch")}
@@ -367,7 +394,8 @@ export function PriceSetPage() {
               label={t("type")}
               value={priceTypeId ? String(priceTypeId) : null}
               onChange={(v) => guard(() => (setTypeId(v ? Number(v) : null), resetAfterContextChange()))}
-              options={typeOptions.map((x) => ({ value: String(x.id), label: x.name }))}
+              options={typeSelectOptions}
+              hint={typeHint}
             />
             <Select
               label={t("branch")}
@@ -429,207 +457,227 @@ export function PriceSetPage() {
               </div>
             </div>
           </section>
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="w-[380px] max-w-full">
-                <TextField
-                  label={t("search")}
-                  variant="search"
-                  size="sm"
-                  value={filter.q}
-                  onChange={(v) => (setFilter((f) => ({ ...f, q: v })), setLimit(CHUNK))}
-                  placeholder={t("searchPh")}
-                  className="[&>label]:sr-only"
+          {batchInProd ? (
+            <Alert
+              tone="info"
+              title={t("typeBatchTitle", { t: pickedType?.name ?? "" })}
+              action={
+                <Button variant="secondary" icon={PackageCheck} onClick={() => (setMode("rc"), setRaw({}), setBanner(null))}>
+                  {t("typeBatchGo")}
+                </Button>
+              }
+            >
+              {t("typeBatchText")}
+            </Alert>
+          ) : (
+            <>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="w-[380px] max-w-full">
+                    <TextField
+                      label={t("search")}
+                      variant="search"
+                      size="sm"
+                      value={filter.q}
+                      onChange={(v) => (setFilter((f) => ({ ...f, q: v })), setLimit(CHUNK))}
+                      placeholder={t("searchPh")}
+                      className="[&>label]:sr-only"
+                    />
+                  </div>
+                  {(
+                    [
+                      ["makers", t("f.maker"), (r: GridRow) => r.manufacturer],
+                      ["categories", t("f.category"), (r: GridRow) => r.category],
+                      ["countries", t("f.country"), (r: GridRow) => r.country],
+                      ["supply", t("f.supply"), (r: GridRow) => r.supplyEmployee],
+                    ] as const
+                  ).map(([k, label, get]) => (
+                    <MultiFilter
+                      key={k}
+                      label={label}
+                      searchable
+                      options={facet(rows, get)}
+                      selected={filter[k]}
+                      onChange={(v) => (setFilter((f) => ({ ...f, [k]: v })), setLimit(CHUNK))}
+                    />
+                  ))}
+                  {filter.q || filter.makers.length || filter.categories.length || filter.countries.length || filter.supply.length ? (
+                    <button
+                      type="button"
+                      onClick={() => (setFilter(EMPTY_SET_FILTER), setView("all"))}
+                      className="h-control-sm px-1.5 text-[13px] font-medium text-link hover:underline"
+                    >
+                      {t("clear")}
+                    </button>
+                  ) : null}
+                </div>
+                <Tabs
+                  aria-label={t("viewsLabel")}
+                  value={view}
+                  onChange={(k) => (setView(k as SetView), setLimit(CHUNK))}
+                  items={SET_VIEWS.map((k) => ({
+                    key: k,
+                    label: t(`views.${k}`),
+                    count: filtered.filter((r) => VIEW_TEST[k](r, states.get(r.productId)!)).length,
+                  }))}
                 />
               </div>
-              {(
-                [
-                  ["makers", t("f.maker"), (r: GridRow) => r.manufacturer],
-                  ["categories", t("f.category"), (r: GridRow) => r.category],
-                  ["countries", t("f.country"), (r: GridRow) => r.country],
-                  ["supply", t("f.supply"), (r: GridRow) => r.supplyEmployee],
-                ] as const
-              ).map(([k, label, get]) => (
-                <MultiFilter
-                  key={k}
-                  label={label}
-                  searchable
-                  options={facet(rows, get)}
-                  selected={filter[k]}
-                  onChange={(v) => (setFilter((f) => ({ ...f, [k]: v })), setLimit(CHUNK))}
-                />
-              ))}
-              {filter.q || filter.makers.length || filter.categories.length || filter.countries.length || filter.supply.length ? (
-                <button
-                  type="button"
-                  onClick={() => (setFilter(EMPTY_SET_FILTER), setView("all"))}
-                  className="h-control-sm px-1.5 text-[13px] font-medium text-link hover:underline"
-                >
-                  {t("clear")}
-                </button>
-              ) : null}
-            </div>
-            <Tabs
-              aria-label={t("viewsLabel")}
-              value={view}
-              onChange={(k) => (setView(k as SetView), setLimit(CHUNK))}
-              items={SET_VIEWS.map((k) => ({
-                key: k,
-                label: t(`views.${k}`),
-                count: filtered.filter((r) => VIEW_TEST[k](r, states.get(r.productId)!)).length,
-              }))}
-            />
-          </div>
-          <div className="min-w-0 overflow-x-auto rounded-card border border-border bg-surface">
-            <table className="w-full min-w-[1040px] border-collapse text-[13px] 2xl:min-w-[1180px]">
-              <caption className="sr-only">{t("caption")}</caption>
-              <thead>
-                <tr className="border-b border-border bg-table-header text-left text-caption font-medium text-text-secondary">
-                  <th className="w-11 px-3 py-2">№</th>
-                  <th className="w-[92px] px-3 py-2">{t("k.code")}</th>
-                  <th className="bg-table-header px-3 py-2 sm:sticky sm:left-0 sm:z-[1]">{t("k.prod")}</th>
-                  <th className="hidden w-[130px] px-3 py-2 2xl:table-cell">{t("k.cat")}</th>
-                  {showCost ? (
-                    <>
-                      <th className="w-32 px-3 py-2 text-right">{t("k.avg")}</th>
-                      <th className="w-28 px-3 py-2 text-right">{t("k.last")}</th>
-                    </>
-                  ) : null}
-                  <th className="w-[150px] px-3 py-2 text-right">{t("k.cur")}</th>
-                  <th className="w-[150px] px-3 py-2 text-right">{t("k.new")}</th>
-                  <th className="w-[88px] px-3 py-2 text-right">{t("k.chg")}</th>
-                  {showCost ? <th className="w-20 px-3 py-2 text-right">{t("k.mk")}</th> : null}
-                  <th className="w-16 px-3 py-2">
-                    <span className="sr-only">{t("k.flags")}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {grid.isPending ? (
-                  <tr>
-                    <td colSpan={12} className="px-3 py-10 text-center text-text-secondary">
-                      {t("loading")}
-                    </td>
-                  </tr>
-                ) : visible.length === 0 ? (
-                  <tr>
-                    <td colSpan={12} className="px-3 py-10 text-center text-text-secondary">
-                      {t("empty")}
-                    </td>
-                  </tr>
-                ) : (
-                  visible.slice(0, limit).map((r, i) => {
-                    const s = states.get(r.productId)!;
-                    const v = raw[r.productId] ?? "";
-                    const nv = s.next ? toCents(s.next) : null;
-                    return (
-                      <tr key={r.productId} className={cn("border-b border-border last:border-b-0", s.below && "bg-danger-bg/40")}>
-                        <td className="px-3 py-2 text-text-secondary">{i + 1}</td>
-                        <td className="px-3 py-2 font-mono text-mono">{r.code}</td>
-                        <td className={cn("px-3 py-2 sm:sticky sm:left-0 sm:z-[1]", s.below ? "bg-danger-bg" : "bg-surface")}>
-                          <div className="font-medium">{r.name}</div>
-                          <div className="text-caption text-text-secondary">{[r.manufacturer, r.country].filter(Boolean).join(" · ")}</div>
-                        </td>
-                        <td className="hidden px-3 py-2 text-text-secondary 2xl:table-cell">{r.category ?? "—"}</td>
-                        {showCost ? (
-                          <>
-                            <td className="px-3 py-2 text-right tabular-nums text-text-secondary">
-                              {r.avgCost ? formatMoney(r.avgCost) : "—"}
-                            </td>
-                            <td className="px-3 py-2 text-right tabular-nums text-text-secondary">
-                              {r.lastCost ? formatMoney(r.lastCost) : "—"}
-                            </td>
-                          </>
-                        ) : null}
-                        <td className="px-3 py-2 text-right tabular-nums">
-                          <div className={r.currentPrice ? "" : "text-warning"}>{r.currentPrice ? formatMoney(r.currentPrice) : "—"}</div>
-                          {r.nextPrice && r.nextFrom ? (
-                            <div className="text-caption text-info">
-                              {t("nextChip", { p: formatMoney(r.nextPrice), d: formatIsoDate(r.nextFrom) })}
-                            </div>
-                          ) : null}
-                        </td>
-                        <td className="px-3 py-1.5 text-right">
-                          <input
-                            value={v}
-                            onChange={(e) => setRaw((o) => ({ ...o, [r.productId]: e.target.value }))}
-                            inputMode="decimal"
-                            aria-label={`${t("k.new")} — ${r.name}`}
-                            aria-invalid={s.bad || undefined}
-                            className={cn(
-                              "h-8 w-full rounded-md border px-2 text-right tabular-nums outline-none focus:border-primary focus:ring-3 focus:ring-primary/15",
-                              s.bad || s.below
-                                ? "border-danger"
-                                : s.big
-                                  ? "border-warning"
-                                  : s.changed
-                                    ? "border-primary bg-primary-soft"
-                                    : "border-border bg-surface",
-                            )}
-                          />
-                          {nv != null ? (
-                            <div className="mt-0.5 text-caption text-text-secondary">
-                              {t("noVat", { v: formatMoney(fromCents(withoutVat(nv, r.vatRate))) })}
-                            </div>
-                          ) : null}
-                        </td>
-                        <td
-                          className={cn(
-                            "px-3 py-2 text-right tabular-nums",
-                            s.chg == null ? "text-text-secondary" : s.chg > 0 ? "text-success" : "text-danger",
-                          )}
-                        >
-                          {formatPct(s.chg)}
-                        </td>
-                        {showCost ? (
-                          <td
-                            className={cn(
-                              "px-3 py-2 text-right tabular-nums",
-                              s.markup != null && s.markup < 0 ? "text-danger" : "text-text-secondary",
-                            )}
-                          >
-                            {formatPct(s.markup)}
-                          </td>
-                        ) : null}
-                        <td className="px-3 py-2">
-                          <span className="flex items-center gap-1.5">
-                            {s.below ? (
-                              <span
-                                title={r.costLimit ? t("flBelow", { c: formatMoney(r.costLimit) }) : t("flBelow0")}
-                                className="text-danger"
-                              >
-                                <TrendingDown className="size-4" strokeWidth={1.5} aria-label={t("views.below")} />
-                              </span>
-                            ) : null}
-                            {s.big ? (
-                              <span title={t("flBig", { x: formatPct(s.chg) })} className="text-warning">
-                                <TriangleAlert className="size-4" strokeWidth={1.5} aria-label={t("views.big")} />
-                              </span>
-                            ) : null}
-                          </span>
+              <div className="min-w-0 overflow-x-auto rounded-card border border-border bg-surface">
+                <table className="w-full min-w-[1040px] border-collapse text-[13px] 2xl:min-w-[1180px]">
+                  <caption className="sr-only">{t("caption")}</caption>
+                  <thead>
+                    <tr className="border-b border-border bg-table-header text-left text-caption font-medium text-text-secondary">
+                      <th className="w-11 px-3 py-2">№</th>
+                      <th className="w-[92px] px-3 py-2">{t("k.code")}</th>
+                      <th className="bg-table-header px-3 py-2 sm:sticky sm:left-0 sm:z-[1]">{t("k.prod")}</th>
+                      <th className="hidden w-[130px] px-3 py-2 2xl:table-cell">{t("k.cat")}</th>
+                      {showCost ? (
+                        <>
+                          <th className="w-32 px-3 py-2 text-right">{t("k.avg")}</th>
+                          <th className="w-28 px-3 py-2 text-right">{t("k.last")}</th>
+                        </>
+                      ) : null}
+                      <th className="w-[150px] px-3 py-2 text-right">{t("k.cur")}</th>
+                      <th className="w-[150px] px-3 py-2 text-right">{t("k.new")}</th>
+                      <th className="w-[88px] px-3 py-2 text-right">{t("k.chg")}</th>
+                      {showCost ? <th className="w-20 px-3 py-2 text-right">{t("k.mk")}</th> : null}
+                      <th className="w-16 px-3 py-2">
+                        <span className="sr-only">{t("k.flags")}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {grid.isPending ? (
+                      <tr>
+                        <td colSpan={12} className="px-3 py-10 text-center text-text-secondary">
+                          {t("loading")}
                         </td>
                       </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-            {visible.length > limit ? (
-              <div className="flex justify-center border-t border-border p-3">
-                <Button variant="tertiary" size="sm" onClick={() => setLimit((n) => n + CHUNK * 2)}>
-                  {t("more", { n: formatQuantity(visible.length - limit) })}
+                    ) : visible.length === 0 ? (
+                      <tr>
+                        <td colSpan={12} className="px-3 py-10 text-center text-text-secondary">
+                          {t("empty")}
+                        </td>
+                      </tr>
+                    ) : (
+                      visible.slice(0, limit).map((r, i) => {
+                        const s = states.get(r.productId)!;
+                        const v = raw[r.productId] ?? "";
+                        const nv = s.next ? toCents(s.next) : null;
+                        return (
+                          <tr key={r.productId} className={cn("border-b border-border last:border-b-0", s.below && "bg-danger-bg/40")}>
+                            <td className="px-3 py-2 text-text-secondary">{i + 1}</td>
+                            <td className="px-3 py-2 font-mono text-mono">{r.code}</td>
+                            <td className={cn("px-3 py-2 sm:sticky sm:left-0 sm:z-[1]", s.below ? "bg-danger-bg" : "bg-surface")}>
+                              <div className="font-medium">{r.name}</div>
+                              <div className="text-caption text-text-secondary">
+                                {[r.manufacturer, r.country].filter(Boolean).join(" · ")}
+                              </div>
+                            </td>
+                            <td className="hidden px-3 py-2 text-text-secondary 2xl:table-cell">{r.category ?? "—"}</td>
+                            {showCost ? (
+                              <>
+                                <td className="px-3 py-2 text-right tabular-nums text-text-secondary">
+                                  {r.avgCost ? formatMoney(r.avgCost) : "—"}
+                                </td>
+                                <td className="px-3 py-2 text-right tabular-nums text-text-secondary">
+                                  {r.lastCost ? formatMoney(r.lastCost) : "—"}
+                                </td>
+                              </>
+                            ) : null}
+                            <td className="px-3 py-2 text-right tabular-nums">
+                              <div className={r.currentPrice ? "" : "text-warning"}>
+                                {r.currentPrice ? formatMoney(r.currentPrice) : "—"}
+                              </div>
+                              {r.nextPrice && r.nextFrom ? (
+                                <div className="text-caption text-info">
+                                  {t("nextChip", { p: formatMoney(r.nextPrice), d: formatIsoDate(r.nextFrom) })}
+                                </div>
+                              ) : null}
+                            </td>
+                            <td className="px-3 py-1.5 text-right">
+                              <input
+                                value={v}
+                                onChange={(e) => setRaw((o) => ({ ...o, [r.productId]: e.target.value }))}
+                                inputMode="decimal"
+                                aria-label={`${t("k.new")} — ${r.name}`}
+                                aria-invalid={s.bad || undefined}
+                                className={cn(
+                                  "h-8 w-full rounded-md border px-2 text-right tabular-nums outline-none focus:border-primary focus:ring-3 focus:ring-primary/15",
+                                  s.bad || s.below
+                                    ? "border-danger"
+                                    : s.big
+                                      ? "border-warning"
+                                      : s.changed
+                                        ? "border-primary bg-primary-soft"
+                                        : "border-border bg-surface",
+                                )}
+                              />
+                              {nv != null ? (
+                                <div className="mt-0.5 text-caption text-text-secondary">
+                                  {t("noVat", { v: formatMoney(fromCents(withoutVat(nv, r.vatRate))) })}
+                                </div>
+                              ) : null}
+                            </td>
+                            <td
+                              className={cn(
+                                "px-3 py-2 text-right tabular-nums",
+                                s.chg == null ? "text-text-secondary" : s.chg > 0 ? "text-success" : "text-danger",
+                              )}
+                            >
+                              {formatPct(s.chg)}
+                            </td>
+                            {showCost ? (
+                              <td
+                                className={cn(
+                                  "px-3 py-2 text-right tabular-nums",
+                                  s.markup != null && s.markup < 0 ? "text-danger" : "text-text-secondary",
+                                )}
+                              >
+                                {formatPct(s.markup)}
+                              </td>
+                            ) : null}
+                            <td className="px-3 py-2">
+                              <span className="flex items-center gap-1.5">
+                                {s.below ? (
+                                  <span
+                                    title={r.costLimit ? t("flBelow", { c: formatMoney(r.costLimit) }) : t("flBelow0")}
+                                    className="text-danger"
+                                  >
+                                    <TrendingDown className="size-4" strokeWidth={1.5} aria-label={t("views.below")} />
+                                  </span>
+                                ) : null}
+                                {s.big ? (
+                                  <span title={t("flBig", { x: formatPct(s.chg) })} className="text-warning">
+                                    <TriangleAlert className="size-4" strokeWidth={1.5} aria-label={t("views.big")} />
+                                  </span>
+                                ) : null}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+                {visible.length > limit ? (
+                  <div className="flex justify-center border-t border-border p-3">
+                    <Button variant="tertiary" size="sm" onClick={() => setLimit((n) => n + CHUNK * 2)}>
+                      {t("more", { n: formatQuantity(visible.length - limit) })}
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+              <div className="sticky bottom-0 z-10 -mx-6 -mb-6 flex items-center justify-end gap-4 border-t border-border bg-surface px-6 py-3">
+                <span className="text-[13px] text-text-secondary">
+                  {t("foot", { n: formatQuantity(changed.length), m: formatQuantity(nBelow), k: formatQuantity(nBig) })}
+                </span>
+                <Button icon={Check} onClick={trySave}>
+                  {t("save")}
                 </Button>
               </div>
-            ) : null}
-          </div>
-          <div className="sticky bottom-0 z-10 -mx-6 -mb-6 flex items-center justify-end gap-4 border-t border-border bg-surface px-6 py-3">
-            <span className="text-[13px] text-text-secondary">
-              {t("foot", { n: formatQuantity(changed.length), m: formatQuantity(nBelow), k: formatQuantity(nBig) })}
-            </span>
-            <Button icon={Check} onClick={trySave}>
-              {t("save")}
-            </Button>
-          </div>
+            </>
+          )}
         </>
       )}
       <Modal

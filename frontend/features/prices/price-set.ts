@@ -216,3 +216,30 @@ export function netMarkupPct(sellWithVatCents: bigint, baseWithVatCents: bigint)
   if (baseWithVatCents <= 0n) return null;
   return pctDiff(sellWithVatCents, baseWithVatCents);
 }
+
+export interface TypeLike {
+  id: number;
+  name: string;
+  base: boolean;
+  batch: boolean;
+  /** Yoʻq boʻlsa — faol (`/api/price-types` faqat faollarni beradi). */
+  active?: boolean;
+}
+
+/**
+ * «Narx oʻrnatish» narx turi roʻyxati (BG1 N1, egasi 26.11.2026): ikkala rejimda ham BARCHA turlar koʻrinadi —
+ * «Kirim boʻyicha»da partiyaviylar birinchi; «Mahsulot boʻyicha»da oddiylar birinchi, partiyaviylar oxirida (tanlansa —
+ * «Kirim boʻyicha»ga yoʻl-yoʻriq). Faol emas turlar — oxirida, tanlab boʻlmaydi (server ularga narx qabul qilmaydi).
+ */
+export function orderTypes<T extends TypeLike>(types: readonly T[], mode: "prod" | "rc"): T[] {
+  const rank = (x: T) => (x.active === false ? 3 : (mode === "rc") === x.batch ? (x.base ? 0 : 1) : 2);
+  return types
+    .map((x, i) => ({ x, i }))
+    .sort((a, b) => rank(a.x) - rank(b.x) || a.i - b.i)
+    .map((e) => e.x);
+}
+
+/** Tanlanmagan boʻlsa — standart tur: mahsulot rejimida bazaviy oddiy tur, kirim rejimida birinchi partiyaviy (yoʻq boʻlsa bazaviy). */
+export function defaultTypeId(types: readonly TypeLike[], mode: "prod" | "rc"): number | null {
+  return orderTypes(types, mode).find((x) => x.active !== false)?.id ?? null;
+}
