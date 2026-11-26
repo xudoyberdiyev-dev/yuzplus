@@ -241,7 +241,7 @@ class DayCloses {
                 FROM employee e JOIN role r ON r.id = e.role_id
                 JOIN role_permission rp ON rp.role_id = r.id AND rp.permission_key = 'cash.closeDiff'
                 WHERE e.status = 'ACTIVE'
-                  AND (e.branch_id = :b OR r.scope = 'all' OR r.code IN ('DIRECTOR', 'ADMIN') OR (r.code = 'ACCOUNTANT' AND e.all_branches))
+                  AND (e.branch_id = :b OR r.scope = 'all' OR r.code IN ('DIRECTOR', 'ADMIN') OR e.all_branches)
                 ORDER BY (e.branch_id = :b) DESC, e.full_name""")
                 .param("b", branchId)
                 .query((rs, n) -> new CloseApprover(rs.getLong("id"), rs.getString("full_name"), rs.getString("role"), rs.getBoolean("own")))

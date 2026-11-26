@@ -27,9 +27,10 @@ test("F1: tanlangan filialda boshqa filial omborlari va xodimlari koʻrinmaydi",
 
   // API: branchId bilan — faqat shu filial
   for (const path of ["/api/warehouses", "/api/warehouses/overview", "/api/employees", "/api/vehicles"]) {
-    const rows = (await (await page.request.get(`${path}?branchId=${sid}`)).json()) as { branchId: number | null }[];
+    const rows = (await (await page.request.get(`${path}?branchId=${sid}`)).json()) as { branchId: number | null; allBranches?: boolean }[];
     expect(
-      rows.every((r) => r.branchId === sid),
+      // BG1 X1: «Barcha filiallar» xodimlari har filial roʻyxatida ham
+      rows.every((r) => r.branchId === sid || r.allBranches === true),
       path,
     ).toBe(true);
   }

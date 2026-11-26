@@ -416,7 +416,7 @@ class InventoryCounts {
                     .add(new ScopeProductZone(x.zoneId(), x.batches()));
         }
         List<MemberRef> staff = jdbc.sql("""
-                SELECT id, full_name FROM employee WHERE status = 'ACTIVE' AND branch_id = :b ORDER BY full_name""")
+                SELECT id, full_name FROM employee WHERE status = 'ACTIVE' AND (branch_id = :b OR all_branches) ORDER BY full_name""")
                 .param("b", w.branchId())
                 .query((rs, n) -> new MemberRef(rs.getLong("id"), rs.getString("full_name")))
                 .list();

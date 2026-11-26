@@ -134,7 +134,7 @@ export function StaffManager({
   const t = useTranslations("staff");
   const tc = useTranslations("staff.card");
   const me = useMe();
-  const list = useEmployees();
+  const list = useEmployees("all");
   const seatsQ = useSeats();
   const matrix = useRoleMatrix();
   const create = useCreateEmployee();
@@ -344,7 +344,7 @@ export function StaffManager({
       (!page || inView(e, view, weekAgo)) &&
       (!ql || `${displayName(e)} ${e.fullName} ${e.login}`.toLocaleLowerCase("uz").includes(ql)) &&
       (!fRole.length || fRole.includes(e.roleCode)) &&
-      (!fBranch.length || fBranch.includes(e.branchId ? String(e.branchId) : "ALL")) &&
+      (!fBranch.length || e.allBranches || fBranch.includes(e.branchId ? String(e.branchId) : "ALL")) &&
       (!fStatus.length || fStatus.includes(staffStatus(e))),
   );
   const only = emps.length <= 1 && emps.every((e) => e.roleCode === "DIRECTOR");
@@ -367,7 +367,7 @@ export function StaffManager({
       ),
     },
     { key: "role", title: t("cRole"), render: (e) => roleOf(e.roleCode)?.name ?? e.roleName },
-    { key: "branch", title: t("cBranch"), width: 130, render: (e) => branchName(e.branchId) },
+    { key: "branch", title: t("cBranch"), width: 130, render: (e) => (e.allBranches ? t("scAll") : branchName(e.branchId)) },
     { key: "login", title: t("cLogin"), width: 150, mono: true },
     { key: "phone", title: t("cPhone"), width: 160, render: (e) => e.phone ?? "—" },
     ...(page
@@ -535,8 +535,12 @@ export function StaffManager({
               <MultiFilter
                 label={t("cBranch")}
                 options={[
-                  { value: "ALL", label: t("scAll"), count: cntBy((e) => !e.branchId) },
-                  ...branches.map((b) => ({ value: String(b.id), label: b.name, count: cntBy((e) => e.branchId === b.id) })),
+                  { value: "ALL", label: t("scAll"), count: cntBy((e) => !e.branchId || e.allBranches) },
+                  ...branches.map((b) => ({
+                    value: String(b.id),
+                    label: b.name,
+                    count: cntBy((e) => e.branchId === b.id || e.allBranches),
+                  })),
                 ]}
                 selected={fBranch}
                 onChange={setFBranch}

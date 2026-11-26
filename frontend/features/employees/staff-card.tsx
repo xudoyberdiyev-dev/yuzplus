@@ -241,8 +241,8 @@ export function StaffCardPage({ id }: { id: number }) {
         ...(pinNeeded
           ? [{ key: "pin", label: t("aPin"), icon: <Icon icon={RotateCcwKey} />, onSelect: () => setDlg({ kind: "pin" }) }]
           : []),
-        // E3: Buxgalterga barcha filiallar — faqat Direktor beradi
-        ...(me.data?.role.code === "DIRECTOR" && e.roleCode === "ACCOUNTANT"
+        // E3: barcha filiallar — faqat Direktor beradi; BG1 X1 (egasi 26.11.2026): istalgan rolga
+        ...(me.data?.role.code === "DIRECTOR" && e.roleCode !== "DIRECTOR" && e.roleCode !== "ADMIN"
           ? [
               {
                 key: "allBranches",
@@ -405,7 +405,7 @@ export function StaffCardPage({ id }: { id: number }) {
               <Badge tone={STATUS[st].tone} icon={STATUS[st].icon}>
                 {ts(`st.${st}`)}
               </Badge>
-              {e.allBranches && e.roleCode === "ACCOUNTANT" ? (
+              {e.allBranches ? (
                 <Badge tone="info" icon={Building2}>
                   {te("badge")}
                 </Badge>

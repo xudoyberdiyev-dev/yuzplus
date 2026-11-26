@@ -343,7 +343,7 @@ class SettingsController {
         }
         int ok = jdbc.sql("""
                 SELECT count(*) FROM employee e
-                WHERE e.id = :id AND e.status = 'ACTIVE' AND (e.branch_id IS NULL OR e.branch_id = :b)""")
+                WHERE e.id = :id AND e.status = 'ACTIVE' AND (e.branch_id IS NULL OR e.branch_id = :b OR e.all_branches)""")
                 .param("id", id).param("b", branchId).query(Integer.class).single();
         if (ok == 0) {
             throw YuzplusException.badRequest("settings.signerInvalid");

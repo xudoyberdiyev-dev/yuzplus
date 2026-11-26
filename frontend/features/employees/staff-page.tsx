@@ -12,7 +12,8 @@ import { StaffManager } from "./staff-manager";
 export function StaffPage() {
   const t = useTranslations("employees");
   const router = useRouter();
-  const list = useEmployees();
+  // BG1 X1: tepadagi filialdan qatʼi nazar barcha xodimlar; filial — sahifadagi filtr (standart «Hammasi»)
+  const list = useEmployees("all");
   const branches = useBranches();
   const warehouses = useWarehouses();
   if (list.error instanceof ApiError && list.error.isForbidden) return <ForbiddenState description={t("forbidden")} />;

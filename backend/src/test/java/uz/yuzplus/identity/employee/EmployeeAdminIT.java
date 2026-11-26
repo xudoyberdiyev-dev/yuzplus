@@ -192,13 +192,19 @@ class EmployeeAdminIT {
         Cookie acc = login(accLogin);
         mvc.perform(get("/api/auth/me").cookie(acc)).andExpect(jsonPath("$.allBranches").value(false));
 
-        // Faqat Direktor beradi (Bosh administrator ham emas); faqat Buxgalterga
+        // Faqat Direktor beradi (Bosh administrator ham emas)
         Cookie admin = login(admLogin);
         mvc.perform(allBranches(accId, admin, true)).andExpect(status().isForbidden());
         Cookie director = login(dirLogin);
-        mvc.perform(allBranches(opId, director, true))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("employee.allBranchesOnlyAccountant"));
+        // BG1 X1 (egasi qarori 26.11.2026): istalgan rolga — masalan, operator
+        mvc.perform(allBranches(opId, director, true)).andExpect(status().isOk()).andExpect(jsonPath("$.allBranches").value(true));
+        Cookie op = login(opLogin);
+        mvc.perform(get("/api/auth/me").cookie(op)).andExpect(jsonPath("$.allBranches").value(true));
+        // har filial roʻyxatida koʻrinadi (tanlash roʻyxatlari)
+        long anyBranch = jdbc.sql("SELECT id FROM branch WHERE active ORDER BY id DESC LIMIT 1").query(Long.class).single();
+        mvc.perform(get("/api/employees").param("branchId", String.valueOf(anyBranch)).cookie(director))
+                .andExpect(jsonPath("$[?(@.id == " + opId + ")]").exists());
+        mvc.perform(allBranches(opId, director, false)).andExpect(jsonPath("$.allBranches").value(false));
         mvc.perform(allBranches(accId, director, true)).andExpect(status().isOk()).andExpect(jsonPath("$.allBranches").value(true));
         // Eski sessiya tugaydi; qayta kirganda — barcha filiallar
         mvc.perform(get("/api/auth/me").cookie(acc)).andExpect(status().isUnauthorized());
@@ -211,9 +217,10 @@ class EmployeeAdminIT {
         mvc.perform(allBranches(accId, director, false)).andExpect(jsonPath("$.allBranches").value(false));
         acc = login(accLogin);
         mvc.perform(get("/api/auth/me").cookie(acc)).andExpect(jsonPath("$.allBranches").value(false));
-        // Baza himoyasi: belgi faqat Buxgalterda saqlanadi
+        // BG1 X1: V48 baza cheklovi olib tashlangan (V121) — belgi istalgan rolda saqlanadi
         jdbc.sql("UPDATE employee SET all_branches = true WHERE id = :id").param("id", opId).update();
         org.assertj.core.api.Assertions.assertThat(jdbc.sql("SELECT all_branches FROM employee WHERE id = :id").param("id", opId)
-                .query(Boolean.class).single()).isFalse();
+                .query(Boolean.class).single()).isTrue();
+        jdbc.sql("UPDATE employee SET all_branches = false WHERE id = :id").param("id", opId).update();
     }
 }

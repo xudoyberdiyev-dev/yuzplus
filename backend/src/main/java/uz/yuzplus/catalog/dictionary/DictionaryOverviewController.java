@@ -65,7 +65,7 @@ class DictionaryOverviewController {
         Stat drivers = stat("""
                 SELECT count(*) AS c, count(*) FILTER (WHERE e.status = 'ACTIVE') AS a, max(e.updated_at) AS l
                 FROM employee e JOIN role r ON r.id = e.role_id
-                WHERE r.code = 'DRIVER' AND (:all OR e.branch_id = :b)""", all, branch);
+                WHERE r.code = 'DRIVER' AND (:all OR e.branch_id = :b OR e.all_branches)""", all, branch);
         Instant fleetLast = vehicles.last() == null ? drivers.last()
                 : drivers.last() == null || vehicles.last().isAfter(drivers.last()) ? vehicles.last() : drivers.last();
         return List.of(
