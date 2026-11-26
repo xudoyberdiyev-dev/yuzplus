@@ -14,6 +14,18 @@ Manba: `docs/notes/bg1/` (egasi xati, rasmlar). Egasi: «eng nozik joylar — fa
 - [ ] **B2 Kirim → «Mahsulot qoʻshish» katalogi alohida sahifa** (egasi rasmi `kirim-katalog-modal.png`): modal oʻrniga toʻliq sahifa (keng jadval, koʻp qator, qidiruv), «Qoʻshish va qaytish» kirimga qaytaradi, kiritilganlar yoʻqolmaydi.
 - [ ] **B3 Kirim katalogi** — bir mahsulotga ikkinchi partiya uchun katalogni qayta ochish shart boʻlmasin (B2 sahifasida «+ partiya»).
 
+## 🟠 AU — MUSTAQIL ARXITEKTURA AUDITI (egasi 26.11.2026 23:54) — 27.11 06:00 OYNASIDA BIRINCHI
+Egasi: «kodni umuman koʻrmagan agent» loyihani xolis tekshirsin (arxitektura toʻgʻrimi, hammasi toza qilinganmi, nega sekin/qotadi). Sessiya bu ishni OʻZI bajarmaydi — **Agent vositasi bilan yangi subagent** ishga tushiradi (general-purpose, toza kontekst), unga faqat repo yoʻli va audit topshirigʻi beriladi (PLAN.md/hisobotlar/sessiya xulosalari BERILMAYDI — xolislik uchun). Audit faqat oʻqiydi, kodni oʻzgartirmaydi.
+- Qamrov: modul chegaralari va bogʻliqliklar; pul/qoldiq/qarz yaxlitligi (tranzaksiya, qulf, jurnal, CHECK/trigger); xavfsizlik (ruxsatlar, filial filtri, tannarx sizishi, CSRF/sessiya, sirlar); maʼlumotlar bazasi (indekslar, N+1, ogʻir soʻrovlar); frontend (soʻrovlar soni, polling, SSE, holatlar, xato boshqaruvi); unumdorlik (Vercel rewrite → Railway, SSE, takroriy soʻrovlar); testlar qamrovi va ishonchliligi (flaky E2E); kod tozaligi (oʻlik kod, takror, katta fayllar); deploy/zaxira/monitoring.
+- Natija: `docs/audit/2026-11-27-arxitektura-audit.md` — har topilma: jiddiylik (🔴/🟠/🟢), dalil (fayl:qator), taʼsiri, tavsiya; boshida 10 qatorlik xulosa «arxitektura toʻgʻrimi, nimasi toza emas, nima birinchi». Egasi uchun oddiy tilda qisqa variant ham (Telegram hisobotiga). Topilmalar avtomatik tuzatilmaydi — egasi tasdiqlagach rejaga.
+
+## 🟠 TZ — TEZLIK PAKETI (egasi tasdiqladi 26.11.2026 23:54) — BG1 dan keyin
+- [ ] TZ1 Oʻlchash: frontendda sekin soʻrov/sahifa qaydlari (web-vitals + >1 s soʻrovlar), backendda sekin soʻrov logi, PostgreSQL `pg_stat_statements` (Railway’da yoqish — egasi bilan).
+- [ ] TZ2 Soʻrovlar backend’ga toʻgʻridan-toʻgʻri (Vercel rewrite oʻrniga) — **frontend Railway’ga koʻchirilgach / api subdomeni bilan** (egasi: 27.11 da frontendni Railway’ga koʻchiramiz — egasi bilan birga, Railway sozlamalari).
+- [ ] TZ3 SSE (`/api/notifications/stream`) barqaror: rewrite orqali uzilish sababi, heartbeat, qayta ulanish; jonli kanal ishlaganda 10–20 s polling ishlamasin (29 ta `refetchInterval` koʻrib chiqiladi).
+- [ ] TZ4 Har tugmada darhol javob: yuklanish holati, ikki marta bosishdan himoya (barcha mutatsiya tugmalari).
+- [ ] TZ5 Ogʻir sahifalarda soʻrovlar sonini kamaytirish (birlashtirilgan endpoint/kesh).
+
 ## ⏸ V2 — MIJOZ TALABLARI (25.11.2026, egasi orqali) — TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
 Manba: `docs/notes/v2/mijoz-talablari-25-11.docx`. Egasi qarorlari: 25.11 23:50 soʻrovnoma. Egasi 25.11 23:56: M1–M6 tasdiq kutayotgan rejalarga qoʻshildi; **qaysi versiyada va qachon qilinishi keyin egasi bilan aniqlanadi**. M7 va M5 dagi «5 ta izoh» — mijozdan soʻraladi (javob kelguncha rejaga kiritilmaydi).
 - [ ] **V2-M1 Inventar (korxona mol-mulki)** — oddiy roʻyxat (egasi qarori): nomi, inventar raqami, toifa, qiymati, sotib olingan sana, joyi (filial/xona), mas'ul xodim, holati (ishlayapti/taʼmirda/hisobdan chiqarilgan); xodimga topshirish/qaytarish tarixi (jurnal), xodim ishdan ketsa — undagi buyumlar roʻyxati. Amortizatsiya yoʻq.
@@ -808,3 +820,4 @@ _(07.11.2026 18:12 — 6 savolga javob berildi va 20:00–20:30 da joriy qilindi
 - 26.11 13:25 — oyna erta yopildi (FT6 tugadi, boshqa tasdiqlangan vazifa yoʻq): hisobot, 6a (develop → main), barcha 100+ oynalari oʻchiriladi.
 - 26.11 17:40 (egasi bilan): «Narx oʻrnatish» → «Kirim boʻyicha» endi shu sahifaning oʻzida (kirim tanlash, partiyalar, kirim narxi, ustama % — QQSsiz soʻmgacha, FT6 bilan bir xil), NO hujjati kirimga bogʻlanadi; oldin «Narxlar» sahifasiga oʻtib ketardi (egasi: chalkash).
 - 26.11 23:50 (egasi bilan): jismoniy sinov xatolari — BG1 (N1, N2, F1, F2, Q1, X1, B1–B3) rejaga yozildi, egasi soʻrovnomada qaror berdi.
+- 26.11 23:55 (egasi): AU (mustaqil arxitektura auditi, 27.11 06:00 oynasi) va TZ (tezlik paketi, BG1 dan keyin) rejaga; 27.11 da frontend Railway’ga koʻchiriladi (egasi bilan).
