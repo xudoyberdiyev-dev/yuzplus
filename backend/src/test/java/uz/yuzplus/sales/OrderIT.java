@@ -1387,6 +1387,13 @@ class OrderIT {
         assertThat(spec.getRow(48).getCell(2).getStringCellValue()).startsWith("Ushbu spetsifikatsiya");
 
         // Arxiv — uchala fayl
+        for (String k : List.of("INVOICE", "OFFER", "SPECIFICATION")) {
+            mvc.perform(get("/api/orders/" + o + "/client-docs/" + k + "/pdf").cookie(director)).andDo(r -> {
+                if (r.getResponse().getStatus() >= 500) {
+                    throw new AssertionError("500 (" + k + "): " + r.getResolvedException(), r.getResolvedException());
+                }
+            }).andExpect(status().isOk());
+        }
         byte[] zip = mvc.perform(get("/api/orders/" + o + "/client-docs/zip").cookie(director)).andExpect(status().isOk()).andReturn()
                 .getResponse().getContentAsByteArray();
         List<String> names = new java.util.ArrayList<>();

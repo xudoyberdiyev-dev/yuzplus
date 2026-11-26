@@ -518,9 +518,9 @@ class ClientDocs {
             {"STIR:", s.tin(), "Bank:", b.bank()},
             {"", "", "STIR:", b.treasuryTin()},
         };
-        List<List<String>> requisites = new ArrayList<>();
+        List<Map<String, String>> requisites = new ArrayList<>();
         for (String[] r : req) {
-            requisites.add(java.util.Arrays.stream(r).map(ClientDocs::nz).toList());
+            requisites.add(Map.of("lk", nz(r[0]), "lv", nz(r[1]), "rk", nz(r[2]), "rv", nz(r[3])));
         }
         v.put("requisites", requisites);
         List<Map<String, Object>> lines = new ArrayList<>();

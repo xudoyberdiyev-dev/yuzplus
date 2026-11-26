@@ -57,8 +57,8 @@
     <table class="req">
         <tr><td colspan="2" class="c b">Yetkazib beruvchi :</td><td colspan="2" class="c b">Sotib oluvchi :</td></tr>
         <tr th:each="r : ${requisites}">
-            <td class="k" th:text="${r[0]}">Nomi:</td><td class="v" th:text="${r[1]}">…</td>
-            <td class="k" th:text="${r[2]}">Nomi:</td><td class="v" th:text="${r[3]}">…</td>
+            <td class="k" th:text="${r.lk}">Nomi:</td><td class="v" th:text="${r.lv}">…</td>
+            <td class="k" th:text="${r.rk}">Nomi:</td><td class="v" th:text="${r.rv}">…</td>
         </tr>
     </table>
     <div th:if="${kind == 'SPECIFICATION'}">1. Sotuvchi quyidagi mahsulotlarni mijozga yetkazadi, mijoz o'z o'rnida mahsulotlar qabul qilib olib to'lovni  amalga oshiradi.</div>
