@@ -22,6 +22,20 @@ public final class PriceMath {
         return new Money(base.amount().multiply(factor));
     }
 
+    /**
+     * FT6 (egasi 26.11.2026): ustama QQSsiz narxga qo'yiladi va so'mgacha yaxlitlanadi, so'ng QQS qaytariladi —
+     * {@code round₀(asos ÷ (1 + QQS) × (1 + %)) × (1 + QQS)}, 2 xona HALF_UP. Namuna: kirim 2 644,32 (2 361 + 12 %), 15 % → 2 715 → 3 040,80.
+     * Shunda mijoz hujjatlarida «Ust.%» aniq foiz bo'lib chiqadi.
+     */
+    public static Money markupNetRounded(Money baseWithVat, BigDecimal percent, BigDecimal vatRate) {
+        BigDecimal rate = vatRate == null ? BigDecimal.ZERO : vatRate;
+        BigDecimal hundredRate = BigDecimal.valueOf(100).add(rate);
+        BigDecimal net = baseWithVat.amount().multiply(BigDecimal.valueOf(100)).divide(hundredRate, 2, RoundingMode.HALF_UP);
+        BigDecimal factor = BigDecimal.ONE.add(percent.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
+        BigDecimal netSell = net.multiply(factor).setScale(0, RoundingMode.HALF_UP);
+        return new Money(netSell.multiply(hundredRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+    }
+
     /** O'zgarish foizi (eski → yangi), 2 xona. Eski narx yo'q yoki 0 bo'lsa — bo'sh. */
     public static Optional<BigDecimal> changePercent(Money oldPrice, Money newPrice) {
         if (oldPrice == null || oldPrice.isZero()) {

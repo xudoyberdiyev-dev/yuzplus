@@ -59,5 +59,8 @@
   "eAcc": "Hisob raqami 20 ta raqamdan iborat boʻlishi kerak",
   "eVatNo": "Guvohnoma raqami 6–20 ta raqamdan iborat boʻlishi kerak",
   "added": "{name} qoʻshildi",
-  "updated": "{name} saqlandi"
+  "updated": "{name} saqlandi",
+  "ifut": "IFUT kodi",
+  "ifutHint": "Faoliyat turi kodi — mijoz hujjatlarida chiqadi",
+  "eIfut": "IFUT — 5 raqam."
 }

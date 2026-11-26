@@ -72,6 +72,7 @@ import {
   codesExportUrl,
 } from "./api";
 import { CatalogView } from "./catalog-dialog";
+import { CLIENT_DOCS_PERMISSIONS, ClientDocsModal } from "./client-docs";
 import { FORM_TYPES, InvoiceFormsModal, type FormType } from "./invoice-forms";
 import { formatPct, parsePct, pctText } from "./discount";
 import { OrderCardAside, OrderCardBody, OrderStepper } from "./order-card";
@@ -225,6 +226,7 @@ function Editor({
   const [dialog, setDialog] = useState<"catalog" | "reject" | "cancel" | "discard" | null>(null);
   // O18: 5 xil faktura — oldindan koʻrish va qoʻlda tuzatish oynasi
   const [invoiceForm, setInvoiceForm] = useState<FormType | null>(null);
+  const [clientDocs, setClientDocs] = useState(false);
   const seen = useRef(new Map<string, { code: string; name: string }>());
   const credit = useCustomerCredit(warehouseId ? Number(warehouseId) : null, editable && customer ? Number(customer) : null);
   const err = describeError(save.error ?? submit.error ?? approve.error ?? back.error);
@@ -513,6 +515,13 @@ function Editor({
         icon: <FileSpreadsheet size={16} strokeWidth={1.5} aria-hidden />,
         onSelect: () => setInvoiceForm(f.type),
       });
+  if (doc && doc.status !== "REJECTED" && doc.status !== "CANCELLED" && CLIENT_DOCS_PERMISSIONS.every((p) => can(me.data, p)))
+    printItems.push({
+      key: "client-docs",
+      label: t("print.clientDocs"),
+      icon: <FileSpreadsheet size={16} strokeWidth={1.5} aria-hidden />,
+      onSelect: () => setClientDocs(true),
+    });
   const actions = (
     <>
       {frame === "page" && printItems.length ? (
@@ -609,6 +618,7 @@ function Editor({
         </Modal>
       ) : null}
       {invoiceForm && doc ? <InvoiceFormsModal orderId={doc.id} initial={invoiceForm} onClose={() => setInvoiceForm(null)} /> : null}
+      {clientDocs && doc ? <ClientDocsModal orderId={doc.id} onClose={() => setClientDocs(false)} /> : null}
       {(dialog === "reject" || dialog === "cancel") && doc ? (
         <DeactivateDialog
           title={dialog === "reject" ? t("drawer.rejectTitle", { number: doc.number }) : t("drawer.cancelTitle", { number: doc.number })}

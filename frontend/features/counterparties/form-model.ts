@@ -27,6 +27,9 @@ export interface CpForm {
   bankName: string;
   bankMfo: string;
   bankAccount: string;
+  /** FT6: gʻazna rekvizitlari (byudjet tashkilotlari) */
+  treasuryAccount: string;
+  treasuryTin: string;
   // Faqat yangi kartada: litsenziya va birinchi filial shartlari
   pharmNo: string;
   pharmUntil: string;
@@ -47,7 +50,20 @@ export interface CpForm {
 }
 
 export type FormErr =
-  "required" | "tin" | "email" | "mfo" | "account" | "vat" | "date" | "dateOrder" | "money" | "days" | "pct" | "contactName" | "zone";
+  | "required"
+  | "tin"
+  | "email"
+  | "mfo"
+  | "account"
+  | "vat"
+  | "date"
+  | "dateOrder"
+  | "money"
+  | "days"
+  | "pct"
+  | "contactName"
+  | "zone"
+  | "treasury";
 export type ErrKey = keyof CpForm | `contact${number}`;
 
 const blankContact = (): ContactForm => ({ name: "", position: "", phone: "" });
@@ -68,6 +84,8 @@ export function emptyForm(branchId: string | null): CpForm {
     bankName: "",
     bankMfo: "",
     bankAccount: "",
+    treasuryAccount: "",
+    treasuryTin: "",
     pharmNo: "",
     pharmUntil: "",
     ctrl: false,
@@ -106,6 +124,8 @@ export function formFromDetail(c: Detail): CpForm {
     bankName: c.bankName ?? "",
     bankMfo: c.bankMfo ?? "",
     bankAccount: c.bankAccount ?? "",
+    treasuryAccount: c.treasuryAccount ?? "",
+    treasuryTin: c.treasuryTin ?? "",
   };
 }
 
@@ -128,6 +148,9 @@ export function validateForm(
   if (f.vatCode.trim() && !/^\d{12}$/.test(f.vatCode.trim())) e.vatCode = "vat";
   if (f.bankMfo.trim() && !/^\d{5}$/.test(f.bankMfo.trim())) e.bankMfo = "mfo";
   if (f.bankAccount.replace(/\s/g, "") && !/^\d{20}$/.test(f.bankAccount.replace(/\s/g, ""))) e.bankAccount = "account";
+  const treasury = f.treasuryAccount.replace(/\s/g, "");
+  if (treasury && !/^\d{20,27}$/.test(treasury)) e.treasuryAccount = "treasury";
+  if (f.treasuryTin.trim() && !/^\d{9}$/.test(f.treasuryTin.trim())) e.treasuryTin = "tin";
   f.contacts.forEach((k, i) => {
     if (filled(k) && !k.name.trim()) e[`contact${i}`] = "contactName";
   });
@@ -177,6 +200,9 @@ export function toRequest(f: CpForm, roles: { customer: boolean; supplier: boole
     bankMfo: t(f.bankMfo),
     vatCode: t(f.vatCode),
     note: t(f.note),
+    // boʻsh satr — oʻchiriladi (null — oʻzgarmaydi)
+    treasuryAccount: f.treasuryAccount.replace(/\s/g, ""),
+    treasuryTin: f.treasuryTin.trim(),
     contacts: contacts.map((k) => ({ name: k.name.trim(), position: t(k.position), phone: t(k.phone) })),
   };
 }

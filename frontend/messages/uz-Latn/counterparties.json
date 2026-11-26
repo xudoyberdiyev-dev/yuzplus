@@ -91,7 +91,9 @@
     "blockAction": "Kontragentni bloklash",
     "deactivateAction": "Kontragentni nofaol qilish",
     "blockedToast": "Bloklandi",
-    "deactivatedToast": "Nofaol qilindi"
+    "deactivatedToast": "Nofaol qilindi",
+    "treasuryAccount": "Gʻazna hisob raqami",
+    "treasuryTin": "Gʻazna STIR"
   },
   "licenses": {
     "add": "Litsenziya qoʻshish",
@@ -351,7 +353,9 @@
     "nextDue": "Keyingi toʻlov kuni",
     "bonusBal": "Bonus balans",
     "bonusPending": "Kutilayotgan",
-    "bonusPendingN": "{n} ta kirim boʻyicha bonus"
+    "bonusPendingN": "{n} ta kirim boʻyicha bonus",
+    "treasuryAccount": "Gʻazna H/R",
+    "treasuryTin": "Gʻazna STIR"
   },
   "docs": {
     "tab": {
@@ -489,8 +493,10 @@
       "days": "0–365 oraligʻida butun son.",
       "contactName": "Kontakt ismini kiriting yoki qatorni oʻchiring.",
       "pct": "0–99,99 oraligʻida, masalan 2,5.",
-      "zone": "Savdo zonasini tanlang."
-    }
+      "zone": "Savdo zonasini tanlang.",
+      "treasury": "Gʻazna hisob raqami — 20–27 raqam."
+    },
+    "treasuryHint": "Byudjet tashkilotlari uchun — mijoz hujjatlarida chiqadi"
   },
   "wizard": {
     "crumbC": "Mijozlar · Excelʼdan yuklash",

@@ -333,6 +333,12 @@ function Card({ c, role }: { c: CounterpartyDetail; role: CounterpartyRole }) {
                 [t("mfo"), c.bankMfo, true],
                 [t("account"), c.bankAccount ? fmtAccount(c.bankAccount) : null, true],
                 [t("vat"), c.vatCode, true],
+                ...(c.treasuryAccount || c.treasuryTin
+                  ? ([
+                      [t("treasuryAccount"), c.treasuryAccount ? fmtAccount(c.treasuryAccount) : null, true],
+                      [t("treasuryTin"), c.treasuryTin, true],
+                    ] as const)
+                  : []),
               ]}
             />
           </div>

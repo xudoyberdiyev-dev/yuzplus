@@ -490,8 +490,9 @@ class PriceChanges {
             case LAST_RECEIPT -> costs.lastReceiptCost(r.branchId(), r.productIds());
             default -> Map.of();
         };
-        record Prod(long id, String code, String name) {}
-        List<Prod> prods = jdbc.sql("SELECT id, code, name FROM product WHERE id IN (:ids) ORDER BY lower(name)")
+        record Prod(long id, String code, String name, java.math.BigDecimal vatRate) {}
+        List<Prod> prods = jdbc.sql("SELECT id, code, name, CASE WHEN vat_exempt THEN 0 ELSE vat_rate END AS vat_rate FROM product "
+                        + "WHERE id IN (:ids) ORDER BY lower(name)")
                 .param("ids", r.productIds())
                 .query(Prod.class)
                 .list();
@@ -503,7 +504,8 @@ class PriceChanges {
                 case CURRENT_SAME_TYPE -> old;
                 case AVG_RECEIPT, LAST_RECEIPT -> receiptCosts.get(p.id());
             };
-            Money next = base == null ? null : PriceMath.markup(base, r.percent());
+            Money next = base == null ? null
+                    : Boolean.TRUE.equals(r.roundNet()) ? PriceMath.markupNetRounded(base, r.percent(), p.vatRate()) : PriceMath.markup(base, r.percent());
             boolean costBased = r.base() == BaseKind.AVG_RECEIPT || r.base() == BaseKind.LAST_RECEIPT;
             out.add(new MarkupLine(p.id(), p.code(), p.name(), costBased && !showCost ? null : str(base), str(old), str(next)));
         }

@@ -386,6 +386,29 @@ function FormBody({
               />
             </div>
           </div>
+          <div className="mt-3 grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-3">
+            <div data-f="treasuryAccount">
+              <TextField
+                label={tm("treasuryAccount")}
+                value={f.treasuryAccount}
+                onChange={set("treasuryAccount")}
+                error={err("treasuryAccount")}
+                hint={t("treasuryHint")}
+                inputMode="numeric"
+                maxLength={30}
+              />
+            </div>
+            <div data-f="treasuryTin">
+              <TextField
+                label={tm("treasuryTin")}
+                value={f.treasuryTin}
+                onChange={set("treasuryTin")}
+                error={err("treasuryTin")}
+                inputMode="numeric"
+                maxLength={9}
+              />
+            </div>
+          </div>
         </Section>
 
         {isNew ? (

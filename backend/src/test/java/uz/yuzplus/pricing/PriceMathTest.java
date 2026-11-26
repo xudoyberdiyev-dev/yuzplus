@@ -50,4 +50,19 @@ class PriceMathTest {
         assertThat(PriceMath.weightedAverage(java.util.List.of(new PriceMath.Part(Money.of("5"), 0)))).isEmpty();
         assertThat(PriceMath.weightedAverage(java.util.List.of())).isEmpty();
     }
+
+    @Test
+    void markupNetRoundedMatchesOwnerSample() {
+        java.math.BigDecimal twelve = java.math.BigDecimal.valueOf(12);
+        java.math.BigDecimal fifteen = java.math.BigDecimal.valueOf(15);
+        // 2 361 × 1,12 = 2 644,32 → QQSsiz 2 361 × 1,15 = 2 715,15 → 2 715 → QQS bilan 3 040,80
+        assertThat(PriceMath.markupNetRounded(Money.of("2644.32"), fifteen, twelve)).isEqualTo(Money.of("3040.80"));
+        // 490 × 1,15 = 563,5 → 564 (HALF_UP) → 631,68
+        assertThat(PriceMath.markupNetRounded(Money.of("548.80"), fifteen, twelve)).isEqualTo(Money.of("631.68"));
+        // 9 075 ÷ 1,12 = 8 102,68 → × 1,15 = 9 318,08 → 9 318 → 10 436,16
+        assertThat(PriceMath.markupNetRounded(Money.of("9075"), fifteen, twelve)).isEqualTo(Money.of("10436.16"));
+        // QQSsiz mahsulot: 110 × 1,2 = 132
+        assertThat(PriceMath.markupNetRounded(Money.of("110"), java.math.BigDecimal.valueOf(20), java.math.BigDecimal.ZERO))
+                .isEqualTo(Money.of("132"));
+    }
 }

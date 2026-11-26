@@ -103,7 +103,9 @@ final class PriceChangeModels {
             @NotEmpty(message = "{priceChange.noLines}") @Size(max = 5000) List<Long> productIds,
             @NotNull(message = "{validation.required}") Long priceTypeId,
             @NotNull(message = "{validation.required}") BaseKind base,
-            @NotNull(message = "{validation.required}") @DecimalMin("-90") @DecimalMax("1000") BigDecimal percent) {}
+            @NotNull(message = "{validation.required}") @DecimalMin("-90") @DecimalMax("1000") BigDecimal percent,
+            @Schema(nullable = true, description = "FT6: ustama QQSsiz narxga, so'mgacha yaxlitlab (sotish = round(kirim ÷ 1,12 × (1 + %)) × 1,12)")
+            Boolean roundNet) {}
 
     record MarkupLine(long productId, String productCode, String productName,
             @Schema(nullable = true, description = "Kirim narxi asosida — faqat special.cost bilan") String basePrice,
