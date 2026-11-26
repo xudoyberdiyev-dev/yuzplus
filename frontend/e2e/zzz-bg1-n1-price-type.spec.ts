@@ -35,7 +35,7 @@ test("BG1 N1: yangi narx turi Narx oʻrnatishda koʻrinadi", async ({ page }) =>
   await createType(page, plain, false);
   await createType(page, batch, true);
 
-  await page.getByRole("button", { name: "Narx oʻrnatish", exact: true }).click();
+  await page.getByRole("button", { name: "Narx oʻrnatish", exact: true }).first().click();
   await expect(page).toHaveURL(/\/prices\/set/);
   const typeSelect = page.getByRole("combobox", { name: "Narx turi" });
   await typeSelect.click();
