@@ -13318,6 +13318,55 @@
         "tags" : [ "products" ]
       }
     },
+    "/api/products/vat-bulk" : {
+      "post" : {
+        "description" : "QQSdan ozod mahsulotlar va narxlar oʻzgarmaydi. `rate` amaldagi stavkadan farq qilsa — 409 (sozlama oʻzgargan).",
+        "operationId" : "vatBulkApply",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/VatBulkApply"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VatBulkResult"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Amaldagi QQS stavkasini barcha mahsulotlarga qoʻllash",
+        "tags" : [ "products" ]
+      }
+    },
+    "/api/products/vat-bulk/preview" : {
+      "get" : {
+        "operationId" : "vatBulkPreview",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VatBulkPreview"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "QQS stavkasini barcha mahsulotlarga qoʻllash — oldindan koʻrish (nechta mahsulot oʻzgaradi)",
+        "tags" : [ "products" ]
+      }
+    },
     "/api/products/{id}" : {
       "get" : {
         "operationId" : "get_6",
@@ -41298,6 +41347,55 @@
           }
         },
         "required" : [ "id" ]
+      },
+      "VatBulkApply" : {
+        "type" : "object",
+        "properties" : {
+          "rate" : {
+            "type" : "string",
+            "description" : "Oldindan koʻrilgan stavka — amaldagi bilan mos boʻlishi shart",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "rate" ]
+      },
+      "VatBulkPreview" : {
+        "type" : "object",
+        "properties" : {
+          "affected" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Stavkasi oʻzgaradigan mahsulotlar"
+          },
+          "exempt" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "QQSdan ozod — oʻzgarmaydi"
+          },
+          "rate" : {
+            "type" : "string",
+            "description" : "Amaldagi stavka (%), masalan «12»"
+          },
+          "same" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Allaqachon shu stavkada"
+          }
+        },
+        "required" : [ "affected", "exempt", "rate", "same" ]
+      },
+      "VatBulkResult" : {
+        "type" : "object",
+        "properties" : {
+          "changed" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "rate" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "changed", "rate" ]
       },
       "VatRequest" : {
         "type" : "object",

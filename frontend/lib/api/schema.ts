@@ -5870,6 +5870,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/products/vat-bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Amaldagi QQS stavkasini barcha mahsulotlarga qoʻllash
+         * @description QQSdan ozod mahsulotlar va narxlar oʻzgarmaydi. `rate` amaldagi stavkadan farq qilsa — 409 (sozlama oʻzgargan).
+         */
+        post: operations["vatBulkApply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/vat-bulk/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** QQS stavkasini barcha mahsulotlarga qoʻllash — oldindan koʻrish (nechta mahsulot oʻzgaradi) */
+        get: operations["vatBulkPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/products/{id}": {
         parameters: {
             query?: never;
@@ -17379,6 +17416,34 @@ export interface components {
             /** Format: int64 */
             id: number;
         };
+        VatBulkApply: {
+            /** @description Oldindan koʻrilgan stavka — amaldagi bilan mos boʻlishi shart */
+            rate: string;
+        };
+        VatBulkPreview: {
+            /**
+             * Format: int64
+             * @description Stavkasi oʻzgaradigan mahsulotlar
+             */
+            affected: number;
+            /**
+             * Format: int64
+             * @description QQSdan ozod — oʻzgarmaydi
+             */
+            exempt: number;
+            /** @description Amaldagi stavka (%), masalan «12» */
+            rate: string;
+            /**
+             * Format: int64
+             * @description Allaqachon shu stavkada
+             */
+            same: number;
+        };
+        VatBulkResult: {
+            /** Format: int64 */
+            changed: number;
+            rate: string;
+        };
         VatRequest: {
             rate: string;
             /** Format: date */
@@ -26384,6 +26449,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NewCode"];
+                };
+            };
+        };
+    };
+    vatBulkApply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VatBulkApply"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VatBulkResult"];
+                };
+            };
+        };
+    };
+    vatBulkPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VatBulkPreview"];
                 };
             };
         };

@@ -195,5 +195,17 @@
     "okTitle": "Xato yoʻq",
     "okText": "Oxirgi 7 kunda server xatosi qayd etilmagan.",
     "failed": "Tizim holatini yuklab boʻlmadi — sahifani yangilang."
-  }
+  },
+  "vatBulk": "Barcha mahsulotlarga qoʻllash",
+  "vatBulkHint": "Amaldagi stavkani katalogdagi barcha mahsulotlarga yozadi (QQSdan ozodlardan tashqari).",
+  "vatBulkTitle": "QQS stavkasini barcha mahsulotlarga qoʻllash",
+  "vatBulkGo": "Qoʻllash",
+  "vatBulkWhat": "{n, plural, other {# ta mahsulot}} QQS stavkasi {r}% boʻladi.",
+  "vatBulkExempt": "QQSdan ozod belgilanganlar oʻzgarmaydi ({n, plural, other {# ta}}).",
+  "vatBulkPrices": "Narxlar oʻzgarmaydi.",
+  "vatBulkDocs": "Oʻtkazilgan hujjatlar oʻz stavkasini saqlaydi; yangi stavka keyingi hujjatlarga tushadi.",
+  "vatBulkAudit": "Amal audit jurnaliga yoziladi.",
+  "vatBulkNone": "Barcha mahsulotlar allaqachon {r}% stavkada — oʻzgartiradigan narsa yoʻq.",
+  "vatBulkDone": "{n, plural, other {# ta mahsulot}} QQS stavkasi {r}% boʻldi",
+  "vatBulkFail": "QQS stavkasini qoʻllab boʻlmadi. Sahifani yangilang va qaytadan urinib koʻring."
 }

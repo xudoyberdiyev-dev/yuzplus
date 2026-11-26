@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -30,6 +32,7 @@ import uz.yuzplus.shared.audit.AuditLog;
 import uz.yuzplus.shared.error.YuzplusException;
 import uz.yuzplus.shared.excel.ExcelUploadGuard;
 import uz.yuzplus.shared.security.CurrentActor;
+import uz.yuzplus.shared.settings.SystemSettings;
 
 /**
  * Import ustasi (prototip `ImportWizard`, turi «products»): 1) fayl o'qiladi (varaqlar → katakchalar, .xlsx/.csv);
@@ -84,13 +87,18 @@ public class ProductImport {
     private final JdbcClient jdbc;
     private final AuditLog audit;
     private final CurrentActor actor;
+    private final SystemSettings settings;
+    private final java.time.Clock clock;
 
-    ProductImport(Products products, ProductExcel excel, JdbcClient jdbc, AuditLog audit, CurrentActor actor) {
+    ProductImport(Products products, ProductExcel excel, JdbcClient jdbc, AuditLog audit, CurrentActor actor, SystemSettings settings,
+            java.time.Clock clock) {
         this.products = products;
         this.excel = excel;
         this.jdbc = jdbc;
         this.audit = audit;
         this.actor = actor;
+        this.settings = settings;
+        this.clock = clock;
     }
 
     // ===== 1. Faylni o'qish =====
@@ -229,6 +237,8 @@ public class ProductImport {
         int warn = 0;
         int error = 0;
         int created = 0;
+        // BG1 N2: QQS ustuni boʻsh boʻlsa — Sozlamalardagi amaldagi stavka (qattiq «12» emas)
+        String defaultVat = settings.vatRate(LocalDate.now(clock.withZone(ZoneId.of("Asia/Tashkent")))).stripTrailingZeros().toPlainString();
         for (ImportRowInput in : req.rows()) {
             Map<String, String> v = new HashMap<>();
             for (String f : FIELDS) {
@@ -294,7 +304,7 @@ public class ProductImport {
             }
             String vat = v.get("vat").replace(",", ".").replace("%", "").strip();
             if (vat.isEmpty()) {
-                vat = "12";
+                vat = defaultVat;
             }
             if (!vat.matches("^\\d{1,3}(\\.\\d{1,2})?$")) {
                 msgs.add(err("pVatBad", "t", v.get("vat")));
