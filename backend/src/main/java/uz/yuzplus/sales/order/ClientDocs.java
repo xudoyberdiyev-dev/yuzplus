@@ -82,6 +82,9 @@ class ClientDocs {
     private static final java.util.Set<String> PROPOSAL_STATUSES = java.util.Set.of("DRAFT", "PENDING_APPROVAL");
     private static final java.util.Set<String> DEAD_STATUSES = java.util.Set.of("CANCELLED", "REJECTED");
     private static final String MONEY_FORMAT = "#,##0.00";
+    private static final String SIGN_DIRECTOR = "Rahbar _________________________________ ";
+    private static final String SIGN_ACCOUNTANT = "Bosh hisobchi ___________________________ ";
+    private static final String OFFER_SIGN = " direktori:  ____________________";
 
     private final JdbcClient jdbc;
     private final AuditLog audit;
@@ -497,6 +500,10 @@ class ClientDocs {
         v.put("seller", Map.of("name", nz(s.name()), "bank", nz(s.bank())));
         v.put("director", nz(d.director()));
         v.put("accountant", nz(d.accountant()));
+        // «__» Thymeleaf'da oldindan ishlov belgisi — imzo satrlari tayyor matn bo'lib beriladi
+        v.put("signDirector", SIGN_DIRECTOR + nz(d.director()));
+        v.put("signAccountant", SIGN_ACCOUNTANT + nz(d.accountant()));
+        v.put("offerSign", nz(s.name()) + OFFER_SIGN);
         v.put("offerRequisites", offerRequisites(s));
         v.put("offerNumber", offerNumber(d));
         v.put("offerIntro", offerIntro(s));
@@ -564,8 +571,8 @@ class ClientDocs {
         int total = INVOICE_ITEM_ROW + 1 + shift;
         totals(wb, sh, total, d);
         text(sh, total + 1, 0, "JAMI: " + d.words());
-        text(sh, 25 + shift, 1, "Rahbar _________________________________ " + nz(d.director()));
-        text(sh, 27 + shift, 1, "Bosh hisobchi ___________________________ " + nz(d.accountant()));
+        text(sh, 25 + shift, 1, SIGN_DIRECTOR + nz(d.director()));
+        text(sh, 27 + shift, 1, SIGN_ACCOUNTANT + nz(d.accountant()));
     }
 
     private static void specification(XSSFWorkbook wb, XSSFSheet sh, Doc d) {
@@ -598,7 +605,7 @@ class ClientDocs {
             money(sh, r, 5, l.calc().offerPrice(), money);
             height(sh, r, l.name(), 50, 15.75f, 16f);
         }
-        text(sh, 19 + shift, 1, nz(s.name()) + " direktori:  ____________________");
+        text(sh, 19 + shift, 1, nz(s.name()) + OFFER_SIGN);
         text(sh, 19 + shift, 4, nz(d.director()));
     }
 

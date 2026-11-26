@@ -48,7 +48,7 @@
         </tbody>
     </table>
     <div style="margin-top:6px">Barcha dori-darmonlar va tibbiyot vositalari sifat sertifikatlariga ega. * -QQS bilan birga.</div>
-    <table class="sign"><tr><td th:text="${seller.name + ' direktori:  ____________________'}">direktori</td>
+    <table class="sign"><tr><td th:text="${offerSign}">direktori</td>
         <td class="b" th:text="${director}">F.I.Sh.</td></tr></table>
 </div>
 <div th:unless="${kind == 'OFFER'}">
@@ -90,8 +90,8 @@
     </div>
     <table class="sign" th:if="${kind == 'INVOICE'}">
         <tr><td class="b">Sotuvchi:</td><td class="b">Mijoz:</td></tr>
-        <tr><td th:text="${'Rahbar _________________________________ ' + director}">Rahbar</td><td>_____________________________________________________</td></tr>
-        <tr><td th:text="${'Bosh hisobchi ___________________________ ' + accountant}">Bosh hisobchi</td><td>_____________________________________________________</td></tr>
+        <tr><td th:text="${signDirector}">Rahbar</td><td>_____________________________________________________</td></tr>
+        <tr><td th:text="${signAccountant}">Bosh hisobchi</td><td>_____________________________________________________</td></tr>
         <tr><td>Ombor mudiri __________________________</td><td>Ishonch №_______________ orqali: ______________</td></tr>
     </table>
 </div>
