@@ -3,6 +3,7 @@ import { parseMoneyInput } from "@/features/counterparties/api";
 import {
   applyImport,
   applyMarkup,
+  markupNetRounded,
   formatPct,
   fromCents,
   importIssues,
@@ -150,5 +151,21 @@ describe("Excel importi", () => {
     }));
     expect(importIssues(issues)).toEqual({ k: 6, a: 2, b: 2, c: 2, rows: "4, 5, 6, 7, 8…" });
     expect(importIssues([]).rows).toBe("");
+  });
+});
+
+describe("markupNetRounded (kirim boʻyicha ustama, FT6 namunasi)", () => {
+  it("2 644,32 (2 361 + 12% QQS) + 15% → 3 040,80 (QQSsiz 2 715)", () => {
+    expect(fromCents(markupNetRounded(264432n, 1500n, "12.00"))).toBe("3040.80");
+  });
+  it("namuna qatorlari: 8 102,68 → 9 318; 682 → 784; 490 → 564 (QQSsiz)", () => {
+    const withVat = (c: bigint) => (c * 11200n + 5000n) / 10000n;
+    expect(fromCents(markupNetRounded(withVat(810268n), 1500n, "12"))).toBe(fromCents((931800n * 112n) / 100n));
+    expect(fromCents(markupNetRounded(withVat(68200n), 1500n, "12"))).toBe(fromCents((78400n * 112n) / 100n));
+    expect(fromCents(markupNetRounded(withVat(49000n), 1500n, "12"))).toBe(fromCents((56400n * 112n) / 100n));
+  });
+  it("QQSsiz mahsulot: 1 400 + 15% → 1 610", () => {
+    expect(fromCents(markupNetRounded(140000n, 1500n, "0"))).toBe("1610.00");
+    expect(fromCents(markupNetRounded(140000n, 1500n, null))).toBe("1610.00");
   });
 });

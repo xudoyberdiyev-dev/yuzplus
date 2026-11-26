@@ -298,7 +298,26 @@
     "importedNone": "Faylda yangi narx topilmadi",
     "importSkipped": "{k} ta qator oʻtkazib yuborildi: nomaʼlum kod — {a}, notoʻgʻri narx — {b}, takror — {c}. Qatorlar: {rows}",
     "importOutside": " · {k} ta mahsulot bu jadvalda yoʻq",
-    "exportFailed": "Eksport qilib boʻlmadi. Qayta urinib koʻring."
+    "exportFailed": "Eksport qilib boʻlmadi. Qayta urinib koʻring.",
+    "rc": {
+      "receipt": "Kirim",
+      "receiptPh": "Raqam yoki taʼminotchi",
+      "pct": "Ustama, %",
+      "roundNet": "QQSsiz narxga, soʻmgacha yaxlitlab",
+      "roundNetHint": "Hisob-fakturadagidek: kirim narxi QQSsiz × ustama, soʻmgacha; keyin QQS qoʻshiladi",
+      "noCost": "Kirim narxini koʻrish ruxsati yoʻq — yangi narxni qoʻlda kiriting",
+      "loadFailed": "Kirim partiyalarini yuklab boʻlmadi. Qayta urinib koʻring.",
+      "caption": "Kirim boʻyicha narxlar: {t}",
+      "batch": "Partiya",
+      "qty": "Soni",
+      "cost": "Kirim narxi",
+      "bonus": "bonus",
+      "pick": "Oʻtkazilgan kirimni tanlang — uning partiyalari shu yerda chiqadi",
+      "empty": "Bu kirimda partiya yoʻq",
+      "foot": "{n} ta narx oʻzgartirildi · {m} ta tannarxdan past",
+      "dReceipt": "Kirim: {r} · narx turi: {t}",
+      "dBatches": "Narx faqat shu kirim partiyalariga qoʻyiladi; boshqa partiyalar narxi oʻzgarmaydi"
+    }
   },
   "doc": {
     "parent": "Narx oʻzgarishlari",
