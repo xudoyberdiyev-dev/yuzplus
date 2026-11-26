@@ -62,5 +62,11 @@
   "updated": "{name} saqlandi",
   "ifut": "IFUT kodi",
   "ifutHint": "Faoliyat turi kodi — mijoz hujjatlarida chiqadi",
-  "eIfut": "IFUT — 5 raqam."
+  "eIfut": "IFUT — 5 raqam.",
+  "directorEmp": "Rahbar (direktor) — xodim",
+  "accountantEmp": "Bosh hisobchi — xodim",
+  "signerNone": "Tanlanmagan",
+  "signerHint": "Rolidan qatʼi nazar istalgan xodim (masalan, ombor menejeri). Ismi hujjatlarga avtomatik tushadi.",
+  "textFallback": "Zaxira: xodim tanlanmagan boʻlsa hujjatga shu ism yoziladi",
+  "signerNow": "Hozir hujjatlarda: rahbar — {d}; bosh hisobchi — {a}"
 }

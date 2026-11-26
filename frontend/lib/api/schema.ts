@@ -743,6 +743,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/branches/{id}/signers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Filial direktori va bosh hisobchisi (xodimlardan) */
+        get: operations["branchSigners"];
+        /**
+         * Filial direktori va bosh hisobchisini tanlash
+         * @description Rolidan qatʼi nazar: shu filial yoki barcha filiallar faol xodimi. null — tanlanmagan.
+         */
+        put: operations["updateBranchSigners"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cash-close": {
         parameters: {
             query?: never;
@@ -10193,6 +10214,30 @@ export interface components {
             /** @description Faqat special.cost ruxsati bilan */
             total?: string;
         };
+        BranchSigners: {
+            /** @description Hujjatlarga tushadigan bosh hisobchi */
+            accountant?: string;
+            /** Format: int64 */
+            accountantEmployeeId?: number;
+            /** @description Hujjatlarga tushadigan rahbar (tanlangan / matn / rol boʻyicha) */
+            director?: string;
+            /** Format: int64 */
+            directorEmployeeId?: number;
+            /** @description Tanlash mumkin: shu filial yoki barcha filiallar faol xodimlari */
+            options: components["schemas"]["SignerEmployee"][];
+        };
+        BranchSignersUpdate: {
+            /**
+             * Format: int64
+             * @description null — tanlanmagan
+             */
+            accountantEmployeeId?: number;
+            /**
+             * Format: int64
+             * @description null — tanlanmagan (matn yoki rol boʻyicha)
+             */
+            directorEmployeeId?: number;
+        };
         BranchStats: {
             /** Format: int64 */
             branchId: number;
@@ -16286,6 +16331,13 @@ export interface components {
             employeeId: number;
             reason: string;
         };
+        SignerEmployee: {
+            fullName: string;
+            /** Format: int64 */
+            id: number;
+            roleCode: string;
+            roleName: string;
+        };
         SignerOption: {
             /** Format: int64 */
             id: number;
@@ -19110,6 +19162,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Branch"];
+                };
+            };
+        };
+    };
+    branchSigners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchSigners"];
+                };
+            };
+        };
+    };
+    updateBranchSigners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchSignersUpdate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchSigners"];
                 };
             };
         };

@@ -1737,6 +1737,71 @@
         "tags" : [ "branches" ]
       }
     },
+    "/api/branches/{id}/signers" : {
+      "get" : {
+        "operationId" : "branchSigners",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BranchSigners"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Filial direktori va bosh hisobchisi (xodimlardan)",
+        "tags" : [ "branches" ]
+      },
+      "put" : {
+        "description" : "Rolidan qatʼi nazar: shu filial yoki barcha filiallar faol xodimi. null — tanlanmagan.",
+        "operationId" : "updateBranchSigners",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BranchSignersUpdate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BranchSigners"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Filial direktori va bosh hisobchisini tanlash",
+        "tags" : [ "branches" ]
+      }
+    },
     "/api/cash-close" : {
       "get" : {
         "operationId" : "listCloses",
@@ -23342,6 +23407,50 @@
         },
         "required" : [ "buyer", "createdAt", "createdBy", "fromWarehouse", "fromZone", "id", "lines", "number", "qty", "seller", "shortageQty", "status", "toWarehouse" ]
       },
+      "BranchSigners" : {
+        "type" : "object",
+        "properties" : {
+          "accountant" : {
+            "type" : "string",
+            "description" : "Hujjatlarga tushadigan bosh hisobchi"
+          },
+          "accountantEmployeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "director" : {
+            "type" : "string",
+            "description" : "Hujjatlarga tushadigan rahbar (tanlangan / matn / rol boʻyicha)"
+          },
+          "directorEmployeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "options" : {
+            "type" : "array",
+            "description" : "Tanlash mumkin: shu filial yoki barcha filiallar faol xodimlari",
+            "items" : {
+              "$ref" : "#/components/schemas/SignerEmployee"
+            }
+          }
+        },
+        "required" : [ "options" ]
+      },
+      "BranchSignersUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "accountantEmployeeId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "null — tanlanmagan"
+          },
+          "directorEmployeeId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "null — tanlanmagan (matn yoki rol boʻyicha)"
+          }
+        }
+      },
       "BranchStats" : {
         "type" : "object",
         "properties" : {
@@ -38570,6 +38679,25 @@
           }
         },
         "required" : [ "amount", "branchId", "employeeId", "reason" ]
+      },
+      "SignerEmployee" : {
+        "type" : "object",
+        "properties" : {
+          "fullName" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "roleCode" : {
+            "type" : "string"
+          },
+          "roleName" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "fullName", "id", "roleCode", "roleName" ]
       },
       "SignerOption" : {
         "type" : "object",

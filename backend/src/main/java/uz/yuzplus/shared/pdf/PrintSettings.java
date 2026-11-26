@@ -22,11 +22,16 @@ public class PrintSettings {
         this.jdbc = jdbc;
     }
 
-    /** Filial rahbari va bosh hisobchisi: qo'lda tanlangan → filial rahbari / buxgalter roli (filialniki yoki umumiy). */
+    /**
+     * Filial rahbari va bosh hisobchisi (BG1 F1): filial kartasida tanlangan xodim → filial kartasidagi matn (zaxira) →
+     * filial rahbari / buxgalter roli (filialniki yoki umumiy).
+     */
     @Transactional(readOnly = true)
     public Signers signers(long branchId) {
-        String head = manual(branchId, "head_id").or(() -> auto(branchId, "BRANCH_MANAGER", false)).orElse(null);
-        String acc = manual(branchId, "accountant_id").or(() -> auto(branchId, "ACCOUNTANT", true)).orElse(null);
+        String head = manual(branchId, "director_employee_id").or(() -> text(branchId, "director_name"))
+                .or(() -> auto(branchId, "BRANCH_MANAGER", false)).orElse(null);
+        String acc = manual(branchId, "accountant_employee_id").or(() -> text(branchId, "accountant_name"))
+                .or(() -> auto(branchId, "ACCOUNTANT", true)).orElse(null);
         return new Signers(head, acc);
     }
 
@@ -57,7 +62,12 @@ public class PrintSettings {
     }
 
     private Optional<String> manual(long branchId, String column) {
-        return jdbc.sql("SELECT e.full_name FROM print_signer s JOIN employee e ON e.id = s." + column + " WHERE s.branch_id = :b")
+        return jdbc.sql("SELECT e.full_name FROM branch b JOIN employee e ON e.id = b." + column + " WHERE b.id = :b")
+                .param("b", branchId).query(String.class).optional();
+    }
+
+    private Optional<String> text(long branchId, String column) {
+        return jdbc.sql("SELECT btrim(" + column + ") FROM branch WHERE id = :b AND btrim(coalesce(" + column + ", '')) <> ''")
                 .param("b", branchId).query(String.class).optional();
     }
 
