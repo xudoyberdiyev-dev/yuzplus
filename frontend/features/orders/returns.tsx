@@ -14,16 +14,18 @@ import { ensureCsrf, useScopeBranchId } from "@/features/auth/session";
 import { describeError } from "@/features/setup/form-error";
 import { api, unwrap } from "@/lib/api/client";
 import { formatDateTime, formatQuantity } from "@/lib/format";
+import { useLivePoll } from "@/lib/live";
 
 /** Ombor mudiri → Qaytgan tovar (SPEC 5.4): yetkazilmagan tovar sanab qabul qilinadi → Karantin; kam kelsa — muammo. */
 export function ReturnsList() {
   const t = useTranslations("orders");
   const qc = useQueryClient();
   const branchId = useScopeBranchId();
+  const poll = useLivePoll(30_000);
   const list = useQuery({
     queryKey: ["orders", "returns", branchId ?? "all"],
     queryFn: () => unwrap(api.GET("/api/orders/returns", { params: { query: { branchId: branchId ?? undefined } } })),
-    refetchInterval: 30_000,
+    refetchInterval: poll,
   });
   const [counts, setCounts] = useState<Record<number, string>>({});
   const [pending, setPending] = useState<number | null>(null);

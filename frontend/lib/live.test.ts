@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CLOSE_DELAY_MS, resetLive, STREAM_URL, subscribeLive, useLive } from "./live";
+import { CLOSE_DELAY_MS, LIVE_INVALIDATES, LIVE_POLL_MS, livePollMs, resetLive, STREAM_URL, subscribeLive, useLive } from "./live";
 
 class FakeEventSource {
   static instances: FakeEventSource[] = [];
@@ -95,5 +95,20 @@ describe("live (SSE)", () => {
     expect(result.current).toBe(false);
 
     unmount();
+  });
+});
+
+describe("livePollMs (TZ3)", () => {
+  it("SSE ulangan — zaxira oraligʻi, ulanmagan — sahifa oraligʻi", () => {
+    expect(livePollMs(true, 15_000)).toBe(LIVE_POLL_MS);
+    expect(livePollMs(false, 15_000)).toBe(15_000);
+    expect(livePollMs(true, 600_000)).toBe(600_000);
+  });
+
+  it("useLivePoll ishlatadigan soʻrov kalitlari hodisa bilan yangilanadi", () => {
+    const all = Object.values(LIVE_INVALIDATES)
+      .flat()
+      .map((k) => k.join("/"));
+    for (const k of ["marking/queue", "orders/returns", "nav-badges", "trips/cash"]) expect(all).toContain(k);
   });
 });

@@ -129,6 +129,18 @@ export function useLiveConnected(): boolean {
 }
 
 /**
+ * TZ3: soʻrov oraligʻi — SSE ulangan boʻlsa zaxira (`LIVE_POLL_MS`), aks holda sahifaning odatdagi oraligʻi.
+ * Faqat kaliti `LIVE_INVALIDATES` da bor soʻrovlar uchun (ulanganda ular hodisa bilan yangilanadi).
+ */
+export function livePollMs(live: boolean, fallbackMs: number): number {
+  return live ? Math.max(LIVE_POLL_MS, fallbackMs) : fallbackMs;
+}
+
+export function useLivePoll(fallbackMs: number): number {
+  return livePollMs(useLiveConnected(), fallbackMs);
+}
+
+/**
  * Hodisa → yangilanadigan roʻyxatlar (faqat roʻyxat/panel soʻrovlari; ochiq kartochka va tahrir oynalari tegilmaydi —
  * kiritilayotgan maʼlumot yoʻqolmasin). TanStack Query faqat ekrandagi soʻrovlarni qayta oladi.
  */

@@ -35,8 +35,12 @@ export function PasswordExit() {
   return (
     <button
       type="button"
-      onClick={() => logout.mutate(undefined, { onSettled: () => router.replace("/login?out=1") })}
-      className="flex h-[30px] items-center gap-[6px] rounded-card px-[10px] text-table text-text-secondary transition-colors duration-150 ease-out hover:bg-background hover:text-text-primary"
+      aria-busy={logout.isPending || undefined}
+      onClick={() => {
+        if (logout.isPending) return;
+        logout.mutate(undefined, { onSettled: () => router.replace("/login?out=1") });
+      }}
+      className="flex h-[30px] items-center gap-[6px] rounded-card px-[10px] text-table text-text-secondary transition-colors duration-150 ease-out hover:bg-background hover:text-text-primary aria-busy:cursor-progress"
     >
       <Icon icon={LogOut} />
       {t("exit")}
