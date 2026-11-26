@@ -1268,7 +1268,8 @@ class OrderIT {
         Place p = place();
         long c = customer(p.branchId(), null);
         jdbc.sql("""
-                UPDATE counterparty SET legal_name = 'Nishon Tuman Tibbiyot Birlashmasi', bank_account = '23426000700394429001', bank_mfo = '00182',
+                UPDATE counterparty SET legal_name = 'Nishon Tuman Tibbiyot Birlashmasi', address = 'Кашкадарьинская Область, Нишанский Район',
+                       phone = NULL, bank_account = '23426000700394429001', bank_mfo = '00182',
                        bank_name = 'Markaziy bank Toshkent sh. Bosh Boshkarmasi HKKM', treasury_account = '23402000300100001010',
                        treasury_tin = '201122919' WHERE id = :c""").param("c", c).update();
         jdbc.sql("""
@@ -1340,6 +1341,17 @@ class OrderIT {
         assertThat(sh.getRow(6).getCell(8).getStringCellValue()).isEqualTo("Nishon Tuman Tibbiyot Birlashmasi");
         assertThat(sh.getRow(12).getCell(8).getStringCellValue()).isEqualTo("23402000300100001010");
         assertThat(sh.getRow(14).getCell(8).getStringCellValue()).isEqualTo("201122919");
+        // BG1 F2: rekvizitlar egasi namunasi (rekvizitlar-namuna.png) bilan qatorma-qator
+        String[] sellerReq = {"\"Shahrisabz Farm\" Mchj", "Beruniy", "+998 (97) 764-59-36", "20208000900355090001", "00083", "46180",
+            "\"Hamkorbank\" ATB bosh ofisi", jdbc.sql("SELECT tin FROM branch WHERE id = :b").param("b", p.branchId()).query(String.class).single()};
+        for (int i = 0; i < sellerReq.length; i++) {
+            assertThat(sh.getRow(6 + i).getCell(2).getStringCellValue()).as("sotuvchi %d", i).isEqualTo(sellerReq[i]);
+        }
+        String[] buyerReq = {"Nishon Tuman Tibbiyot Birlashmasi", "Кашкадарьинская Область, Нишанский Район", "", "23426000700394429001", "00182",
+            jdbc.sql("SELECT tin FROM counterparty WHERE id = :c").param("c", c).query(String.class).single(), "23402000300100001010", "Markaziy bank Toshkent sh. Bosh Boshkarmasi HKKM", "201122919"};
+        for (int i = 0; i < buyerReq.length; i++) {
+            assertThat(sh.getRow(6 + i).getCell(8).getStringCellValue()).as("xaridor %d", i).isEqualTo(buyerReq[i]);
+        }
         for (int r = 18; r <= 43; r++) {
             assertThat(sh.getRow(r).getCell(0).getNumericCellValue()).isEqualTo(r - 17.0);
             assertThat(sh.getRow(r).getCell(1).getStringCellValue()).isEqualTo(sample.getRow(r).getCell(1).getStringCellValue().strip());
