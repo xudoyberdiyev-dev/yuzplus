@@ -4,10 +4,12 @@ import { clientDocUrl, CLIENT_DOC_KINDS, contractLabel, initialContract } from "
 describe("FT6 mijoz hujjatlari", () => {
   it("shartnoma koʻrinishi va boshlangʻich tanlov", () => {
     expect(contractLabel({ number: "1478", signedOn: "2026-01-05" })).toBe("№ 1478 · 05.01.2026");
-    expect(contractLabel({ number: "12", signedOn: null })).toBe("№ 12");
-    expect(initialContract({ contract: { id: 7, number: "1478", signedOn: null, validUntil: null }, suggestedContractId: 9 })).toBe("7");
-    expect(initialContract({ contract: null, suggestedContractId: 9 })).toBe("9");
-    expect(initialContract({ contract: null, suggestedContractId: null })).toBeNull();
+    expect(contractLabel({ number: "12", signedOn: undefined })).toBe("№ 12");
+    expect(
+      initialContract({ contract: { id: 7, number: "1478", signedOn: undefined, validUntil: undefined }, suggestedContractId: 9 }),
+    ).toBe("7");
+    expect(initialContract({ contract: undefined, suggestedContractId: 9 })).toBe("9");
+    expect(initialContract({ contract: undefined, suggestedContractId: undefined })).toBeNull();
   });
 
   it("fayl manzillari: uchta hujjat va arxiv", () => {

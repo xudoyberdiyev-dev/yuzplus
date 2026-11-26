@@ -63,7 +63,7 @@ class ClientDocs {
                     + "buyerAccount, buyerMfo, buyerBank, noCost") List<String> missing,
             int lines) {}
 
-    record ContractRequest(@jakarta.validation.constraints.NotNull(message = "{validation.required}") Long contractId) {}
+    record OrderContractRequest(@jakarta.validation.constraints.NotNull(message = "{validation.required}") Long contractId) {}
 
     /** Hujjat ma'lumoti (testlar va fayl uchun). */
     record Party(String name, String address, String phone, String account, String mfo, String bank, String tin, String ifut,

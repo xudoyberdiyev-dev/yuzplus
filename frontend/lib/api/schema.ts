@@ -562,7 +562,7 @@ export interface paths {
          * FS va hisob-faktura — PDF (chop etish)
          * @description Narx, summa va QQS — faqat special.cost.
          */
-        get: operations["pdf_6"];
+        get: operations["pdf_7"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2737,7 +2737,7 @@ export interface paths {
          * Sanoq varag'i / inventarizatsiya qaydnomasi — PDF
          * @description Sanoqda — sanoq varag'i («Sanaldi» bo'sh), keyin — farqlar bilan qaydnoma. Tannarx — faqat prices.cost.
          */
-        get: operations["pdf_5"];
+        get: operations["pdf_6"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4469,6 +4469,100 @@ export interface paths {
          * @description Barcha qatorlar «Tekshirildi» va joylar soni → «Hujjatlashtirilmoqda».
          */
         post: operations["check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/client-docs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hujjatlar oynasi: shartnoma, mijoz shartnomalari, bo'sh rekvizitlar */
+        get: operations["info"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/client-docs/contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Buyurtma uchun mijoz shartnomasini tanlash
+         * @description Hujjat raqami va sanasi shu shartnomadan; buyurtma o'zgarmaydi.
+         */
+        put: operations["contract"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/client-docs/zip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Uchala hujjat bitta arxivda (.zip): .xlsx va .pdf */
+        get: operations["zip"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/client-docs/{kind}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bitta hujjat PDF
+         * @description Excel bilan bir xil ma'lumot va matnlar.
+         */
+        get: operations["pdf_5"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/client-docs/{kind}/xlsx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bitta hujjat .xlsx
+         * @description INVOICE — hisob varaq-faktura, OFFER — tijorat taklifi, SPECIFICATION — spetsifikatsiya. Shartnoma tanlanmagan bo'lsa — 400 clientDocs.contractRequired.
+         */
+        get: operations["xlsx_2"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -9795,6 +9889,8 @@ export interface components {
             directorName?: string;
             /** Format: int64 */
             id: number;
+            /** @description IFUT (faoliyat turi kodi) — FT6 mijoz hujjatlari */
+            ifut?: string;
             legalName: string;
             name: string;
             phone?: string;
@@ -10323,6 +10419,21 @@ export interface components {
             /** @enum {string} */
             step: "COMPANY" | "BRANCHES" | "WAREHOUSES" | "EMPLOYEES" | "PRICES" | "CUSTOMERS" | "PRODUCTS" | "OPENING_STOCK";
         };
+        ClientDocsInfo: {
+            /** @description Tanlangan shartnoma; null — hujjat chiqarishdan oldin tanlanadi */
+            contract?: components["schemas"]["ContractOption"];
+            /** @description Mijozning shu filialdagi shartnomalari (yangi → eski) */
+            contracts: components["schemas"]["ContractOption"][];
+            /** Format: int32 */
+            lines: number;
+            /** @description Bo'sh rekvizitlar (i18n kalit qismlari): sellerIfut, sellerDirector, sellerAccountant, sellerBank, buyerAccount, buyerMfo, buyerBank, noCost */
+            missing: string[];
+            /**
+             * Format: int64
+             * @description Tavsiya: amaldagi eng yangi shartnoma
+             */
+            suggestedContractId?: number;
+        };
         CloseApprover: {
             /** Format: int64 */
             id: number;
@@ -10526,6 +10637,15 @@ export interface components {
             /** Format: date */
             validUntil?: string;
         };
+        ContractOption: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: date */
+            signedOn?: string;
+            /** Format: date */
+            validUntil?: string;
+        };
         ContractRequest: {
             /** Format: int64 */
             branchId: number;
@@ -10573,6 +10693,10 @@ export interface components {
             /** @description Faqat xodim ko'ra oladigan filiallar */
             terms: components["schemas"]["Terms"][];
             tin: string;
+            /** @description G'azna hisob raqami (byudjet tashkilotlari, FT6) */
+            treasuryAccount?: string;
+            /** @description G'azna STIR (FT6) */
+            treasuryTin?: string;
             vatCode?: string;
         };
         CounterpartyDocumentsPage: {
@@ -10672,6 +10796,10 @@ export interface components {
             regionId?: number;
             supplier: boolean;
             tin: string;
+            /** @description G'azna hisob raqami (20–27 raqam); null — o'zgarmaydi, bo'sh — o'chiriladi */
+            treasuryAccount?: string;
+            /** @description G'azna STIR (9 raqam); null — o'zgarmaydi, bo'sh — o'chiriladi */
+            treasuryTin?: string;
             vatCode?: string;
         };
         CounterpartyRow: {
@@ -10703,6 +10831,8 @@ export interface components {
             bankAccounts?: components["schemas"]["BankAccount"][];
             code: string;
             directorName?: string;
+            /** @description IFUT — 5 raqam (FT6) */
+            ifut?: string;
             legalName: string;
             name: string;
             phone?: string;
@@ -12764,6 +12894,8 @@ export interface components {
             /** Format: int64 */
             priceTypeId: number;
             productIds: number[];
+            /** @description FT6: ustama QQSsiz narxga, so'mgacha yaxlitlab (sotish = round(kirim ÷ 1,12 × (1 + %)) × 1,12) */
+            roundNet?: boolean;
         };
         MatchRequest: {
             /** Format: int64 */
@@ -13492,6 +13624,10 @@ export interface components {
             total: string;
             /** Format: int64 */
             waitMinutes: number;
+        };
+        OrderContractRequest: {
+            /** Format: int64 */
+            contractId: number;
         };
         OrderDetail: {
             address?: string;
@@ -17195,6 +17331,8 @@ export interface components {
             address?: string;
             bankAccounts?: components["schemas"]["BankAccount"][];
             directorName?: string;
+            /** @description IFUT — 5 raqam (FT6) */
+            ifut?: string;
             legalName: string;
             name: string;
             phone?: string;
@@ -18655,7 +18793,7 @@ export interface operations {
             };
         };
     };
-    pdf_6: {
+    pdf_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -21811,7 +21949,7 @@ export interface operations {
             };
         };
     };
-    pdf_5: {
+    pdf_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -24203,6 +24341,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+        };
+    };
+    info: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientDocsInfo"];
+                };
+            };
+        };
+    };
+    contract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderContractRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientDocsInfo"];
+                };
+            };
+        };
+    };
+    zip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+        };
+    };
+    pdf_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                kind: "INVOICE" | "OFFER" | "SPECIFICATION";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+        };
+    };
+    xlsx_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                kind: "INVOICE" | "OFFER" | "SPECIFICATION";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
                 };
             };
         };

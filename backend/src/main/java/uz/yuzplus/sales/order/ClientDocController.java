@@ -44,7 +44,7 @@ class ClientDocController {
     @PutMapping("/api/orders/{id}/client-docs/contract")
     @PreAuthorize(CAN)
     @Operation(summary = "Buyurtma uchun mijoz shartnomasini tanlash", description = "Hujjat raqami va sanasi shu shartnomadan; buyurtma o'zgarmaydi.")
-    ClientDocs.ClientDocsInfo contract(@PathVariable long id, @Valid @RequestBody ClientDocs.ContractRequest r) {
+    ClientDocs.ClientDocsInfo contract(@PathVariable long id, @Valid @RequestBody ClientDocs.OrderContractRequest r) {
         return docs.setContract(actor(), id, r.contractId());
     }
 
