@@ -36,7 +36,7 @@ public class Organization {
             @Schema(nullable = true) String phone, boolean active, boolean vatPayer, @Schema(nullable = true) String vatCertNo,
             @Schema(nullable = true) String region, @Schema(nullable = true) String actualAddress,
             @Schema(nullable = true) String directorName, @Schema(nullable = true) String accountantName,
-            List<BankAccount> bankAccounts) {}
+            List<BankAccount> bankAccounts, @Schema(nullable = true, description = "IFUT (faoliyat turi kodi) — FT6 mijoz hujjatlari") String ifut) {}
 
     /** Filial bank hisobi (prototip BranchPanel «Bank rekvizitlari»). */
     public record BankAccount(
@@ -47,7 +47,13 @@ public class Organization {
 
     /** Filial kartasi qoʻshimchalari; {@code null} — tahrirlashda oʻzgarmaydi. */
     public record BranchExtra(boolean vatPayer, String vatCertNo, String region, String actualAddress, String directorName,
-            String accountantName, List<BankAccount> bankAccounts) {}
+            String accountantName, List<BankAccount> bankAccounts, String ifut) {
+
+        public BranchExtra(boolean vatPayer, String vatCertNo, String region, String actualAddress, String directorName,
+                String accountantName, List<BankAccount> bankAccounts) {
+            this(vatPayer, vatCertNo, region, actualAddress, directorName, accountantName, bankAccounts, null);
+        }
+    }
 
     public record BranchData(String code, String name, String legalName, String tin, String address, String phone, BranchExtra extra) {
         public BranchData(String code, String name, String legalName, String tin, String address, String phone) {
@@ -57,11 +63,11 @@ public class Organization {
 
     private record BranchRow(long id, String code, String name, String legalName, String tin, String address, String phone,
             boolean active, boolean vatPayer, String vatCertNo, String region, String actualAddress, String directorName,
-            String accountantName) {}
+            String accountantName, String ifut) {}
 
     private static final String BRANCH_COLUMNS = """
             id, code, name, legal_name, tin, address, phone, active, vat_payer, vat_cert_no, region, actual_address, director_name,
-            accountant_name""";
+            accountant_name, ifut""";
 
     private final JdbcClient jdbc;
     private final AuditLog audit;
@@ -218,7 +224,7 @@ public class Organization {
         return rows.stream()
                 .map(r -> new Branch(r.id(), r.code(), r.name(), r.legalName(), r.tin(), r.address(), r.phone(), r.active(),
                         r.vatPayer(), r.vatCertNo(), r.region(), r.actualAddress(), r.directorName(), r.accountantName(),
-                        List.copyOf(accounts.getOrDefault(r.id(), List.of()))))
+                        List.copyOf(accounts.getOrDefault(r.id(), List.of())), r.ifut()))
                 .toList();
     }
 
@@ -229,7 +235,7 @@ public class Organization {
         }
         jdbc.sql("""
                 UPDATE branch SET vat_payer = :vp, vat_cert_no = :vc, region = :rg, actual_address = :aa, director_name = :dn,
-                       accountant_name = :an
+                       accountant_name = :an, ifut = :ifut
                 WHERE id = :id""")
                 .param("vp", x.vatPayer())
                 .param("vc", x.vatPayer() ? blankToNull(x.vatCertNo()) : null)
@@ -237,6 +243,7 @@ public class Organization {
                 .param("aa", blankToNull(x.actualAddress()))
                 .param("dn", blankToNull(x.directorName()))
                 .param("an", blankToNull(x.accountantName()))
+                .param("ifut", blankToNull(x.ifut()))
                 .param("id", branchId)
                 .update();
         jdbc.sql("DELETE FROM branch_bank_account WHERE branch_id = :id").param("id", branchId).update();
@@ -380,6 +387,7 @@ public class Organization {
             m.put("actualAddress", x.actualAddress());
             m.put("directorName", x.directorName());
             m.put("accountantName", x.accountantName());
+            m.put("ifut", x.ifut());
             m.put("bankAccounts", x.bankAccounts() == null ? 0 : x.bankAccounts().size());
         }
         return m;

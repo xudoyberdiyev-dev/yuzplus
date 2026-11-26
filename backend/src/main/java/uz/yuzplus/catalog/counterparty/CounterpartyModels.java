@@ -90,7 +90,9 @@ final class CounterpartyModels {
             List<License> licenses,
             @Schema(description = "Kontakt shaxslar (tartib bo'yicha)") List<Contact> contacts,
             @Schema(description = "Faqat xodim ko'ra oladigan filiallar") List<Contract> contracts,
-            @Schema(description = "Faqat xodim ko'ra oladigan filiallar") List<Terms> terms) {}
+            @Schema(description = "Faqat xodim ko'ra oladigan filiallar") List<Terms> terms,
+            @Schema(nullable = true, description = "G'azna hisob raqami (byudjet tashkilotlari, FT6)") String treasuryAccount,
+            @Schema(nullable = true, description = "G'azna STIR (FT6)") String treasuryTin) {}
 
     record CounterpartyRequest(
             @NotBlank(message = "{validation.required}") @Pattern(regexp = "^([0-9]{9}|[0-9]{14})$", message = "{validation.counterpartyTin}") String tin,
@@ -110,7 +112,19 @@ final class CounterpartyModels {
             @Schema(nullable = true) @Pattern(regexp = "^$|^[0-9]{12}$", message = "{validation.vatCode}") String vatCode,
             @Schema(nullable = true) @Size(max = 1000) String note,
             @Schema(nullable = true, description = "Kontakt shaxslar — berilsa ro'yxat to'liq almashtiriladi (birinchisi — contactPerson); "
-                    + "null — o'zgarmaydi") @Valid @Size(max = 20) List<ContactRequest> contacts) {}
+                    + "null — o'zgarmaydi") @Valid @Size(max = 20) List<ContactRequest> contacts,
+            @Schema(nullable = true, description = "G'azna hisob raqami (20–27 raqam); null — o'zgarmaydi, bo'sh — o'chiriladi")
+            @Pattern(regexp = "^$|^[0-9]{20,27}$", message = "{validation.treasuryAccount}") String treasuryAccount,
+            @Schema(nullable = true, description = "G'azna STIR (9 raqam); null — o'zgarmaydi, bo'sh — o'chiriladi")
+            @Pattern(regexp = "^$|^[0-9]{9}$", message = "{validation.tin}") String treasuryTin) {
+
+        public CounterpartyRequest(String tin, String name, String legalName, boolean customer, boolean supplier, Kind kind, Long regionId,
+                String address, String phone, String contactPerson, String email, String bankName, String bankAccount, String bankMfo,
+                String vatCode, String note, List<ContactRequest> contacts) {
+            this(tin, name, legalName, customer, supplier, kind, regionId, address, phone, contactPerson, email, bankName, bankAccount, bankMfo,
+                    vatCode, note, contacts, null, null);
+        }
+    }
 
     record Contact(String name, @Schema(nullable = true) String position, @Schema(nullable = true) String phone) {}
 

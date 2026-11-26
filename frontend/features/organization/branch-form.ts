@@ -53,6 +53,8 @@ export interface BranchForm {
   banks: BankRow[];
   directorName: string;
   accountantName: string;
+  /** FT6: IFUT (faoliyat turi kodi) — mijoz hujjatlarida */
+  ifut: string;
 }
 
 export const emptyBank = (main = false): BankRow => ({ bankName: "", mfo: "", account: "", main });
@@ -74,6 +76,7 @@ export function formFromBranch(b?: Branch | null): BranchForm {
     banks,
     directorName: b?.directorName ?? "",
     accountantName: b?.accountantName ?? "",
+    ifut: b?.ifut ?? "",
   };
 }
 
@@ -130,7 +133,7 @@ export function suggestCode(name: string): string {
 }
 
 export type BranchErrors = Partial<Record<string, string>>;
-export type ErrorKey = "eName" | "eCode" | "eLegal" | "eStir" | "eRegion" | "eAddr" | "eActual" | "eBank" | "eAcc" | "eVatNo";
+export type ErrorKey = "eName" | "eCode" | "eLegal" | "eStir" | "eRegion" | "eAddr" | "eActual" | "eBank" | "eAcc" | "eVatNo" | "eIfut";
 
 /** Maydon → xato kaliti (`branchPanel.<kalit>`). Toʻliq boʻsh bank qatori eʼtiborga olinmaydi. */
 export function validateBranch(f: BranchForm, isNew: boolean): Record<string, ErrorKey> {
@@ -140,6 +143,7 @@ export function validateBranch(f: BranchForm, isNew: boolean): Record<string, Er
   if (!f.legalName.trim()) e.legalName = "eLegal";
   if (!/^\d{9}$/.test(f.tin.trim())) e.tin = "eStir";
   if (f.vatPayer && f.vatCertNo.trim() && !/^\d{6,20}$/.test(f.vatCertNo.trim())) e.vatCertNo = "eVatNo";
+  if (f.ifut.trim() && !/^\d{5}$/.test(f.ifut.trim())) e.ifut = "eIfut";
   if (!f.region) e.region = "eRegion";
   if (!f.address.trim()) e.address = "eAddr";
   if (!f.sameAddress && !f.actualAddress.trim()) e.actualAddress = "eActual";
@@ -168,6 +172,7 @@ export function bodyFromForm(f: BranchForm): BranchBody {
     actualAddress: f.sameAddress ? nul(f.address) : nul(f.actualAddress),
     directorName: nul(f.directorName),
     accountantName: nul(f.accountantName),
+    ifut: f.ifut.trim(),
     bankAccounts: banks.map((b) => ({ bankName: b.bankName, mfo: b.mfo, account: b.account.trim(), main: b.main })),
   };
 }

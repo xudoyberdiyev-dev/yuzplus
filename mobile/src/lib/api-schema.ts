@@ -562,7 +562,7 @@ export interface paths {
          * FS va hisob-faktura — PDF (chop etish)
          * @description Narx, summa va QQS — faqat special.cost.
          */
-        get: operations["pdf_6"];
+        get: operations["pdf_7"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2737,7 +2737,7 @@ export interface paths {
          * Sanoq varag'i / inventarizatsiya qaydnomasi — PDF
          * @description Sanoqda — sanoq varag'i («Sanaldi» bo'sh), keyin — farqlar bilan qaydnoma. Tannarx — faqat prices.cost.
          */
-        get: operations["pdf_5"];
+        get: operations["pdf_6"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4475,6 +4475,100 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/orders/{id}/client-docs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hujjatlar oynasi: shartnoma, mijoz shartnomalari, bo'sh rekvizitlar */
+        get: operations["info"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/client-docs/contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Buyurtma uchun mijoz shartnomasini tanlash
+         * @description Hujjat raqami va sanasi shu shartnomadan; buyurtma o'zgarmaydi.
+         */
+        put: operations["contract"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/client-docs/zip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Uchala hujjat bitta arxivda (.zip): .xlsx va .pdf */
+        get: operations["zip"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/client-docs/{kind}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bitta hujjat PDF
+         * @description Excel bilan bir xil ma'lumot va matnlar.
+         */
+        get: operations["pdf_5"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/client-docs/{kind}/xlsx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bitta hujjat .xlsx
+         * @description INVOICE — hisob varaq-faktura, OFFER — tijorat taklifi, SPECIFICATION — spetsifikatsiya. Shartnoma tanlanmagan bo'lsa — 400 clientDocs.contractRequired.
+         */
+        get: operations["xlsx_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/orders/{id}/codes-owner": {
         parameters: {
             query?: never;
@@ -4544,7 +4638,7 @@ export interface paths {
         };
         /**
          * Faktura qatorlari (joriy va asl)
-         * @description Narx ko'rish ruxsatisiz (prices.view) — narx va summa null. fefo=true — O25: yig'ilmagan buyurtmada seriya/muddat zahira yoki FEFO taklifidan.
+         * @description Narx ko'rish ruxsatisiz (prices.view) — narx va summa null. fefo=true — O25: yig'ilmagan buyurtmada seriya/muddat zahira yoki FEFO taklifidan. type — FT5: tuzatilmagan fakturada mijozning shu turdagi shabloni qo'llanadi.
          */
         get: operations["get_10"];
         /**
@@ -4555,6 +4649,47 @@ export interface paths {
         post?: never;
         /** Asl holatiga qaytarish */
         delete: operations["revert"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/invoice-forms/template/{type}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * FT5: shablon sifatida saqlash
+         * @description Joriy ko'rinish (yashirin ustunlar, qo'shilgan ustunlar, bo'limlar) — mijoz + faktura turi uchun.
+         */
+        put: operations["saveTemplate"];
+        post?: never;
+        /** FT5: shablonni o'chirish */
+        delete: operations["deleteTemplate"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/invoice-forms/template/{type}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * FT5: shablonni tiklash
+         * @description Mijoz shablonini joriy qatorlarga qo'llaydi (kataklardagi tuzatishlar saqlanadi).
+         */
+        post: operations["applyTemplate"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -9754,6 +9889,8 @@ export interface components {
             directorName?: string;
             /** Format: int64 */
             id: number;
+            /** @description IFUT (faoliyat turi kodi) — FT6 mijoz hujjatlari */
+            ifut?: string;
             legalName: string;
             name: string;
             phone?: string;
@@ -10282,6 +10419,21 @@ export interface components {
             /** @enum {string} */
             step: "COMPANY" | "BRANCHES" | "WAREHOUSES" | "EMPLOYEES" | "PRICES" | "CUSTOMERS" | "PRODUCTS" | "OPENING_STOCK";
         };
+        ClientDocsInfo: {
+            /** @description Tanlangan shartnoma; null — hujjat chiqarishdan oldin tanlanadi */
+            contract?: components["schemas"]["ContractOption"];
+            /** @description Mijozning shu filialdagi shartnomalari (yangi → eski) */
+            contracts: components["schemas"]["ContractOption"][];
+            /** Format: int32 */
+            lines: number;
+            /** @description Bo'sh rekvizitlar (i18n kalit qismlari): sellerIfut, sellerDirector, sellerAccountant, sellerBank, buyerAccount, buyerMfo, buyerBank, noCost */
+            missing: string[];
+            /**
+             * Format: int64
+             * @description Tavsiya: amaldagi eng yangi shartnoma
+             */
+            suggestedContractId?: number;
+        };
         CloseApprover: {
             /** Format: int64 */
             id: number;
@@ -10485,6 +10637,15 @@ export interface components {
             /** Format: date */
             validUntil?: string;
         };
+        ContractOption: {
+            /** Format: int64 */
+            id: number;
+            number: string;
+            /** Format: date */
+            signedOn?: string;
+            /** Format: date */
+            validUntil?: string;
+        };
         ContractRequest: {
             /** Format: int64 */
             branchId: number;
@@ -10532,6 +10693,10 @@ export interface components {
             /** @description Faqat xodim ko'ra oladigan filiallar */
             terms: components["schemas"]["Terms"][];
             tin: string;
+            /** @description G'azna hisob raqami (byudjet tashkilotlari, FT6) */
+            treasuryAccount?: string;
+            /** @description G'azna STIR (FT6) */
+            treasuryTin?: string;
             vatCode?: string;
         };
         CounterpartyDocumentsPage: {
@@ -10631,6 +10796,10 @@ export interface components {
             regionId?: number;
             supplier: boolean;
             tin: string;
+            /** @description G'azna hisob raqami (20–27 raqam); null — o'zgarmaydi, bo'sh — o'chiriladi */
+            treasuryAccount?: string;
+            /** @description G'azna STIR (9 raqam); null — o'zgarmaydi, bo'sh — o'chiriladi */
+            treasuryTin?: string;
             vatCode?: string;
         };
         CounterpartyRow: {
@@ -10662,6 +10831,8 @@ export interface components {
             bankAccounts?: components["schemas"]["BankAccount"][];
             code: string;
             directorName?: string;
+            /** @description IFUT — 5 raqam (FT6) */
+            ifut?: string;
             legalName: string;
             name: string;
             phone?: string;
@@ -11473,6 +11644,10 @@ export interface components {
             /** @description Tannarxda — faqat special.cost */
             value?: string;
         };
+        ExtraColumn: {
+            key: string;
+            title: string;
+        };
         Facet: {
             /** Format: int64 */
             count: number;
@@ -11545,13 +11720,21 @@ export interface components {
             batchHint?: string;
             /** @description Яроклик муддати — DD.MM.YYYY yoki erkin matn */
             expiry?: string;
+            /** @description FT4: qoʻshilgan ustunlar kataklari — kalit → matn */
+            extra?: {
+                [key: string]: string;
+            };
             farmId?: string;
+            /** @description FT3: SECTION — boʻlim sarlavhasi (name = boʻlim nomi); null yoki ROW — mahsulot qatori */
+            kind?: string;
             manufacturer?: string;
             name: string;
             /** @description ККС билан Нархи (narx ko'rish ruxsatisiz — null) */
             price?: string;
             /** Format: int32 */
             qty: number;
+            /** @description FT2: fakturadan olib tashlangan (faylga chiqmaydi) */
+            removed?: boolean;
             /** @description Серия (partiya) */
             series?: string;
             /**
@@ -12120,6 +12303,11 @@ export interface components {
             sizeBytes: number;
         };
         InvoiceFormSave: {
+            extraColumns?: components["schemas"]["ExtraColumn"][];
+            /** @description Faktura turi → yashirilgan ustun kalitlari */
+            hidden?: {
+                [key: string]: string[];
+            };
             rows: components["schemas"]["FormRow"][];
         };
         InvoiceForms: {
@@ -12132,8 +12320,14 @@ export interface components {
             /** Format: date-time */
             editedAt?: string;
             editedBy?: string;
+            /** @description FT4: qoʻshilgan ustunlar */
+            extraColumns: components["schemas"]["ExtraColumn"][];
             /** @description O25: seriya/muddat FEFO bo'yicha to'ldirildimi */
             fefo: boolean;
+            /** @description FT1: faktura turi → yashirilgan ustun kalitlari */
+            hidden: {
+                [key: string]: string[];
+            };
             /** Format: int64 */
             orderId: number;
             orderNumber: string;
@@ -12143,6 +12337,10 @@ export interface components {
             picked: boolean;
             /** @description Joriy qatorlar (tuzatilgan bo'lsa — tuzatilgani) */
             rows: components["schemas"]["FormRow"][];
+            /** @description FT5: tuzatilmagan faktura shablon boʻyicha koʻrsatildi */
+            templateApplied: boolean;
+            /** @description FT5: shu mijozda shabloni bor faktura turlari */
+            templates: string[];
             tin?: string;
             warehouse: string;
         };
@@ -12696,6 +12894,8 @@ export interface components {
             /** Format: int64 */
             priceTypeId: number;
             productIds: number[];
+            /** @description FT6: ustama QQSsiz narxga, so'mgacha yaxlitlab (sotish = round(kirim ÷ 1,12 × (1 + %)) × 1,12) */
+            roundNet?: boolean;
         };
         MatchRequest: {
             /** Format: int64 */
@@ -13424,6 +13624,10 @@ export interface components {
             total: string;
             /** Format: int64 */
             waitMinutes: number;
+        };
+        OrderContractRequest: {
+            /** Format: int64 */
+            contractId: number;
         };
         OrderDetail: {
             address?: string;
@@ -17127,6 +17331,8 @@ export interface components {
             address?: string;
             bankAccounts?: components["schemas"]["BankAccount"][];
             directorName?: string;
+            /** @description IFUT — 5 raqam (FT6) */
+            ifut?: string;
             legalName: string;
             name: string;
             phone?: string;
@@ -18587,7 +18793,7 @@ export interface operations {
             };
         };
     };
-    pdf_6: {
+    pdf_7: {
         parameters: {
             query?: never;
             header?: never;
@@ -21743,7 +21949,7 @@ export interface operations {
             };
         };
     };
-    pdf_5: {
+    pdf_6: {
         parameters: {
             query?: never;
             header?: never;
@@ -24139,6 +24345,122 @@ export interface operations {
             };
         };
     };
+    info: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientDocsInfo"];
+                };
+            };
+        };
+    };
+    contract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderContractRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientDocsInfo"];
+                };
+            };
+        };
+    };
+    zip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+        };
+    };
+    pdf_5: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                kind: "INVOICE" | "OFFER" | "SPECIFICATION";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+        };
+    };
+    xlsx_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                kind: "INVOICE" | "OFFER" | "SPECIFICATION";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+        };
+    };
     setCodesOwner: {
         parameters: {
             query?: never;
@@ -24213,6 +24535,7 @@ export interface operations {
         parameters: {
             query?: {
                 fefo?: boolean;
+                type?: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
             };
             header?: never;
             path: {
@@ -24235,7 +24558,9 @@ export interface operations {
     };
     save_1: {
         parameters: {
-            query?: never;
+            query?: {
+                type?: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
+            };
             header?: never;
             path: {
                 id: number;
@@ -24261,10 +24586,81 @@ export interface operations {
     };
     revert: {
         parameters: {
+            query?: {
+                type?: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceForms"];
+                };
+            };
+        };
+    };
+    saveTemplate: {
+        parameters: {
             query?: never;
             header?: never;
             path: {
                 id: number;
+                type: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceForms"];
+                };
+            };
+        };
+    };
+    deleteTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                type: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceForms"];
+                };
+            };
+        };
+    };
+    applyTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                type: "WAREHOUSE" | "WAREHOUSE2" | "CLIENT_SEND" | "CLIENT1" | "CLIENT2";
             };
             cookie?: never;
         };

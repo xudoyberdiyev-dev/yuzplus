@@ -976,7 +976,8 @@
   },
   "print": {
     "menu": "Chop etish",
-    "pick": "Terish varagʻi"
+    "pick": "Terish varagʻi",
+    "clientDocs": "Mijoz hujjatlari (3 ta)"
   },
   "tripPage": {
     "title": "Reys",
@@ -1152,5 +1153,36 @@
     "note": "Izoh",
     "lines": "Qatorlar",
     "moreLines": "Yana {n} ta qator — «Toʻliq ochish»da"
+  },
+  "clientDocs": {
+    "title": "Mijoz hujjatlari",
+    "intro": "Hisob varaq-faktura, tijorat taklifi va spetsifikatsiya — egasi namunasidagi shablonda, buyurtmaning hozirgi holatidan. Buyurtma, qoldiq va qarz oʻzgarmaydi.",
+    "contract": "Mijoz shartnomasi",
+    "contractHint": "Hujjat raqami va sanasi shu shartnomadan olinadi",
+    "validUntil": "{date} gacha",
+    "noContracts": "Mijozda bu filial uchun shartnoma yoʻq",
+    "noContractsHint": "Mijoz kartasida «Shartnomalar» boʻlimiga shartnoma qoʻshing, soʻng hujjatlarni chiqaring.",
+    "missingTitle": "Baʼzi rekvizitlar boʻsh — hujjatda boʻsh joy qoladi",
+    "noLines": "Buyurtmada chiqariladigan qator yoʻq",
+    "separately": "Alohida fayl (.xlsx)",
+    "zipHint": "«Hammasini yuklab olish» — uchala fayl bitta arxivda (.zip)",
+    "downloadAll": "Hammasini yuklab olish",
+    "close": "Yopish",
+    "saveError": "Shartnoma saqlanmadi. Qayta urinib koʻring.",
+    "kind": {
+      "INVOICE": "Hisob varaq-faktura",
+      "OFFER": "Tijorat taklifi",
+      "SPECIFICATION": "Spetsifikatsiya"
+    },
+    "missing": {
+      "sellerIfut": "Filial IFUT kodi (Sozlamalar → Filiallar)",
+      "sellerDirector": "Filial rahbari (direktor) ismi",
+      "sellerAccountant": "Bosh hisobchi ismi",
+      "sellerBank": "Filial bank hisobi",
+      "buyerAccount": "Mijozning hisob raqami",
+      "buyerMfo": "Mijoz bankining MFO kodi",
+      "buyerBank": "Mijoz banki",
+      "noCost": "Baʼzi qatorlarda kirim narxi aniqlanmadi (zahira yoki partiya yoʻq) — «Baza narxi» va «Ust.%» boʻsh qoladi"
+    }
   }
 }

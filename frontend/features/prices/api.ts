@@ -178,6 +178,7 @@ export async function computeMarkup(body: {
   priceTypeId: number;
   base: MarkupBase;
   percent: number;
+  roundNet?: boolean;
 }): Promise<MarkupLine[]> {
   await ensureCsrf();
   return unwrap(api.POST("/api/price-changes/markup", { body }));

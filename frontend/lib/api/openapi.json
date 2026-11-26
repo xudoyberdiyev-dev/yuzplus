@@ -9,6 +9,9 @@
     "url" : "/"
   } ],
   "tags" : [ {
+    "description" : "Mijoz hujjatlari: hisob varaq-faktura, tijorat taklifi, spetsifikatsiya (FT6)",
+    "name" : "client-docs"
+  }, {
     "description" : "Boshlang'ich qoldiq: qarzlar, kassa va bank",
     "name" : "opening-finance"
   }, {
@@ -1394,7 +1397,7 @@
     "/api/branch-sales/{id}/pdf" : {
       "get" : {
         "description" : "Narx, summa va QQS — faqat special.cost.",
-        "operationId" : "pdf_6",
+        "operationId" : "pdf_7",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -6264,7 +6267,7 @@
     "/api/inventory-counts/{id}/pdf" : {
       "get" : {
         "description" : "Sanoqda — sanoq varag'i («Sanaldi» bo'sh), keyin — farqlar bilan qaydnoma. Tannarx — faqat prices.cost.",
-        "operationId" : "pdf_5",
+        "operationId" : "pdf_6",
         "parameters" : [ {
           "in" : "path",
           "name" : "id",
@@ -9999,6 +10002,178 @@
         },
         "summary" : "Hisobdan o'tkazish",
         "tags" : [ "orders" ]
+      }
+    },
+    "/api/orders/{id}/client-docs" : {
+      "get" : {
+        "operationId" : "info",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClientDocsInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Hujjatlar oynasi: shartnoma, mijoz shartnomalari, bo'sh rekvizitlar",
+        "tags" : [ "client-docs" ]
+      }
+    },
+    "/api/orders/{id}/client-docs/contract" : {
+      "put" : {
+        "description" : "Hujjat raqami va sanasi shu shartnomadan; buyurtma o'zgarmaydi.",
+        "operationId" : "contract",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OrderContractRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ClientDocsInfo"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Buyurtma uchun mijoz shartnomasini tanlash",
+        "tags" : [ "client-docs" ]
+      }
+    },
+    "/api/orders/{id}/client-docs/zip" : {
+      "get" : {
+        "operationId" : "zip",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Uchala hujjat bitta arxivda (.zip): .xlsx va .pdf",
+        "tags" : [ "client-docs" ]
+      }
+    },
+    "/api/orders/{id}/client-docs/{kind}/pdf" : {
+      "get" : {
+        "description" : "Excel bilan bir xil ma'lumot va matnlar.",
+        "operationId" : "pdf_5",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "path",
+          "name" : "kind",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "INVOICE", "OFFER", "SPECIFICATION" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Bitta hujjat PDF",
+        "tags" : [ "client-docs" ]
+      }
+    },
+    "/api/orders/{id}/client-docs/{kind}/xlsx" : {
+      "get" : {
+        "description" : "INVOICE — hisob varaq-faktura, OFFER — tijorat taklifi, SPECIFICATION — spetsifikatsiya. Shartnoma tanlanmagan bo'lsa — 400 clientDocs.contractRequired.",
+        "operationId" : "xlsx_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "path",
+          "name" : "kind",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "INVOICE", "OFFER", "SPECIFICATION" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Bitta hujjat .xlsx",
+        "tags" : [ "client-docs" ]
       }
     },
     "/api/orders/{id}/codes-owner" : {
@@ -22401,6 +22576,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "ifut" : {
+            "type" : "string",
+            "description" : "IFUT (faoliyat turi kodi) — FT6 mijoz hujjatlari"
+          },
           "legalName" : {
             "type" : "string"
           },
@@ -23773,6 +23952,39 @@
         },
         "required" : [ "count", "done", "link", "step" ]
       },
+      "ClientDocsInfo" : {
+        "type" : "object",
+        "properties" : {
+          "contract" : {
+            "$ref" : "#/components/schemas/ContractOption",
+            "description" : "Tanlangan shartnoma; null — hujjat chiqarishdan oldin tanlanadi"
+          },
+          "contracts" : {
+            "type" : "array",
+            "description" : "Mijozning shu filialdagi shartnomalari (yangi → eski)",
+            "items" : {
+              "$ref" : "#/components/schemas/ContractOption"
+            }
+          },
+          "lines" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "missing" : {
+            "type" : "array",
+            "description" : "Bo'sh rekvizitlar (i18n kalit qismlari): sellerIfut, sellerDirector, sellerAccountant, sellerBank, buyerAccount, buyerMfo, buyerBank, noCost",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "suggestedContractId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Tavsiya: amaldagi eng yangi shartnoma"
+          }
+        },
+        "required" : [ "contracts", "lines", "missing" ]
+      },
       "CloseApprover" : {
         "type" : "object",
         "properties" : {
@@ -24302,6 +24514,27 @@
         },
         "required" : [ "branchId", "id", "number" ]
       },
+      "ContractOption" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "number" : {
+            "type" : "string"
+          },
+          "signedOn" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "validUntil" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "id", "number" ]
+      },
       "ContractRequest" : {
         "type" : "object",
         "properties" : {
@@ -24442,6 +24675,14 @@
           },
           "tin" : {
             "type" : "string"
+          },
+          "treasuryAccount" : {
+            "type" : "string",
+            "description" : "G'azna hisob raqami (byudjet tashkilotlari, FT6)"
+          },
+          "treasuryTin" : {
+            "type" : "string",
+            "description" : "G'azna STIR (FT6)"
           },
           "vatCode" : {
             "type" : "string"
@@ -24707,6 +24948,16 @@
             "minLength" : 1,
             "pattern" : "^([0-9]{9}|[0-9]{14})$"
           },
+          "treasuryAccount" : {
+            "type" : "string",
+            "description" : "G'azna hisob raqami (20–27 raqam); null — o'zgarmaydi, bo'sh — o'chiriladi",
+            "pattern" : "^$|^[0-9]{20,27}$"
+          },
+          "treasuryTin" : {
+            "type" : "string",
+            "description" : "G'azna STIR (9 raqam); null — o'zgarmaydi, bo'sh — o'chiriladi",
+            "pattern" : "^$|^[0-9]{9}$"
+          },
           "vatCode" : {
             "type" : "string",
             "pattern" : "^$|^[0-9]{12}$"
@@ -24806,6 +25057,11 @@
             "type" : "string",
             "maxLength" : 200,
             "minLength" : 0
+          },
+          "ifut" : {
+            "type" : "string",
+            "description" : "IFUT — 5 raqam (FT6)",
+            "pattern" : "^$|^[0-9]{5}$"
           },
           "legalName" : {
             "type" : "string",
@@ -30041,6 +30297,10 @@
             },
             "maxItems" : 5000,
             "minItems" : 0
+          },
+          "roundNet" : {
+            "type" : "boolean",
+            "description" : "FT6: ustama QQSsiz narxga, so'mgacha yaxlitlab (sotish = round(kirim ÷ 1,12 × (1 + %)) × 1,12)"
           }
         },
         "required" : [ "base", "branchId", "percent", "priceTypeId", "productIds" ]
@@ -31823,6 +32083,16 @@
           }
         },
         "required" : [ "blocked", "branchCode", "branchId", "createdBy", "customer", "customerId", "debt", "id", "level", "lines", "mine", "number", "overdue", "overdueDays", "reasons", "submittedAt", "total", "waitMinutes" ]
+      },
+      "OrderContractRequest" : {
+        "type" : "object",
+        "properties" : {
+          "contractId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "contractId" ]
       },
       "OrderDetail" : {
         "type" : "object",
@@ -40847,6 +41117,11 @@
             "type" : "string",
             "maxLength" : 200,
             "minLength" : 0
+          },
+          "ifut" : {
+            "type" : "string",
+            "description" : "IFUT — 5 raqam (FT6)",
+            "pattern" : "^$|^[0-9]{5}$"
           },
           "legalName" : {
             "type" : "string",

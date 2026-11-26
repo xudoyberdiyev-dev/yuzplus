@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
-import { Radio } from "@/components/ui/selection-controls";
+import { Checkbox, Radio } from "@/components/ui/selection-controls";
 import { ErrorState, Skeleton } from "@/components/ui/system-states";
 import { TextField } from "@/components/ui/text-field";
 import { toast } from "@/components/ui/toast";
@@ -555,6 +555,8 @@ function MarkupDialog({
   const t = useTranslations("prices.markup");
   const [base, setBase] = useState<string | null>("BASE_PRICE");
   const [percent, setPercent] = useState("15");
+  // FT6 (egasi 26.11): ustama QQSsiz narxga, soʻmgacha yaxlitlab
+  const [roundNet, setRoundNet] = useState(true);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -575,6 +577,7 @@ function MarkupDialog({
           priceTypeId,
           base: (base ?? "BASE_PRICE") as MarkupBase,
           percent: pct,
+          roundNet,
         });
         for (const m of out) {
           if (m.newPrice) result[`${m.productId}:${priceTypeId}`] = m.newPrice;
@@ -609,7 +612,8 @@ function MarkupDialog({
           ]}
         />
         <TextField label={t("percent")} value={percent} onChange={setPercent} suffix="%" inputMode="decimal" hint={t("percentHint")} />
-        <p className="text-caption text-text-secondary">{t("exact")}</p>
+        <Checkbox label={t("roundNet")} description={t("roundNetHint")} checked={roundNet} onChange={setRoundNet} />
+        {roundNet ? null : <p className="text-caption text-text-secondary">{t("exact")}</p>}
         {error ? <Alert tone="danger" title={error} /> : null}
       </div>
     </Modal>

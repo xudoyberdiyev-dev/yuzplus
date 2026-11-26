@@ -148,7 +148,9 @@
     "LAST_RECEIPT": "Oxirgi kirim narxi",
     "percent": "Ustama",
     "percentHint": "Manfiy — chegirma",
-    "exact": "Narx yaxlitlanmaydi — soʻm va tiyinigacha aniq hisoblanadi."
+    "exact": "Narx yaxlitlanmaydi — soʻm va tiyinigacha aniq hisoblanadi.",
+    "roundNet": "QQSsiz narxni soʻmgacha yaxlitlash",
+    "roundNetHint": "Ustama QQSsiz narxga qoʻyiladi, soʻmgacha yaxlitlanadi, soʻng QQS qoʻshiladi — mijoz hujjatlarida «Ust.%» aniq chiqadi (2 361 × 1,15 = 2 715)."
   },
   "approve": {
     "title": "Narx oʻzgarishini tasdiqlash",

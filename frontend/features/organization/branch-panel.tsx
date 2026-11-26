@@ -29,7 +29,7 @@ import {
 type Branch = components["schemas"]["Branch"];
 
 /** Maydonlar tartibi — «Birinchi xatoga oʻtish» uchun. */
-const ORDER = ["name", "code", "legalName", "tin", "vatCertNo", "region", "address", "actualAddress"];
+const ORDER = ["name", "code", "legalName", "tin", "vatCertNo", "ifut", "region", "address", "actualAddress"];
 
 function Section({ title, description, children }: { title: string; description: string; children: ReactNode }) {
   return (
@@ -230,6 +230,18 @@ function BranchPanelInner({
                 />
               </div>
             ) : null}
+            <div data-field="ifut" className="max-w-[266px]">
+              <TextField
+                label={t("ifut")}
+                hint={t("ifutHint")}
+                inputMode="numeric"
+                maxLength={5}
+                value={form.ifut}
+                onChange={(v) => set("ifut")(v.replace(/\D/g, ""))}
+                placeholder="46180"
+                error={errorFor("ifut")}
+              />
+            </div>
           </Section>
 
           <Section title={t("s3")} description={t("s3d")}>
