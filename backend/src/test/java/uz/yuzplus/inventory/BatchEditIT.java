@@ -116,9 +116,14 @@ class BatchEditIT {
         long batch = stocked(br, "B1 Sinov Paratsetamol");
         Cookie wm = loginAs("WAREHOUSE_MANAGER", br);
 
-        mvc.perform(get("/api/stock/batch-edit").param("branchId", String.valueOf(br)).param("q", "paratsetamol").cookie(wm))
+        String oldNumber = jdbc.sql("SELECT number FROM batch WHERE id = :b").param("b", batch).query(String.class).single();
+        mvc.perform(get("/api/stock/batch-edit").param("branchId", String.valueOf(br)).cookie(wm))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[?(@.batchId == " + batch + ")].qty").value(7));
+        mvc.perform(get("/api/stock/batch-edit").param("branchId", String.valueOf(br)).param("q", oldNumber).cookie(wm))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].batchId").value((int) batch));
 
         // sabab majburiy
         mvc.perform(put("/api/stock/batch-edit/" + batch).with(csrf()).cookie(wm).contentType(MediaType.APPLICATION_JSON)
