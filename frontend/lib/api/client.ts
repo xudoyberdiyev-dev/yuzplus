@@ -2,6 +2,7 @@ import createClient, { type Middleware } from "openapi-fetch";
 import { CSRF_COOKIE, CSRF_HEADER, needsCsrf, readCookie } from "./csrf";
 import { ApiError, toApiError } from "./errors";
 import type { paths } from "./schema";
+import { timingMiddleware } from "../telemetry";
 
 /**
  * Tiplangan API mijozi. Tiplar faqat OpenAPI'dan (`pnpm api:gen`), qo'lda yozilmaydi.
@@ -24,7 +25,7 @@ export const api = createClient<paths>({
   headers: { Accept: "application/json" },
 });
 
-api.use(csrfMiddleware);
+api.use(csrfMiddleware, timingMiddleware);
 
 type FetchResult<T> = { data?: T; error?: unknown; response: Response };
 

@@ -84,6 +84,9 @@
     "description" : "Reyslar",
     "name" : "trips"
   }, {
+    "description" : "Tezlik oʻlchovi (brauzer)",
+    "name" : "telemetry"
+  }, {
     "description" : "Akt sverka hujjatlari (AS-…)",
     "name" : "reconciliations"
   }, {
@@ -18396,6 +18399,28 @@
         },
         "summary" : "Rad etish",
         "tags" : [ "supplier-return" ]
+      }
+    },
+    "/api/telemetry/timings" : {
+      "post" : {
+        "operationId" : "timings",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TimingReport"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Brauzerdagi sekin soʻrovlar va Web Vitals qaydlari (faqat log)",
+        "tags" : [ "telemetry" ]
       }
     },
     "/api/transfers/overview" : {
@@ -40530,6 +40555,47 @@
           }
         },
         "required" : [ "pickMinutes" ]
+      },
+      "TimingEntry" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "description" : "api — sekin soʻrov, vital — Web Vitals",
+            "enum" : [ "api", "vital" ]
+          },
+          "ms" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Davomiylik, ms (CLS uchun ×1000)"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "API yoʻli (masalan GET /api/orders/{id}) yoki koʻrsatkich nomi (LCP)"
+          },
+          "page" : {
+            "type" : "string",
+            "description" : "Sahifa yoʻli (masalan /orders/{id})"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "HTTP holati (api uchun)"
+          }
+        },
+        "required" : [ "kind", "ms", "name" ]
+      },
+      "TimingReport" : {
+        "type" : "object",
+        "properties" : {
+          "entries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TimingEntry"
+            }
+          }
+        },
+        "required" : [ "entries" ]
       },
       "Transfer" : {
         "type" : "object",

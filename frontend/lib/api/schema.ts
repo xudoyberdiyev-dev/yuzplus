@@ -7979,6 +7979,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/telemetry/timings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Brauzerdagi sekin soʻrovlar va Web Vitals qaydlari (faqat log) */
+        post: operations["timings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/transfers/overview": {
         parameters: {
             query?: never;
@@ -17111,6 +17128,30 @@ export interface components {
             markMinutes?: number;
             /** Format: int32 */
             pickMinutes: number;
+        };
+        TimingEntry: {
+            /**
+             * @description api — sekin soʻrov, vital — Web Vitals
+             * @enum {string}
+             */
+            kind: "api" | "vital";
+            /**
+             * Format: int64
+             * @description Davomiylik, ms (CLS uchun ×1000)
+             */
+            ms: number;
+            /** @description API yoʻli (masalan GET /api/orders/{id}) yoki koʻrsatkich nomi (LCP) */
+            name: string;
+            /** @description Sahifa yoʻli (masalan /orders/{id}) */
+            page?: string;
+            /**
+             * Format: int32
+             * @description HTTP holati (api uchun)
+             */
+            status?: number;
+        };
+        TimingReport: {
+            entries: components["schemas"]["TimingEntry"][];
         };
         Transfer: {
             amount: string;
@@ -29620,6 +29661,28 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SupplierReturnDetail"];
                 };
+            };
+        };
+    };
+    timings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TimingReport"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
