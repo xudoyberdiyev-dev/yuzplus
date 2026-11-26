@@ -113,11 +113,11 @@ class Counterparties {
         record Base(long id, String tin, String name, String legalName, boolean isCustomer, boolean isSupplier, String kind, Long regionId,
                 String region, String address, String phone, String contactPerson, String email, String bankName,
                 String bankAccount, String bankMfo, String vatCode, String note, boolean blocked, String blockedReason,
-                boolean active) {}
+                boolean active, String treasuryAccount, String treasuryTin) {}
         Optional<Base> base = jdbc.sql("""
                 SELECT c.id, c.tin, c.name, c.legal_name, c.is_customer, c.is_supplier, c.kind, c.region_id, r.name AS region, c.address,
                        c.phone, c.contact_person, c.email, c.bank_name, c.bank_account, c.bank_mfo, c.vat_code, c.note,
-                       c.blocked, c.blocked_reason, c.active
+                       c.blocked, c.blocked_reason, c.active, c.treasury_account, c.treasury_tin
                 FROM counterparty c LEFT JOIN region r ON r.id = c.region_id WHERE c.id = :id""")
                 .param("id", id)
                 .query(Base.class)
@@ -178,7 +178,7 @@ class Counterparties {
                 b.kind() == null ? null : Kind.valueOf(b.kind()),
                 b.regionId() == null ? null : new Ref(b.regionId(), b.region()), b.address(), b.phone(), b.contactPerson(), b.email(),
                 b.bankName(), b.bankAccount(), b.bankMfo(), b.vatCode(), b.note(), b.blocked(), b.blockedReason(), b.active(),
-                licenses, contacts, contracts, terms));
+                licenses, contacts, contracts, terms, b.treasuryAccount(), b.treasuryTin()));
     }
 
     // ===== Karta =====
@@ -188,9 +188,9 @@ class Counterparties {
         validateCard(r, null);
         long id = jdbc.sql("""
                 INSERT INTO counterparty (tin, name, legal_name, is_customer, is_supplier, kind, region_id, address, phone, contact_person,
-                                          email, bank_name, bank_account, bank_mfo, vat_code, note)
+                                          email, bank_name, bank_account, bank_mfo, vat_code, note, treasury_account, treasury_tin)
                 VALUES (:tin, :name, :legal, :customer, :supplier, :kind, :region, :address, :phone, :contact, :email, :bank, :account,
-                        :mfo, :vat, :note) RETURNING id""")
+                        :mfo, :vat, :note, :ta, :tt) RETURNING id""")
                 .params(cardParams(r))
                 .query(Long.class)
                 .single();
@@ -208,6 +208,8 @@ class Counterparties {
                 UPDATE counterparty SET tin = :tin, name = :name, legal_name = :legal, is_customer = :customer, is_supplier = :supplier, kind = :kind,
                        region_id = :region, address = :address, phone = :phone, contact_person = :contact, email = :email,
                        bank_name = :bank, bank_account = :account, bank_mfo = :mfo, vat_code = :vat, note = :note,
+                       treasury_account = CASE WHEN :taKeep THEN treasury_account ELSE :ta END,
+                       treasury_tin = CASE WHEN :ttKeep THEN treasury_tin ELSE :tt END,
                        updated_at = now(), version = version + 1
                 WHERE id = :id""")
                 .params(cardParams(r))
@@ -647,6 +649,10 @@ class Counterparties {
         m.put("mfo", blankToNull(r.bankMfo()));
         m.put("vat", blankToNull(r.vatCode()));
         m.put("note", blankToNull(r.note()));
+        m.put("ta", blankToNull(r.treasuryAccount()));
+        m.put("tt", blankToNull(r.treasuryTin()));
+        m.put("taKeep", r.treasuryAccount() == null);
+        m.put("ttKeep", r.treasuryTin() == null);
         return m;
     }
 

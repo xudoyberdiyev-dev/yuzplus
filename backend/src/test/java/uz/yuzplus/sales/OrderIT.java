@@ -1243,6 +1243,183 @@ class OrderIT {
                 .andExpect(jsonPath("$.rows[0].batchHint").doesNotExist());
     }
 
+    /** Namuna katagidagi pul matni («1 629 000,00») → son. */
+    private static java.math.BigDecimal sampleNumber(org.apache.poi.ss.usermodel.Sheet sh, int r, int c) {
+        String v = sh.getRow(r).getCell(c).getStringCellValue().replaceAll("[\\s\u00a0]", "").replace(',', '.');
+        return new java.math.BigDecimal(v).setScale(2, java.math.RoundingMode.HALF_UP);
+    }
+
+    private static java.math.BigDecimal cellNumber(org.apache.poi.ss.usermodel.Sheet sh, int r, int c) {
+        return java.math.BigDecimal.valueOf(sh.getRow(r).getCell(c).getNumericCellValue()).setScale(2, java.math.RoundingMode.HALF_UP);
+    }
+
+    private static org.apache.poi.ss.usermodel.Sheet sheet(MvcResult r) throws Exception {
+        return new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(r.getResponse().getContentAsByteArray())).getSheetAt(0);
+    }
+
+    /**
+     * FT6: mijoz hujjatlari toʻplami egasi namunasi (1478) bilan tiyinigacha mos. Namunadagi 26 qator (nom, soni, baza va sotish narxi)
+     * tizimga QQS bilan kiritiladi (narx = sotish × 1,12, kirim narxi = baza × 1,12) — faktura, tijorat taklifi va spetsifikatsiya
+     * namunadagi qatorlarda, ИТОГО 67 171 400,00 / 8 060 568,00 / 75 231 968,00, soʻz bilan jami; shartnoma tanlanmaguncha — xato;
+     * ruxsatsiz (operator) — 403; QQSsiz mahsulot va bir nechta partiya (vaznli oʻrtacha).
+     */
+    @Test
+    void clientDocsMatchOwnerSample() throws Exception {
+        Place p = place();
+        long c = customer(p.branchId(), null);
+        jdbc.sql("""
+                UPDATE counterparty SET legal_name = 'Nishon Tuman Tibbiyot Birlashmasi', bank_account = '23426000700394429001', bank_mfo = '00182',
+                       bank_name = 'Markaziy bank Toshkent sh. Bosh Boshkarmasi HKKM', treasury_account = '23402000300100001010',
+                       treasury_tin = '201122919' WHERE id = :c""").param("c", c).update();
+        jdbc.sql("""
+                UPDATE branch SET legal_name = '"Shahrisabz Farm" Mchj', address = 'Beruniy', phone = '+998 (97) 764-59-36', ifut = '46180',
+                       director_name = 'MUSURMONOVA M.A.', accountant_name = 'UZOKOV SH.E.' WHERE id = :b""").param("b", p.branchId()).update();
+        jdbc.sql("INSERT INTO branch_bank_account (branch_id, bank_name, mfo, account, is_main) VALUES (:b, '\"Hamkorbank\" ATB bosh ofisi', '00083', "
+                + "'20208000900355090001', true)").param("b", p.branchId()).update();
+        java.math.BigDecimal vat = new java.math.BigDecimal("1.12");
+        StringBuilder lines = new StringBuilder();
+        org.apache.poi.ss.usermodel.Sheet sample;
+        try (var in = getClass().getResourceAsStream("/client-docs/1478-hisob-varaq-faktura.xls")) {
+            sample = new org.apache.poi.hssf.usermodel.HSSFWorkbook(in).getSheetAt(0);
+        }
+        for (int r = 18; r <= 43; r++) {
+            String name = sample.getRow(r).getCell(1).getStringCellValue().strip();
+            int qty = sampleNumber(sample, r, 4).intValueExact();
+            String price = sampleNumber(sample, r, 7).multiply(vat).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString();
+            Money cost = new Money(sampleNumber(sample, r, 5).multiply(vat));
+            long prod = product(p, name, price, 0, null, null);
+            if (r == 18) {
+                jdbc.sql("UPDATE product SET ikpu = '02132011110000002' WHERE id = :p").param("p", prod).update();
+            }
+            tx.executeWithoutResult(s -> {
+                long b = ledger.createBatch(prod, "S-" + prod, null, LocalDate.now().plusYears(2), cost, false, "BQ", null);
+                ledger.post(new DocRef("BQ", prod, "BQ-FT6-" + prod), List.of(Move.in(p.main(), b, qty)));
+            });
+            lines.append(lines.isEmpty() ? "" : ",").append("{\"productId\":").append(prod).append(",\"qty\":").append(qty).append("}");
+        }
+        Cookie operator = loginAs("OPERATOR", p.branchId());
+        Cookie director = loginAs("DIRECTOR", p.branchId());
+        long o = draft(operator, "{\"warehouseId\":" + p.warehouseId() + ",\"customerId\":" + c
+                + ",\"deliveryType\":\"DELIVERY\",\"paymentType\":\"TRANSFER\",\"lines\":[" + lines + "]}");
+        assertThat(jdbc.sql("SELECT total::text FROM sales_order WHERE id = :o").param("o", o).query(String.class).single()).isEqualTo("75231968.00");
+        long contract = jdbc.sql("INSERT INTO counterparty_contract (counterparty_id, branch_id, number) VALUES (:c, :b, '1478') RETURNING id")
+                .param("c", c).param("b", p.branchId()).query(Long.class).single();
+        // Ruxsat: operatorda invoices.costPrint yo'q
+        mvc.perform(get("/api/orders/" + o + "/client-docs").cookie(operator)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/orders/" + o + "/client-docs/INVOICE/xlsx").cookie(operator)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/orders/" + o + "/client-docs").cookie(director))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contract").doesNotExist())
+                .andExpect(jsonPath("$.suggestedContractId").value(contract))
+                .andExpect(jsonPath("$.lines").value(26))
+                .andExpect(jsonPath("$.missing.length()").value(0));
+        mvc.perform(get("/api/orders/" + o + "/client-docs/INVOICE/xlsx").cookie(director))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("clientDocs.contractRequired"));
+        long foreignContract = jdbc.sql("INSERT INTO counterparty_contract (counterparty_id, branch_id, number) VALUES (:c, :b, '9') RETURNING id")
+                .param("c", customer(p.branchId(), null)).param("b", p.branchId()).query(Long.class).single();
+        send(put("/api/orders/" + o + "/client-docs/contract"), director, "{\"contractId\":" + foreignContract + "}")
+                .andExpect(status().isBadRequest());
+        send(put("/api/orders/" + o + "/client-docs/contract"), director, "{\"contractId\":" + contract + "}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contract.number").value("1478"));
+        String total = "JAMI: Yetmish besh million ikki yuz oʻttiz bir ming toʻqqiz yuz oltmish sakkiz soʻm";
+
+        // 1. Hisob varaq-faktura — namuna qatorlari bilan katakma-katak
+        MvcResult inv = mvc.perform(get("/api/orders/" + o + "/client-docs/INVOICE/xlsx").cookie(director))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
+                        .string("Content-Disposition", containsString("1478-hisob-varaq-faktura.xlsx")))
+                .andReturn();
+        var sh = sheet(inv);
+        assertThat(sh.getRow(0).getCell(0).getStringCellValue()).isEqualTo("HISOB VARAQ FAKTURA № 1478");
+        assertThat(sh.getRow(2).getCell(0).getStringCellValue()).startsWith("№ 1478 sonli shartnomaga asosan  «___» ______ ");
+        assertThat(sh.getRow(6).getCell(2).getStringCellValue()).isEqualTo("\"Shahrisabz Farm\" Mchj");
+        assertThat(sh.getRow(11).getCell(2).getStringCellValue()).isEqualTo("46180");
+        assertThat(sh.getRow(12).getCell(2).getStringCellValue()).isEqualTo("\"Hamkorbank\" ATB bosh ofisi");
+        assertThat(sh.getRow(6).getCell(8).getStringCellValue()).isEqualTo("Nishon Tuman Tibbiyot Birlashmasi");
+        assertThat(sh.getRow(12).getCell(8).getStringCellValue()).isEqualTo("23402000300100001010");
+        assertThat(sh.getRow(14).getCell(8).getStringCellValue()).isEqualTo("201122919");
+        for (int r = 18; r <= 43; r++) {
+            assertThat(sh.getRow(r).getCell(0).getNumericCellValue()).isEqualTo(r - 17.0);
+            assertThat(sh.getRow(r).getCell(1).getStringCellValue()).isEqualTo(sample.getRow(r).getCell(1).getStringCellValue().strip());
+            for (int col : new int[] {4, 5, 6, 7, 8, 10, 11}) {
+                assertThat(cellNumber(sh, r, col)).as("qator %d, ustun %d", r, col).isEqualTo(sampleNumber(sample, r, col));
+            }
+            assertThat(sh.getRow(r).getCell(9).getStringCellValue()).isEqualTo("12%");
+        }
+        assertThat(sh.getRow(18).getCell(12).getStringCellValue()).isEqualTo("02132011110000002");
+        assertThat(sh.getRow(44).getCell(7).getStringCellValue()).isEqualTo("ИТОГО");
+        assertThat(cellNumber(sh, 44, 8)).isEqualByComparingTo("67171400.00");
+        assertThat(cellNumber(sh, 44, 10)).isEqualByComparingTo("8060568.00");
+        assertThat(cellNumber(sh, 44, 11)).isEqualByComparingTo("75231968.00");
+        assertThat(sh.getRow(45).getCell(0).getStringCellValue()).isEqualTo(total);
+        assertThat(sh.getRow(50).getCell(1).getStringCellValue()).isEqualTo("Rahbar _________________________________ MUSURMONOVA M.A.");
+        assertThat(sh.getRow(52).getCell(1).getStringCellValue()).isEqualTo("Bosh hisobchi ___________________________ UZOKOV SH.E.");
+        assertThat(sh.getRow(54).getCell(1).getStringCellValue()).isEqualTo("Ombor mudiri __________________________");
+        assertThat(sh.getMergedRegions()).anyMatch(m -> m.getFirstRow() == 43 && m.getFirstColumn() == 1 && m.getLastColumn() == 2);
+        assertThat(sh.getMergedRegions()).anyMatch(m -> m.getFirstRow() == 50 && m.getFirstColumn() == 1 && m.getLastColumn() == 4);
+
+        // 2. Tijorat taklifi — narx QQS bilan (2 715 × 1,12 = 3 040,80)
+        var offer = sheet(mvc.perform(get("/api/orders/" + o + "/client-docs/OFFER/xlsx").cookie(director)).andExpect(status().isOk()).andReturn());
+        assertThat(offer.getRow(4).getCell(1).getStringCellValue()).isEqualTo("\"Shahrisabz Farm\" Mchj");
+        assertThat(offer.getRow(5).getCell(1).getStringCellValue()).isEqualTo("Beruniy, H/R 20208000900355090001, STIR " + jdbc.sql(
+                "SELECT tin FROM branch WHERE id = :b").param("b", p.branchId()).query(String.class).single() + ", МФО 00083");
+        assertThat(offer.getRow(10).getCell(1).getStringCellValue()).isEqualTo("T I J O R A T    T A K L I F I");
+        assertThat(offer.getRow(15).getCell(2).getStringCellValue()).isEqualTo(sample.getRow(18).getCell(1).getStringCellValue().strip());
+        assertThat(cellNumber(offer, 15, 5)).isEqualByComparingTo("3040.80");
+        assertThat(cellNumber(offer, 16, 5)).isEqualByComparingTo("9420.32");
+        assertThat(offer.getRow(40).getCell(1).getNumericCellValue()).isEqualTo(26.0);
+        assertThat(offer.getRow(42).getCell(2).getStringCellValue()).startsWith("Barcha dori-darmonlar");
+        assertThat(offer.getRow(44).getCell(4).getStringCellValue()).isEqualTo("MUSURMONOVA M.A.");
+
+        // 3. Spetsifikatsiya — IKPUsiz, ИТОГО 45-qatorda
+        var spec = sheet(mvc.perform(get("/api/orders/" + o + "/client-docs/SPECIFICATION/xlsx").cookie(director)).andExpect(status().isOk())
+                .andReturn());
+        assertThat(spec.getRow(2).getCell(8).getStringCellValue()).isEqualTo("1478 sonli shartnomaga");
+        assertThat(cellNumber(spec, 19, 6)).isEqualByComparingTo("15.00");
+        assertThat(cellNumber(spec, 41, 7)).isEqualByComparingTo("564.00");
+        assertThat(cellNumber(spec, 41, 6)).isEqualByComparingTo("15.00");
+        assertThat(cellNumber(spec, 45, 8)).isEqualByComparingTo("67171400.00");
+        assertThat(cellNumber(spec, 45, 10)).isEqualByComparingTo("8060568.00");
+        assertThat(cellNumber(spec, 45, 11)).isEqualByComparingTo("75231968.00");
+        assertThat(spec.getRow(46).getCell(0).getStringCellValue()).isEqualTo(total);
+        assertThat(spec.getRow(48).getCell(2).getStringCellValue()).startsWith("Ushbu spetsifikatsiya");
+
+        // Arxiv — uchala fayl
+        byte[] zip = mvc.perform(get("/api/orders/" + o + "/client-docs/zip").cookie(director)).andExpect(status().isOk()).andReturn()
+                .getResponse().getContentAsByteArray();
+        List<String> names = new java.util.ArrayList<>();
+        try (var z = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(zip))) {
+            for (var e = z.getNextEntry(); e != null; e = z.getNextEntry()) {
+                names.add(e.getName());
+            }
+        }
+        assertThat(names).containsExactly("1478-hisob-varaq-faktura.xlsx", "1478-tijorat-taklifi.xlsx", "1478-spetsifikatsiya.xlsx");
+        // Buyurtma o'zgarmadi
+        assertThat(jdbc.sql("SELECT total::text FROM sales_order WHERE id = :o").param("o", o).query(String.class).single()).isEqualTo("75231968.00");
+
+        // QQSsiz mahsulot, ikki partiya (vaznli o'rtacha kirim narxi): 2 × 100 + 1 × 130 → 110,00; ustama 20 % → 132
+        long free = product(p, "FT6 QQSsiz", "132", 0, null, null);
+        jdbc.sql("UPDATE product SET vat_exempt = true, vat_rate = 0 WHERE id = :p").param("p", free).update();
+        tx.executeWithoutResult(s -> {
+            long b1 = ledger.createBatch(free, "Q-1", null, LocalDate.now().plusYears(1), Money.of("100"), false, "BQ", null);
+            long b2 = ledger.createBatch(free, "Q-2", null, LocalDate.now().plusYears(2), Money.of("130"), false, "BQ", null);
+            ledger.post(new DocRef("BQ", free, "BQ-FT6Q-" + free), List.of(Move.in(p.main(), b1, 2), Move.in(p.main(), b2, 5)));
+        });
+        long o2 = draft(operator, order(p, c, new long[][] {{free, 3}}));
+        send(put("/api/orders/" + o2 + "/client-docs/contract"), director, "{\"contractId\":" + contract + "}").andExpect(status().isOk());
+        var q = sheet(mvc.perform(get("/api/orders/" + o2 + "/client-docs/INVOICE/xlsx").cookie(director)).andExpect(status().isOk()).andReturn());
+        assertThat(cellNumber(q, 18, 5)).isEqualByComparingTo("110.00");
+        assertThat(cellNumber(q, 18, 6)).isEqualByComparingTo("20.00");
+        assertThat(cellNumber(q, 18, 7)).isEqualByComparingTo("132.00");
+        assertThat(q.getRow(18).getCell(9).getStringCellValue()).isEqualTo("QQSsiz");
+        assertThat(cellNumber(q, 18, 10)).isEqualByComparingTo("0.00");
+        assertThat(cellNumber(q, 19, 11)).isEqualByComparingTo("396.00");
+        assertThat(q.getRow(20).getCell(0).getStringCellValue()).isEqualTo("JAMI: Uch yuz toʻqson olti soʻm");
+        assertThat(q.getRow(25).getCell(1).getStringCellValue()).endsWith("MUSURMONOVA M.A.");
+    }
+
     /**
      * FT (egasi 24.11): ustunlarni yashirish, qatorni olib tashlash, bo'lim, qo'shilgan ustun — faqat faylga (buyurtma o'zgarmaydi), jami qayta
      * hisoblanadi; shablon mijoz + faktura turi bo'yicha saqlanadi, tuzatilmagan fakturada qo'llanadi, «Shablonni tiklash» va o'chirish.

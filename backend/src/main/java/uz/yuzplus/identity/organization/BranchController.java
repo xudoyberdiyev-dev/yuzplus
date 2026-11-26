@@ -45,12 +45,13 @@ class BranchController {
             @Schema(nullable = true) @Size(max = 500) String actualAddress,
             @Schema(nullable = true) @Size(max = 200) String directorName,
             @Schema(nullable = true) @Size(max = 200) String accountantName,
-            @Valid @Schema(nullable = true) @Size(max = 10) List<Organization.BankAccount> bankAccounts) {
+            @Valid @Schema(nullable = true) @Size(max = 10) List<Organization.BankAccount> bankAccounts,
+            @Schema(nullable = true, description = "IFUT — 5 raqam (FT6)") @Pattern(regexp = "^$|^[0-9]{5}$", message = "{validation.ifut}") String ifut) {
 
         Organization.BranchExtra extra() {
             return vatPayer == null
                     ? null
-                    : new Organization.BranchExtra(vatPayer, vatCertNo, region, actualAddress, directorName, accountantName, bankAccounts);
+                    : new Organization.BranchExtra(vatPayer, vatCertNo, region, actualAddress, directorName, accountantName, bankAccounts, ifut);
         }
     }
 
@@ -66,12 +67,13 @@ class BranchController {
             @Schema(nullable = true) @Size(max = 500) String actualAddress,
             @Schema(nullable = true) @Size(max = 200) String directorName,
             @Schema(nullable = true) @Size(max = 200) String accountantName,
-            @Valid @Schema(nullable = true) @Size(max = 10) List<Organization.BankAccount> bankAccounts) {
+            @Valid @Schema(nullable = true) @Size(max = 10) List<Organization.BankAccount> bankAccounts,
+            @Schema(nullable = true, description = "IFUT — 5 raqam (FT6)") @Pattern(regexp = "^$|^[0-9]{5}$", message = "{validation.ifut}") String ifut) {
 
         Organization.BranchExtra extra() {
             return vatPayer == null
                     ? null
-                    : new Organization.BranchExtra(vatPayer, vatCertNo, region, actualAddress, directorName, accountantName, bankAccounts);
+                    : new Organization.BranchExtra(vatPayer, vatCertNo, region, actualAddress, directorName, accountantName, bankAccounts, ifut);
         }
     }
 
