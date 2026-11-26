@@ -17,7 +17,7 @@ async function createType(page: Page, name: string, batch: boolean) {
   await page.getByRole("button", { name: "Narx turi yaratish", exact: true }).click();
   const dlg = page.getByRole("dialog");
   await field(dlg, "Nomi").fill(name);
-  if (batch) await dlg.getByRole("switch", { name: "Partiya boʻyicha" }).click();
+  if (batch) await dlg.getByRole("switch", { name: "Partiya boʻyicha" }).check({ force: true });
   await dlg.getByRole("button", { name: "Saqlash", exact: true }).click();
   await expect(page.getByText(`«${name}» yaratildi`)).toBeVisible();
 }

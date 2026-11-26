@@ -964,7 +964,7 @@ test("CEO: Sozlamalar — chegarani oʻzgartirish (tasdiq oynasi, audit), QQS ta
 
   await page.getByRole("button", { name: "Soliq" }).click();
   await expect(page.getByText("Stavkalar tarixi")).toBeVisible();
-  await expect(page.getByText("Amalda")).toBeVisible();
+  await expect(page.getByText("Amalda", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Hujjatlar" }).click();
   await expect(page.getByText("Raqamlash formati: PREFIKS-FILIAL-000001", { exact: false })).toBeVisible();
   await expect(page.getByText("Buyurtma", { exact: true })).toBeVisible();
