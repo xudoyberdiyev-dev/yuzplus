@@ -402,6 +402,7 @@ Bu javoblar SPEC/T12 dan ustun. Har birini kod + test + e2e bilan joriy qiling, 
 - [ ] (Ixtiyoriy) Bulut muhiti tarmoq sozlamasida Maven Central (`repo.maven.apache.org`), `services.gradle.org` va Docker Hub'ga ruxsat — shunda backend sessiya ichida ham tekshiriladi, CI kutish shart bo'lmaydi.
 
 ## Egasiga savollar
+- ❗ (26.11 13:40) Oyna oxirida 100+ rejalashtirilgan vazifalarini oʻchirish sessiyadan rad etildi (avtomatik ruxsat tekshiruvi). Qoʻlda oʻchiring: «100+ zaxira :00 (14–18)», «100+ zaxira :30 (14–18)», «100+ zanjir (davom)».
 - ❓ (25.11) Mijozdan soʻrash: (1) «Oylik» (V2-M7) — xodimlar oyligini hisoblashmi yoki oylik reja/hisobotmi? (2) CRM dagi «5 ta izoh» (V2-M5) — qoʻngʻiroq natijalarining tayyor variantlarimi?
 - ❓ (25.11) V2-M1…M6 qaysi versiyada va qachon bajariladi — egasi bilan kelishiladi.
 - **S1 6-qism (23.11) — zaxira va repo private:** GitHub Free da private repo uchun Actions xotirasi 500 MB va 2 000 daqiqa/oy. 2 yillik bazaning nusxasi ~1 GB (14 kun × kunlik → ~14 GB), toʻliq CI ≈ 21 daqiqa (kuniga 20–60 marta) → private qilinsa bepul daqiqalar 2–5 kunda tugaydi. Tanlang: (a) repo public qoladi, zaxira — Railway Postgres «Backups» + (ixtiyoriy) S3/R2 (pullik); (b) private + pullik Actions; (c) private + CI faqat PR/oyna oxirida. Qoʻshimcha: `notification` jadvali tozalanmaydi (~0,5–1 mln/yil, tezlikka taʼsiri yoʻq) — «oʻqilgan va 180 kundan eski» bildirishnomalarni avtomatik oʻchiraylikmi? Railway Postgres'da `log_min_duration_statement = 1000` ni yoqish tavsiya qilinadi.
