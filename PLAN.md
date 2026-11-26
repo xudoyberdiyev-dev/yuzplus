@@ -792,3 +792,4 @@ _(07.11.2026 18:12 — 6 savolga javob berildi va 20:00–20:30 da joriy qilindi
 - 26.11 11:40 (egasi bilan): FT6 — mijoz uchun 3 ta hujjat namunasi (hisob varaq-faktura, tijorat taklifi, spetsifikatsiya) olindi, savollar hal qilindi, PLAN.md ga yozildi; bajarish vaqti — egasi aytadi.
 - 26.11 11:55 — egasi FT6 ni (ustama % bilan) tasdiqladi; bugun 14:00 oyna 12:00 da boshlanadi (12:00–18:00, faqat 26.11, egasi qarori). Oyna oxirida hisobot, 6a, soʻng BARCHA 100+ oynalari yana oʻchiriladi.
 - 26.11 12:00–13:00 (bir martalik oyna, 1-sessiya): FT6 ✅ — backend (V119, ClientDocs/ClientDocMath, xlsx shablon, PDF, zip), frontend (Mijoz hujjatlari oynasi, gʻazna rekvizitlari, IFUT, ustama soʻmgacha), testlar (IT namuna bilan katakma-katak, unit, vitest, e2e). CI: backend + frontend yashil.
+- 26.11 13:25 — oyna erta yopildi (FT6 tugadi, boshqa tasdiqlangan vazifa yoʻq): hisobot, 6a (develop → main), barcha 100+ oynalari oʻchiriladi.
