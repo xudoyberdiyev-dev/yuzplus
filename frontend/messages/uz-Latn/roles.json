@@ -323,6 +323,7 @@
     "shortage_view": "Xodim kamomadlari: koʻrish",
     "shortage_writeOff": "Xodim kamomadi: hisobdan chiqarish",
     "tripExpenses_view": "Yoʻl xarajatlari: koʻrish va hisobot",
-    "invoices_costPrint": "Mijoz hujjatlari (hisob varaq-faktura, tijorat taklifi, spetsifikatsiya) — kirim narxi bilan"
+    "invoices_costPrint": "Mijoz hujjatlari (hisob varaq-faktura, tijorat taklifi, spetsifikatsiya) — kirim narxi bilan",
+    "stock_batchEdit": "Qoldiq: partiya raqami va yaroqlilik muddatini tahrirlash (sabab bilan)"
   }
 }

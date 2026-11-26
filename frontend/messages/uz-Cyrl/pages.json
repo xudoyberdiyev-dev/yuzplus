@@ -56,5 +56,6 @@
   "invoices": "Фактуралар",
   "messages": "Хабарлар",
   "shortages": "Ходим камомадлари",
-  "tripExpenses": "Йўл харажатлари"
+  "tripExpenses": "Йўл харажатлари",
+  "batchEdit": "Партияларни таҳрирлаш"
 }

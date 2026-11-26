@@ -7,13 +7,14 @@ import {
   ChevronRight,
   CircleX,
   Download,
+  PencilLine,
   Printer,
   ShieldAlert,
   SlidersHorizontal,
   TriangleAlert,
   Truck,
-  X,
   type LucideIcon,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -476,6 +477,17 @@ export function StockOverview() {
               icon: <Printer size={16} strokeWidth={1.5} aria-hidden />,
               onSelect: () => window.print(),
             },
+            // BG1 B1: partiya raqami va yaroqlilik muddatini tahrirlash — alohida sahifa
+            ...(can(me.data, "stock.batchEdit")
+              ? [
+                  {
+                    key: "batchEdit",
+                    label: t("batchEdit.open"),
+                    icon: <PencilLine size={16} strokeWidth={1.5} aria-hidden />,
+                    onSelect: () => router.push("/stock/batch-edit"),
+                  },
+                ]
+              : []),
           ]}
         />
       </div>

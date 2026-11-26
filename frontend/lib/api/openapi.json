@@ -4785,7 +4785,7 @@
     },
     "/api/employees/{id}/all-branches" : {
       "post" : {
-        "description" : "Standart holatda Buxgalter faqat o'z filialini ko'radi (E3). Ochiq sessiyalari tugatiladi.",
+        "description" : "Istalgan rol (BG1 X1). Standart holatda xodim faqat o'z filialini ko'radi. Ochiq sessiyalari tugatiladi.",
         "operationId" : "allBranches",
         "parameters" : [ {
           "in" : "path",
@@ -4818,7 +4818,7 @@
             "description" : "OK"
           }
         },
-        "summary" : "Buxgalterga barcha filiallar doirasi (faqat Direktor)",
+        "summary" : "Xodimga barcha filiallar doirasi (faqat Direktor)",
         "tags" : [ "employees" ]
       }
     },
@@ -17299,6 +17299,120 @@
         "tags" : [ "stock" ]
       }
     },
+    "/api/stock/batch-edit" : {
+      "get" : {
+        "description" : "Filial omborlarida qoldigʻi bor partiyalar; muddati yaqinlari birinchi.",
+        "operationId" : "batchEditList",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "branchId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EditableBatches"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Qoldiqdagi partiyalar (tahrirlash uchun)",
+        "tags" : [ "stock" ]
+      }
+    },
+    "/api/stock/batch-edit/{batchId}" : {
+      "put" : {
+        "description" : "Sabab majburiy. Faqat filialda qoldigʻi bor partiya. Oʻtkazilgan hujjatlar oʻzgarmaydi.",
+        "operationId" : "batchEditSave",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "batchId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BatchEditRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EditableBatch"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Partiya raqami, ishlab chiqarilgan sana va yaroqlilik muddatini tahrirlash",
+        "tags" : [ "stock" ]
+      }
+    },
+    "/api/stock/batch-edit/{batchId}/history" : {
+      "get" : {
+        "operationId" : "batchEditHistory",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "batchId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "branchId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/BatchEditRow"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Partiya tahrirlash tarixi",
+        "tags" : [ "stock" ]
+      }
+    },
     "/api/stock/batches" : {
       "get" : {
         "description" : "Filtrlar «mahsulot bo'yicha» bilan bir xil. stock=ALL_RESERVED — mavjudi 0, band > 0 qatorlar; faqat ZERO — bo'sh.",
@@ -22170,6 +22284,72 @@
         },
         "required" : [ "available", "batchId", "batchNumber", "bonus", "branch", "closed", "expired", "expiryDate", "marked", "moves", "productId", "productName", "qty", "reserved", "warehouse", "zone", "zoneId", "zoneType" ]
       },
+      "BatchEditRequest" : {
+        "type" : "object",
+        "properties" : {
+          "branchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "expiryDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "number" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "producedOn" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "branchId", "expiryDate", "number", "reason" ]
+      },
+      "BatchEditRow" : {
+        "type" : "object",
+        "properties" : {
+          "at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "employee" : {
+            "type" : "string"
+          },
+          "newExpiry" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "newNumber" : {
+            "type" : "string"
+          },
+          "newProduced" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "oldExpiry" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "oldNumber" : {
+            "type" : "string"
+          },
+          "oldProduced" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "at", "newExpiry", "newNumber", "oldExpiry", "oldNumber", "reason" ]
+      },
       "BatchMove" : {
         "type" : "object",
         "properties" : {
@@ -26379,6 +26559,61 @@
           }
         },
         "required" : [ "body" ]
+      },
+      "EditableBatch" : {
+        "type" : "object",
+        "properties" : {
+          "batchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "edits" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "expiryDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "number" : {
+            "type" : "string"
+          },
+          "producedOn" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "productCode" : {
+            "type" : "string"
+          },
+          "productId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "productName" : {
+            "type" : "string"
+          },
+          "qty" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "batchId", "edits", "expiryDate", "number", "productCode", "productId", "productName", "qty" ]
+      },
+      "EditableBatches" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EditableBatch"
+            }
+          },
+          "truncated" : {
+            "type" : "boolean",
+            "description" : "Roʻyxat cheklangan (qidiruvni aniqlashtiring)"
+          }
+        },
+        "required" : [ "items", "truncated" ]
       },
       "Employee" : {
         "type" : "object",

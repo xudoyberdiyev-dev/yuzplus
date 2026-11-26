@@ -44,7 +44,8 @@
     },
     "branch": {
       "create": "Filial qoʻshildi",
-      "update": "Filial oʻzgartirildi"
+      "update": "Filial oʻzgartirildi",
+      "signers": "Filial direktori / bosh hisobchisi tanlandi"
     },
     "warehouse": {
       "create": "Ombor qoʻshildi"
@@ -54,6 +55,9 @@
     },
     "product": {
       "vatBulk": "Barcha mahsulotlarga QQS stavkasi qoʻllandi"
+    },
+    "batch": {
+      "edit": "Partiya maʼlumoti tahrirlandi"
     }
   },
   "role": "Rol",

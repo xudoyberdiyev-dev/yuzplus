@@ -56,5 +56,6 @@
   "invoices": "Fakturalar",
   "messages": "Xabarlar",
   "shortages": "Xodim kamomadlari",
-  "tripExpenses": "Yoʻl xarajatlari"
+  "tripExpenses": "Yoʻl xarajatlari",
+  "batchEdit": "Partiyalarni tahrirlash"
 }

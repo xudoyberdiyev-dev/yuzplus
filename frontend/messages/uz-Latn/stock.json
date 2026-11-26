@@ -236,5 +236,42 @@
     "safeT": "{days} kun ichida muddati tugaydigan partiya yoʻq",
     "safeD": "Hozircha xavf yoʻq. Yangi kirimlar avtomatik tekshiriladi.",
     "noneInGroup": "Bu guruhda partiya yoʻq"
+  },
+  "batchEdit": {
+    "title": "Partiyalarni tahrirlash",
+    "subtitle": "Qoldiqdagi partiyalarning raqami, ishlab chiqarilgan sanasi va yaroqlilik muddati. Oʻtkazilgan hujjatlar oʻzgarmaydi.",
+    "forbidden": "Partiyalarni tahrirlash uchun ruxsat yoʻq. Direktorga murojaat qiling.",
+    "branch": "Filial",
+    "search": "Qidirish",
+    "searchPh": "Mahsulot nomi, kodi yoki partiya raqami",
+    "cCode": "Kod",
+    "cProduct": "Mahsulot",
+    "cNumber": "Partiya raqami",
+    "cProduced": "Ishlab chiqarilgan",
+    "cExpiry": "Yaroqlilik muddati",
+    "cQty": "Qoldiq",
+    "cEdits": "Tahrirlar",
+    "editsN": "{n, plural, other {# marta}}",
+    "edit": "Tahrirlash",
+    "emptyT": "Qoldiqda partiya yoʻq",
+    "emptyD": "Bu filial omborlarida qoldigʻi bor partiya topilmadi.",
+    "truncated": "Roʻyxatda dastlabki 500 ta partiya. Qidiruvni aniqlashtiring.",
+    "dlgTitle": "Partiyani tahrirlash: {p}",
+    "dlgHint": "Qoldiqda {q} dona. Oʻzgarish qoldiq, muddat nazorati va keyingi hujjatlarga tushadi; oʻtkazilgan hujjatlar oʻzgarmaydi.",
+    "reason": "Sabab",
+    "reasonHint": "Majburiy — audit jurnaliga yoziladi",
+    "save": "Saqlash",
+    "saved": "Partiya maʼlumoti saqlandi",
+    "history": "Tahrirlash tarixi",
+    "noHistory": "Hali tahrirlanmagan",
+    "loading": "Yuklanmoqda…",
+    "open": "Partiyalarni tahrirlash",
+    "e": {
+      "required": "Toʻldiring",
+      "date": "Sana KK.OO.YYYY koʻrinishida boʻlsin",
+      "producedAfter": "Ishlab chiqarilgan sana muddatdan keyin boʻlmasin",
+      "nothing": "Hech narsa oʻzgarmadi — raqam yoki sanani oʻzgartiring",
+      "long": "Juda uzun"
+    }
   }
 }

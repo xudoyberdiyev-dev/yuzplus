@@ -2034,8 +2034,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Buxgalterga barcha filiallar doirasi (faqat Direktor)
-         * @description Standart holatda Buxgalter faqat o'z filialini ko'radi (E3). Ochiq sessiyalari tugatiladi.
+         * Xodimga barcha filiallar doirasi (faqat Direktor)
+         * @description Istalgan rol (BG1 X1). Standart holatda xodim faqat o'z filialini ko'radi. Ochiq sessiyalari tugatiladi.
          */
         post: operations["allBranches"];
         delete?: never;
@@ -7593,6 +7593,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stock/batch-edit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Qoldiqdagi partiyalar (tahrirlash uchun)
+         * @description Filial omborlarida qoldigʻi bor partiyalar; muddati yaqinlari birinchi.
+         */
+        get: operations["batchEditList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stock/batch-edit/{batchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Partiya raqami, ishlab chiqarilgan sana va yaroqlilik muddatini tahrirlash
+         * @description Sabab majburiy. Faqat filialda qoldigʻi bor partiya. Oʻtkazilgan hujjatlar oʻzgarmaydi.
+         */
+        put: operations["batchEditSave"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stock/batch-edit/{batchId}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Partiya tahrirlash tarixi */
+        get: operations["batchEditHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stock/batches": {
         parameters: {
             query?: never;
@@ -9720,6 +9777,32 @@ export interface components {
             /** @enum {string} */
             zoneType: "RECEIVING" | "MAIN" | "QUARANTINE" | "SHIPPING" | "COLD" | "SAFE";
         };
+        BatchEditRequest: {
+            /** Format: int64 */
+            branchId: number;
+            /** Format: date */
+            expiryDate: string;
+            number: string;
+            /** Format: date */
+            producedOn?: string;
+            reason: string;
+        };
+        BatchEditRow: {
+            /** Format: date-time */
+            at: string;
+            employee?: string;
+            /** Format: date */
+            newExpiry: string;
+            newNumber: string;
+            /** Format: date */
+            newProduced?: string;
+            /** Format: date */
+            oldExpiry: string;
+            oldNumber: string;
+            /** Format: date */
+            oldProduced?: string;
+            reason: string;
+        };
         BatchMove: {
             /**
              * Format: int64
@@ -11350,6 +11433,28 @@ export interface components {
         };
         EditRequest: {
             body: string;
+        };
+        EditableBatch: {
+            /** Format: int64 */
+            batchId: number;
+            /** Format: int32 */
+            edits: number;
+            /** Format: date */
+            expiryDate: string;
+            number: string;
+            /** Format: date */
+            producedOn?: string;
+            productCode: string;
+            /** Format: int64 */
+            productId: number;
+            productName: string;
+            /** Format: int64 */
+            qty: number;
+        };
+        EditableBatches: {
+            items: components["schemas"]["EditableBatch"][];
+            /** @description Roʻyxat cheklangan (qidiruvni aniqlashtiring) */
+            truncated: boolean;
         };
         Employee: {
             /** @description Buxgalterga Direktor bergan «barcha filiallar» doirasi (E3) */
@@ -28983,6 +29088,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BatchCard"];
+                };
+            };
+        };
+    };
+    batchEditList: {
+        parameters: {
+            query: {
+                branchId: number;
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditableBatches"];
+                };
+            };
+        };
+    };
+    batchEditSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batchId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchEditRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditableBatch"];
+                };
+            };
+        };
+    };
+    batchEditHistory: {
+        parameters: {
+            query: {
+                branchId: number;
+            };
+            header?: never;
+            path: {
+                batchId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchEditRow"][];
                 };
             };
         };
