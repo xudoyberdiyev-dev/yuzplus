@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { collectPicks, EMPTY_INPUT } from "./receipt-catalog";
+import { collectPicks, EMPTY_INPUT, productSlots, slotKey } from "./receipt-catalog";
 
 const rows = [
   { productId: 1, code: "0001", name: "Ibuprofen", lastPrice: "15000.50" },
@@ -56,5 +56,26 @@ describe("collectPicks", () => {
       },
     );
     expect(ok.picks[0]?.price).toBe("");
+  });
+});
+
+describe("bir mahsulotga bir nechta partiya (BG1 B3)", () => {
+  it("«+ partiya» qatorlari alohida qoʻshiladi; shu katalogda takror partiya — xato", () => {
+    const { picks, errors } = collectPicks(
+      rows,
+      {
+        1: { ...EMPTY_INPUT, batch: "IB-1", expiry: "01.12.2027", qty: "10" },
+        [slotKey(1, 1)]: { ...EMPTY_INPUT, batch: "IB-2", expiry: "01.03.2028", qty: "4" },
+        [slotKey(1, 2)]: { ...EMPTY_INPUT, batch: "ib-1", expiry: "01.03.2028", qty: "1" },
+      },
+      { zoneId: 7, pricesVisible: false, existing: new Set() },
+    );
+    expect(picks.map((p) => `${p.productId}:${p.batchNumber}:${p.qty}`)).toEqual(["1:IB-1:10", "1:IB-2:4"]);
+    expect(errors).toEqual({ "1:2": "duplicate" });
+  });
+  it("partiya tartibi va kalitlar", () => {
+    expect(slotKey(5, 0)).toBe("5");
+    expect(slotKey(5, 3)).toBe("5:3");
+    expect(productSlots(5, { "5:2": EMPTY_INPUT, "5": EMPTY_INPUT, "55": EMPTY_INPUT, "5:10": EMPTY_INPUT })).toEqual(["5", "5:2", "5:10"]);
   });
 });
