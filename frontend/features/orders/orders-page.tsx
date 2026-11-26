@@ -3,7 +3,6 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Ban,
-  ChevronDown,
   CircleCheck,
   CircleX,
   ClipboardList,
@@ -45,7 +44,7 @@ import type { OrdersT } from "./i18n";
 import { readOpenDraft } from "./open-draft";
 import { OrderPreview } from "./order-preview";
 import { shortName, stageHint } from "./stage-hint";
-import { QUICK_VIEWS, quickOn, quickPatch, splitStatuses } from "./status-strip";
+import { QUICK_VIEWS, quickOn, quickPatch } from "./status-strip";
 import { todayTashkent } from "@/features/counterparties/api";
 import {
   DELIVERY_TYPES,
@@ -153,8 +152,9 @@ export function creditText(c: components["schemas"]["CreditFlag"], t: OrdersT): 
 }
 
 /**
- * U5: holatlar — ixcham chiziq (13 ta karta oʻrniga): segment = nomi + soni; tanlangan segmentda summasi ham.
- * Soni yoʻq holatlar «Yana» menyusida. «Tasdiqlashda» — sariq, «Yetkazilmadi»/«Rad etildi» — qizil nishon.
+ * BG1 Q1 (egasi 26.11.2026): barcha bosqichlar bir qatorda yonma-yon (Qoralama … Yetkazildi) — «Yana» menyusi yoʻq;
+ * sigʻmasa gorizontal aylantiriladi (tanlangan bosqich koʻrinadigan joyga suriladi). Har segment: nomi, soni va summasi.
+ * «Tasdiqlashda» — sariq, «Yetkazilmadi»/«Rad etildi» — qizil nishon.
  */
 function StatusStrip({
   counts,
@@ -169,17 +169,11 @@ function StatusStrip({
   label: string;
   t: OrdersT;
 }) {
-  const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!moreOpen) return;
-    const close = (e: MouseEvent) => moreRef.current && !moreRef.current.contains(e.target as Node) && setMoreOpen(false);
-    const esc = (e: KeyboardEvent) => e.key === "Escape" && setMoreOpen(false);
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", esc);
-    return () => (document.removeEventListener("mousedown", close), document.removeEventListener("keydown", esc));
-  }, [moreOpen]);
-  const { shown, more } = splitStatuses(counts, value, ALL);
+    const el = rowRef.current?.querySelector<HTMLElement>('[aria-selected="true"]');
+    el?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  }, [value, counts.length]);
   const name = (c: StatusCount) => (c.status ? t(`status.${c.status}`) : t("list.all"));
   const badge = (key: string, n: number, on: boolean) =>
     on
@@ -189,61 +183,40 @@ function StatusStrip({
         : BAD.includes(key) && n > 0
           ? "bg-danger-bg text-danger"
           : "bg-background text-text-secondary";
-  const segment = (c: StatusCount, inMenu: boolean) => {
-    const key = c.status ?? ALL;
-    const on = key === value;
-    return (
-      <button
-        key={key}
-        type="button"
-        role="tab"
-        aria-selected={on}
-        onClick={() => (onChange(key), setMoreOpen(false))}
-        className={
-          inMenu
-            ? "flex w-full items-center justify-between gap-3 rounded-control px-2 py-1.5 text-left text-[13px] hover:bg-primary-soft"
-            : `flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-[13px] whitespace-nowrap transition-colors ${
-                on
-                  ? "bg-surface font-semibold shadow-sm ring-1 ring-primary-button"
-                  : "font-medium text-text-secondary hover:bg-surface hover:text-text-primary"
-              }`
-        }
-      >
-        {name(c)}
-        <span
-          className={`h-[18px] min-w-5 rounded-full px-1.5 text-center text-[11.5px] leading-[18px] font-semibold tabular-nums ${badge(key, c.count, on)}`}
-        >
-          {formatQuantity(c.count)}
-        </span>
-        {on && !inMenu ? <span className="text-caption font-normal text-text-secondary tabular-nums">{formatMoney(c.total)}</span> : null}
-      </button>
-    );
-  };
   return (
     <div
+      ref={rowRef}
       role="tablist"
       aria-label={label}
-      className="flex min-w-0 flex-wrap items-center gap-0.5 rounded-card border border-border bg-background p-0.5"
+      data-testid="status-strip"
+      className="flex min-w-0 flex-nowrap items-stretch gap-0.5 overflow-x-auto rounded-card border border-border bg-background p-0.5 [scrollbar-width:thin]"
     >
-      {shown.map((c) => segment(c, false))}
-      {more.length > 0 ? (
-        <div ref={moreRef} className="relative">
+      {counts.map((c) => {
+        const key = c.status ?? ALL;
+        const on = key === value;
+        return (
           <button
+            key={key}
             type="button"
-            onClick={() => setMoreOpen((o) => !o)}
-            aria-expanded={moreOpen}
-            className="flex h-control-sm items-center gap-1 rounded-control px-2.5 text-[13px] font-medium text-text-secondary hover:bg-surface hover:text-text-primary"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(key)}
+            className={`flex shrink-0 flex-col items-start justify-center gap-0.5 rounded-control px-2.5 py-1 text-left whitespace-nowrap transition-colors ${
+              on ? "bg-surface shadow-sm ring-1 ring-primary-button" : "text-text-secondary hover:bg-surface hover:text-text-primary"
+            } ${c.count === 0 && !on ? "opacity-70" : ""}`}
           >
-            {t("list.moreStatuses", { n: more.length })}
-            <ChevronDown size={14} strokeWidth={1.5} aria-hidden />
+            <span className={`flex items-center gap-1.5 text-[13px] ${on ? "font-semibold text-text-primary" : "font-medium"}`}>
+              {name(c)}
+              <span
+                className={`h-[18px] min-w-5 rounded-full px-1.5 text-center text-[11.5px] leading-[18px] font-semibold tabular-nums ${badge(key, c.count, on)}`}
+              >
+                {formatQuantity(c.count)}
+              </span>
+            </span>
+            <span className="text-[11.5px] leading-4 font-normal text-text-secondary tabular-nums">{formatMoney(c.total)}</span>
           </button>
-          {moreOpen ? (
-            <div className="absolute left-0 z-30 mt-1 flex w-64 flex-col gap-0.5 rounded-control border border-border bg-surface p-1.5 shadow-overlay">
-              {more.map((c) => segment(c, true))}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+        );
+      })}
     </div>
   );
 }
