@@ -84,6 +84,9 @@
     "description" : "Reyslar",
     "name" : "trips"
   }, {
+    "description" : "Tezlik oʻlchovi (brauzer)",
+    "name" : "telemetry"
+  }, {
     "description" : "Akt sverka hujjatlari (AS-…)",
     "name" : "reconciliations"
   }, {
@@ -1734,6 +1737,71 @@
           }
         },
         "summary" : "Filialni nofaol qilish",
+        "tags" : [ "branches" ]
+      }
+    },
+    "/api/branches/{id}/signers" : {
+      "get" : {
+        "operationId" : "branchSigners",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BranchSigners"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Filial direktori va bosh hisobchisi (xodimlardan)",
+        "tags" : [ "branches" ]
+      },
+      "put" : {
+        "description" : "Rolidan qatʼi nazar: shu filial yoki barcha filiallar faol xodimi. null — tanlanmagan.",
+        "operationId" : "updateBranchSigners",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BranchSignersUpdate"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BranchSigners"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Filial direktori va bosh hisobchisini tanlash",
         "tags" : [ "branches" ]
       }
     },
@@ -4720,7 +4788,7 @@
     },
     "/api/employees/{id}/all-branches" : {
       "post" : {
-        "description" : "Standart holatda Buxgalter faqat o'z filialini ko'radi (E3). Ochiq sessiyalari tugatiladi.",
+        "description" : "Istalgan rol (BG1 X1). Standart holatda xodim faqat o'z filialini ko'radi. Ochiq sessiyalari tugatiladi.",
         "operationId" : "allBranches",
         "parameters" : [ {
           "in" : "path",
@@ -4753,7 +4821,7 @@
             "description" : "OK"
           }
         },
-        "summary" : "Buxgalterga barcha filiallar doirasi (faqat Direktor)",
+        "summary" : "Xodimga barcha filiallar doirasi (faqat Direktor)",
         "tags" : [ "employees" ]
       }
     },
@@ -13318,6 +13386,55 @@
         "tags" : [ "products" ]
       }
     },
+    "/api/products/vat-bulk" : {
+      "post" : {
+        "description" : "QQSdan ozod mahsulotlar va narxlar oʻzgarmaydi. `rate` amaldagi stavkadan farq qilsa — 409 (sozlama oʻzgargan).",
+        "operationId" : "vatBulkApply",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/VatBulkApply"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VatBulkResult"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Amaldagi QQS stavkasini barcha mahsulotlarga qoʻllash",
+        "tags" : [ "products" ]
+      }
+    },
+    "/api/products/vat-bulk/preview" : {
+      "get" : {
+        "operationId" : "vatBulkPreview",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VatBulkPreview"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "QQS stavkasini barcha mahsulotlarga qoʻllash — oldindan koʻrish (nechta mahsulot oʻzgaradi)",
+        "tags" : [ "products" ]
+      }
+    },
     "/api/products/{id}" : {
       "get" : {
         "operationId" : "get_6",
@@ -17185,6 +17302,120 @@
         "tags" : [ "stock" ]
       }
     },
+    "/api/stock/batch-edit" : {
+      "get" : {
+        "description" : "Filial omborlarida qoldigʻi bor partiyalar; muddati yaqinlari birinchi.",
+        "operationId" : "batchEditList",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "branchId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EditableBatches"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Qoldiqdagi partiyalar (tahrirlash uchun)",
+        "tags" : [ "stock" ]
+      }
+    },
+    "/api/stock/batch-edit/{batchId}" : {
+      "put" : {
+        "description" : "Sabab majburiy. Faqat filialda qoldigʻi bor partiya. Oʻtkazilgan hujjatlar oʻzgarmaydi.",
+        "operationId" : "batchEditSave",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "batchId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BatchEditRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EditableBatch"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Partiya raqami, ishlab chiqarilgan sana va yaroqlilik muddatini tahrirlash",
+        "tags" : [ "stock" ]
+      }
+    },
+    "/api/stock/batch-edit/{batchId}/history" : {
+      "get" : {
+        "operationId" : "batchEditHistory",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "batchId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "in" : "query",
+          "name" : "branchId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/BatchEditRow"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Partiya tahrirlash tarixi",
+        "tags" : [ "stock" ]
+      }
+    },
     "/api/stock/batches" : {
       "get" : {
         "description" : "Filtrlar «mahsulot bo'yicha» bilan bir xil. stock=ALL_RESERVED — mavjudi 0, band > 0 qatorlar; faqat ZERO — bo'sh.",
@@ -18168,6 +18399,28 @@
         },
         "summary" : "Rad etish",
         "tags" : [ "supplier-return" ]
+      }
+    },
+    "/api/telemetry/timings" : {
+      "post" : {
+        "operationId" : "timings",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TimingReport"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Brauzerdagi sekin soʻrovlar va Web Vitals qaydlari (faqat log)",
+        "tags" : [ "telemetry" ]
       }
     },
     "/api/transfers/overview" : {
@@ -22056,6 +22309,72 @@
         },
         "required" : [ "available", "batchId", "batchNumber", "bonus", "branch", "closed", "expired", "expiryDate", "marked", "moves", "productId", "productName", "qty", "reserved", "warehouse", "zone", "zoneId", "zoneType" ]
       },
+      "BatchEditRequest" : {
+        "type" : "object",
+        "properties" : {
+          "branchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "expiryDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "number" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "producedOn" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 300,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "branchId", "expiryDate", "number", "reason" ]
+      },
+      "BatchEditRow" : {
+        "type" : "object",
+        "properties" : {
+          "at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "employee" : {
+            "type" : "string"
+          },
+          "newExpiry" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "newNumber" : {
+            "type" : "string"
+          },
+          "newProduced" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "oldExpiry" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "oldNumber" : {
+            "type" : "string"
+          },
+          "oldProduced" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "at", "newExpiry", "newNumber", "oldExpiry", "oldNumber", "reason" ]
+      },
       "BatchMove" : {
         "type" : "object",
         "properties" : {
@@ -23292,6 +23611,50 @@
           }
         },
         "required" : [ "buyer", "createdAt", "createdBy", "fromWarehouse", "fromZone", "id", "lines", "number", "qty", "seller", "shortageQty", "status", "toWarehouse" ]
+      },
+      "BranchSigners" : {
+        "type" : "object",
+        "properties" : {
+          "accountant" : {
+            "type" : "string",
+            "description" : "Hujjatlarga tushadigan bosh hisobchi"
+          },
+          "accountantEmployeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "director" : {
+            "type" : "string",
+            "description" : "Hujjatlarga tushadigan rahbar (tanlangan / matn / rol boʻyicha)"
+          },
+          "directorEmployeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "options" : {
+            "type" : "array",
+            "description" : "Tanlash mumkin: shu filial yoki barcha filiallar faol xodimlari",
+            "items" : {
+              "$ref" : "#/components/schemas/SignerEmployee"
+            }
+          }
+        },
+        "required" : [ "options" ]
+      },
+      "BranchSignersUpdate" : {
+        "type" : "object",
+        "properties" : {
+          "accountantEmployeeId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "null — tanlanmagan"
+          },
+          "directorEmployeeId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "null — tanlanmagan (matn yoki rol boʻyicha)"
+          }
+        }
       },
       "BranchStats" : {
         "type" : "object",
@@ -26221,6 +26584,61 @@
           }
         },
         "required" : [ "body" ]
+      },
+      "EditableBatch" : {
+        "type" : "object",
+        "properties" : {
+          "batchId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "edits" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "expiryDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "number" : {
+            "type" : "string"
+          },
+          "producedOn" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "productCode" : {
+            "type" : "string"
+          },
+          "productId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "productName" : {
+            "type" : "string"
+          },
+          "qty" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "batchId", "edits", "expiryDate", "number", "productCode", "productId", "productName", "qty" ]
+      },
+      "EditableBatches" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EditableBatch"
+            }
+          },
+          "truncated" : {
+            "type" : "boolean",
+            "description" : "Roʻyxat cheklangan (qidiruvni aniqlashtiring)"
+          }
+        },
+        "required" : [ "items", "truncated" ]
       },
       "Employee" : {
         "type" : "object",
@@ -38522,6 +38940,25 @@
         },
         "required" : [ "amount", "branchId", "employeeId", "reason" ]
       },
+      "SignerEmployee" : {
+        "type" : "object",
+        "properties" : {
+          "fullName" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "roleCode" : {
+            "type" : "string"
+          },
+          "roleName" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "fullName", "id", "roleCode", "roleName" ]
+      },
       "SignerOption" : {
         "type" : "object",
         "properties" : {
@@ -40119,6 +40556,47 @@
         },
         "required" : [ "pickMinutes" ]
       },
+      "TimingEntry" : {
+        "type" : "object",
+        "properties" : {
+          "kind" : {
+            "type" : "string",
+            "description" : "api — sekin soʻrov, vital — Web Vitals",
+            "enum" : [ "api", "vital" ]
+          },
+          "ms" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Davomiylik, ms (CLS uchun ×1000)"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "API yoʻli (masalan GET /api/orders/{id}) yoki koʻrsatkich nomi (LCP)"
+          },
+          "page" : {
+            "type" : "string",
+            "description" : "Sahifa yoʻli (masalan /orders/{id})"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "HTTP holati (api uchun)"
+          }
+        },
+        "required" : [ "kind", "ms", "name" ]
+      },
+      "TimingReport" : {
+        "type" : "object",
+        "properties" : {
+          "entries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TimingEntry"
+            }
+          }
+        },
+        "required" : [ "entries" ]
+      },
       "Transfer" : {
         "type" : "object",
         "properties" : {
@@ -41298,6 +41776,55 @@
           }
         },
         "required" : [ "id" ]
+      },
+      "VatBulkApply" : {
+        "type" : "object",
+        "properties" : {
+          "rate" : {
+            "type" : "string",
+            "description" : "Oldindan koʻrilgan stavka — amaldagi bilan mos boʻlishi shart",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "rate" ]
+      },
+      "VatBulkPreview" : {
+        "type" : "object",
+        "properties" : {
+          "affected" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Stavkasi oʻzgaradigan mahsulotlar"
+          },
+          "exempt" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "QQSdan ozod — oʻzgarmaydi"
+          },
+          "rate" : {
+            "type" : "string",
+            "description" : "Amaldagi stavka (%), masalan «12»"
+          },
+          "same" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Allaqachon shu stavkada"
+          }
+        },
+        "required" : [ "affected", "exempt", "rate", "same" ]
+      },
+      "VatBulkResult" : {
+        "type" : "object",
+        "properties" : {
+          "changed" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "rate" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "changed", "rate" ]
       },
       "VatRequest" : {
         "type" : "object",

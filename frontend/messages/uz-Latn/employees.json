@@ -52,8 +52,8 @@
     "revoke": "Barcha filiallar ruxsatini olish",
     "grantTitle": "{name}: barcha filiallar",
     "revokeTitle": "{name}: faqat oʻz filiali",
-    "grantHint": "Buxgalter barcha filiallar maʼlumotini koʻradi. Standart holatda — faqat oʻz filiali.",
-    "revokeHint": "Buxgalter faqat oʻz filiali maʼlumotini koʻradi.",
+    "grantHint": "Xodim barcha filiallar maʼlumotini koʻradi va har filialning tanlash roʻyxatlarida (yigʻuvchi, haydovchi, operator…) chiqadi. Standart holatda — faqat oʻz filiali.",
+    "revokeHint": "Xodim faqat oʻz filiali maʼlumotini koʻradi.",
     "sessions": "Xodimning ochiq sessiyalari tugatiladi — u qayta kiradi. Oʻzgarish audit jurnaliga yoziladi.",
     "granted": "Barcha filiallar ruxsati berildi",
     "revoked": "Barcha filiallar ruxsati olindi"

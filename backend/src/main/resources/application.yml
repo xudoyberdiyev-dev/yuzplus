@@ -16,6 +16,8 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+        # TZ1: shundan uzoq JPA SQL soʻrovlari «org.hibernate.SQL_SLOW» logiga yoziladi (0 — oʻchiq)
+        log_slow_query: ${YUZPLUS_SLOW_SQL_MS:500}
   flyway:
     enabled: true
     locations: classpath:db/migration

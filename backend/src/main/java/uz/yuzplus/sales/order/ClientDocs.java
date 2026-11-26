@@ -217,11 +217,10 @@ class ClientDocs {
     }
 
     private Doc build(Head h, String contractNumber, LocalDate contractDate) {
-        record P(String name, String address, String phone, String account, String mfo, String bank, String tin, String ifut, String director,
-                String accountant) {}
+        record P(String name, String address, String phone, String account, String mfo, String bank, String tin, String ifut) {}
         P s = jdbc.sql("""
                 SELECT coalesce(nullif(btrim(br.legal_name), ''), br.name) AS name, coalesce(br.address, br.actual_address) AS address, br.phone,
-                       ba.account, ba.mfo, ba.bank_name AS bank, br.tin, br.ifut, br.director_name AS director, br.accountant_name AS accountant
+                       ba.account, ba.mfo, ba.bank_name AS bank, br.tin, br.ifut
                 FROM branch br
                 LEFT JOIN LATERAL (SELECT b.bank_name, b.account, b.mfo FROM branch_bank_account b WHERE b.branch_id = br.id
                         ORDER BY b.is_main DESC, b.sort_order, b.id LIMIT 1) ba ON true
@@ -238,8 +237,9 @@ class ClientDocs {
                 .query(Party.class)
                 .single();
         PrintSettings.Signers signers = printSettings.signers(h.branchId());
-        String director = blank(s.director()) ? signers.head() : s.director();
-        String accountant = blank(s.accountant()) ? signers.accountant() : s.accountant();
+        // BG1 F1: filial kartasidagi xodim → matn (zaxira) → rol boʻyicha — yagona tartib PrintSettings.signers da
+        String director = signers.head();
+        String accountant = signers.accountant();
         List<DocLine> lines = lines(h);
         ClientDocMath.Totals totals = ClientDocMath.totals(lines.stream().map(DocLine::calc).toList());
         return new Doc(h.id(), h.number(), contractNumber, contractDate, docDate(h), seller, buyer, director, accountant, lines, totals,

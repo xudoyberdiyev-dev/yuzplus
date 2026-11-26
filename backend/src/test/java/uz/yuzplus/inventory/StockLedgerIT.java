@@ -141,7 +141,7 @@ class StockLedgerIT {
         assertThatThrownBy(() -> jdbc.sql("UPDATE stock_balance SET qty = -1 WHERE batch_id = :b").param("b", b).update())
                 .hasMessageContaining("stock_balance_qty_check");
         assertThatThrownBy(() -> jdbc.sql("UPDATE batch SET cost = 1 WHERE id = :b").param("b", b).update())
-                .hasMessageContaining("faqat qo'shiladigan");
+                .hasMessageContaining("batch: faqat raqam");
     }
 
     @Test

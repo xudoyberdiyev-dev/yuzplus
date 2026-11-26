@@ -107,7 +107,7 @@ public class Notifications {
         Set<Long> to = new LinkedHashSet<>(jdbc.sql("""
                 SELECT e.id FROM employee e JOIN role r ON r.id = e.role_id
                 JOIN role_permission rp ON rp.role_id = r.id AND rp.permission_key = :key
-                WHERE e.status = 'ACTIVE' AND (e.branch_id = :b OR r.code IN (:all) OR (r.code = 'ACCOUNTANT' AND e.all_branches))
+                WHERE e.status = 'ACTIVE' AND (e.branch_id = :b OR r.code IN (:all) OR e.all_branches)
                 ORDER BY e.id""")
                 .param("key", permission)
                 .param("b", branchId)

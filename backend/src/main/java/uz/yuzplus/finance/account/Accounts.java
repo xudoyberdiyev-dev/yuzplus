@@ -167,7 +167,7 @@ public class Accounts {
                 SELECT e.id, e.full_name,
                        (SELECT string_agg(a.name, ', ' ORDER BY a.id) FROM money_account a WHERE a.cashier_id = e.id AND a.branch_id = :b) AS cash_name
                 FROM employee e JOIN role_permission rp ON rp.role_id = e.role_id AND rp.permission_key = 'cash.io'
-                WHERE e.branch_id = :b AND e.status = 'ACTIVE' ORDER BY e.full_name""")
+                WHERE (e.branch_id = :b OR e.all_branches) AND e.status = 'ACTIVE' ORDER BY e.full_name""")
                 .param("b", branchId)
                 .query((rs, n) -> new CashierOption(rs.getLong("id"), rs.getString("full_name"), rs.getString("cash_name")))
                 .list();

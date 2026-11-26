@@ -33,6 +33,7 @@ import { PAYMENT_MT, useAccounts } from "@/features/payments/api";
 import { api, unwrap } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { formatDateTime, formatMoney } from "@/lib/format";
+import { useLivePoll } from "@/lib/live";
 import { useBranchStore } from "@/lib/stores/branch";
 import { fromCents, isDocTitleKey, toCents } from "./api";
 
@@ -95,11 +96,12 @@ export function CashierPanel() {
     enabled: allowed && branchId != null && !!isoFrom && !!isoTo,
     refetchInterval: 60_000,
   });
+  const driverCashPoll = useLivePoll(30_000);
   const driverCash = useQuery({
     queryKey: ["trips", "cash", branchId],
     queryFn: () => unwrap(api.GET("/api/trips/cash", { params: { query: { branchId: branchId ?? undefined } } })),
     enabled: can(me.data, PAYMENT_MT) && branchId != null,
-    refetchInterval: 30_000,
+    refetchInterval: driverCashPoll,
   });
 
   if (me.data && !allowed) return <ForbiddenState description={t("forbidden")} />;

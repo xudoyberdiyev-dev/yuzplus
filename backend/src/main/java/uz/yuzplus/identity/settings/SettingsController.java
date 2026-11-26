@@ -87,8 +87,6 @@ class SettingsController {
     record SignerUpdate(@Schema(nullable = true, description = "null — avtomatik") Long headId,
             @Schema(nullable = true, description = "null — avtomatik") Long accountantId) {}
 
-    private static final List<String> HEAD_ROLES = List.of("BRANCH_MANAGER", "DIRECTOR");
-    private static final List<String> ACC_ROLES = List.of("ACCOUNTANT");
 
     private final JdbcClient jdbc;
     private final SystemSettings settings;
@@ -163,23 +161,23 @@ class SettingsController {
         record Emp(long id, String name, String role, Long branchId) {}
         List<Emp> emps = jdbc.sql("""
                 SELECT e.id, e.full_name, r.code, e.branch_id FROM employee e JOIN role r ON r.id = e.role_id
-                WHERE e.status = 'ACTIVE' AND r.code IN ('BRANCH_MANAGER', 'DIRECTOR', 'ACCOUNTANT') ORDER BY e.full_name""")
+                WHERE e.status = 'ACTIVE' ORDER BY e.full_name""")
                 .query((rs, i) -> new Emp(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getObject(4, Long.class)))
                 .list();
         record Br(long id, String name, Long head, Long acc) {}
         List<Br> branches = jdbc.sql("""
-                SELECT b.id, b.name, s.head_id, s.accountant_id FROM branch b LEFT JOIN print_signer s ON s.branch_id = b.id
+                SELECT b.id, b.name, b.director_employee_id, b.accountant_employee_id FROM branch b
                 WHERE b.active ORDER BY b.code""")
                 .query((rs, i) -> new Br(rs.getLong(1), rs.getString(2), rs.getObject(3, Long.class), rs.getObject(4, Long.class)))
                 .list();
         List<SignerRow> signers = new ArrayList<>();
         for (Br b : branches) {
             List<SignerOption> heads = emps.stream()
-                    .filter(e -> HEAD_ROLES.contains(e.role()) && (e.branchId() == null || e.branchId() == b.id()))
+                    .filter(e -> e.branchId() == null || e.branchId() == b.id())
                     .map(e -> new SignerOption(e.id(), e.name()))
                     .toList();
             List<SignerOption> accs = emps.stream()
-                    .filter(e -> ACC_ROLES.contains(e.role()) && (e.branchId() == null || e.branchId() == b.id()))
+                    .filter(e -> e.branchId() == null || e.branchId() == b.id())
                     .map(e -> new SignerOption(e.id(), e.name()))
                     .toList();
             String autoHead = emps.stream().filter(e -> "BRANCH_MANAGER".equals(e.role()) && e.branchId() != null && e.branchId() == b.id())
@@ -319,17 +317,15 @@ class SettingsController {
         if (jdbc.sql("SELECT count(*) FROM branch WHERE id = :b AND active").param("b", branchId).query(Integer.class).single() == 0) {
             throw YuzplusException.notFound("error.notFound");
         }
-        checkSigner(r.headId(), HEAD_ROLES, branchId);
-        checkSigner(r.accountantId(), ACC_ROLES, branchId);
+        checkSigner(r.headId(), branchId);
+        checkSigner(r.accountantId(), branchId);
+        // BG1 F1: yagona manba — filial kartasi (branch.director_employee_id / accountant_employee_id)
         record Old(Long head, Long acc) {}
-        Old old = jdbc.sql("SELECT head_id, accountant_id FROM print_signer WHERE branch_id = :b FOR UPDATE").param("b", branchId)
+        Old old = jdbc.sql("SELECT director_employee_id, accountant_employee_id FROM branch WHERE id = :b FOR UPDATE").param("b", branchId)
                 .query((rs, i) -> new Old(rs.getObject(1, Long.class), rs.getObject(2, Long.class)))
-                .optional().orElse(new Old(null, null));
-        jdbc.sql("""
-                INSERT INTO print_signer (branch_id, head_id, accountant_id, updated_by, updated_at) VALUES (:b, :h, :a, :e, now())
-                ON CONFLICT (branch_id) DO UPDATE SET head_id = EXCLUDED.head_id, accountant_id = EXCLUDED.accountant_id,
-                    updated_by = EXCLUDED.updated_by, updated_at = now()""")
-                .param("b", branchId).param("h", r.headId()).param("a", r.accountantId()).param("e", me()).update();
+                .single();
+        jdbc.sql("UPDATE branch SET director_employee_id = :h, accountant_employee_id = :a WHERE id = :b")
+                .param("b", branchId).param("h", r.headId()).param("a", r.accountantId()).update();
         Map<String, Object> before = new HashMap<>();
         before.put("headId", old.head());
         before.put("accountantId", old.acc());
@@ -340,14 +336,15 @@ class SettingsController {
         return get();
     }
 
-    private void checkSigner(Long id, List<String> roles, long branchId) {
+    /** BG1 F1 (egasi qarori): rolidan qatʼi nazar — shu filial yoki barcha filiallar xodimi, faol. */
+    private void checkSigner(Long id, long branchId) {
         if (id == null) {
             return;
         }
         int ok = jdbc.sql("""
-                SELECT count(*) FROM employee e JOIN role r ON r.id = e.role_id
-                WHERE e.id = :id AND e.status = 'ACTIVE' AND r.code IN (:roles) AND (e.branch_id IS NULL OR e.branch_id = :b)""")
-                .param("id", id).param("roles", roles).param("b", branchId).query(Integer.class).single();
+                SELECT count(*) FROM employee e
+                WHERE e.id = :id AND e.status = 'ACTIVE' AND (e.branch_id IS NULL OR e.branch_id = :b OR e.all_branches)""")
+                .param("id", id).param("b", branchId).query(Integer.class).single();
         if (ok == 0) {
             throw YuzplusException.badRequest("settings.signerInvalid");
         }

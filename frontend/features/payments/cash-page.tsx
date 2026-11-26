@@ -13,6 +13,7 @@ import { can } from "@/features/auth/can";
 import { useMe } from "@/features/auth/session";
 import { api, unwrap } from "@/lib/api/client";
 import { formatMoney, formatQuantity } from "@/lib/format";
+import { useLivePoll } from "@/lib/live";
 import { CASH_APPROVE, CASH_CLOSE, CASH_IO, opsFilterFromParams, usableAccount } from "@/features/cash/api";
 import { ClosesTab, OpsTab, PendingOps, StatementTab, TransfersTab } from "@/features/cash/cash-sections";
 import { BankReconTab } from "@/features/cash/bank-recon";
@@ -43,11 +44,12 @@ export function CashPage() {
   const allAccounts = useAllAccounts(allowed && overall);
   const accounts = overall ? allAccounts : branchAccounts;
   const setBranchId = useBranchStore((s) => s.setBranchId);
+  const cashPoll = useLivePoll(30_000);
   const cash = useQuery({
     queryKey: ["trips", "cash", branchId],
     queryFn: () => unwrap(api.GET("/api/trips/cash", { params: { query: { branchId: branchId ?? undefined } } })),
     enabled: canAccept && (branchId != null || overall),
-    refetchInterval: 30_000,
+    refetchInterval: cashPoll,
   });
   const extras = useQuery({
     queryKey: ["trips", "money", "open", branchId],

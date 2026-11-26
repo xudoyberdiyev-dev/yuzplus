@@ -127,7 +127,8 @@ public class Employees {
             return list();
         }
         long b = branchId != null ? branchId : actor.branchId() == null ? -1L : actor.branchId();
-        return jdbc.sql(SELECT + " WHERE e.branch_id = :b ORDER BY e.full_name")
+        // BG1 X1: «Barcha filiallar» xodimlari har filial roʻyxatida ham
+        return jdbc.sql(SELECT + " WHERE (e.branch_id = :b OR e.all_branches) ORDER BY e.full_name")
                 .param("b", b)
                 .query(Employees::map)
                 .list();
@@ -188,15 +189,12 @@ public class Employees {
     }
 
     /**
-     * Buxgalterga barcha filiallar doirasini berish / olish (egasi qarori 07.11.2026, E3) — faqat Direktor.
+     * Barcha filiallar doirasini berish / olish — faqat Direktor (E3, 07.11.2026); BG1 X1 (26.11.2026): istalgan rolga.
      * Xodimning ochiq sessiyalari tugatiladi (yangi doira keyingi kirishda kuchga kiradi).
      */
     @Transactional
     public Employee setAllBranches(Actor actor, long id, boolean enabled) {
         Employee e = accessible(actor, id);
-        if (!"ACCOUNTANT".equals(e.roleCode())) {
-            throw YuzplusException.badRequest("employee.allBranchesOnlyAccountant");
-        }
         if (e.allBranches() == enabled) {
             return e;
         }

@@ -60,7 +60,7 @@ class Messages {
 
     /** Xodim joriy xodimga ko'rinadimi (filial doirasi) — {@code e} va {@code r} taxalluslari bilan. */
     private static final String VISIBLE = """
-            e.status = 'ACTIVE' AND (:all OR e.branch_id = :b OR r.code IN ('DIRECTOR', 'ADMIN') OR (r.code = 'ACCOUNTANT' AND e.all_branches))""";
+            e.status = 'ACTIVE' AND (:all OR e.branch_id = :b OR r.code IN ('DIRECTOR', 'ADMIN') OR e.all_branches)""";
 
     private final JdbcClient jdbc;
     private final NotificationStream stream;
@@ -349,7 +349,7 @@ class Messages {
                 }
                 members = new LinkedHashSet<>(jdbc.sql("""
                         SELECT e.id FROM employee e JOIN role r ON r.id = e.role_id
-                        WHERE e.status = 'ACTIVE' AND r.code = :role AND (CAST(:b AS bigint) IS NULL OR e.branch_id = :b) AND e.id <> :me
+                        WHERE e.status = 'ACTIVE' AND r.code = :role AND (CAST(:b AS bigint) IS NULL OR e.branch_id = :b OR e.all_branches) AND e.id <> :me
                         ORDER BY e.id""")
                         .param("role", role)
                         .param("b", branch)
@@ -365,7 +365,7 @@ class Messages {
                 if (!a.canAccessBranch(branch)) {
                     throw YuzplusException.forbidden("messages.branchDenied");
                 }
-                members = new LinkedHashSet<>(jdbc.sql("SELECT id FROM employee WHERE status = 'ACTIVE' AND branch_id = :b AND id <> :me ORDER BY id")
+                members = new LinkedHashSet<>(jdbc.sql("SELECT id FROM employee WHERE status = 'ACTIVE' AND (branch_id = :b OR all_branches) AND id <> :me ORDER BY id")
                         .param("b", branch)
                         .param("me", me)
                         .query(Long.class)

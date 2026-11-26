@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api, unwrap } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
+import { useLivePoll } from "@/lib/live";
 
 export type NavBadge = components["schemas"]["Badge"];
 
@@ -13,11 +14,12 @@ export function useNavBadges(branchId: number | null | undefined): {
   /** Logotip URL (versiya bilan) yoki null. */
   logo: string | null;
 } {
+  const poll = useLivePoll(60_000);
   const q = useQuery({
     queryKey: ["nav-badges", branchId ?? null],
     queryFn: () => unwrap(api.GET("/api/nav/badges", { params: { query: { branchId: branchId ?? undefined } } })),
     enabled: branchId !== undefined,
-    refetchInterval: 60_000,
+    refetchInterval: poll,
   });
   return {
     badges: badgeMap(q.data),

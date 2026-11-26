@@ -459,8 +459,71 @@ function VatSection({ view, onSaved, onFail }: { view: View; onSaved: (d: View, 
           </div>
           {err ? <span className="text-[12px] leading-4 text-danger">{err}</span> : null}
           <span className="text-[12px] leading-4 text-text-secondary">{t("vatHint")}</span>
+          <VatBulkApply />
         </>
       ) : null}
+    </div>
+  );
+}
+
+/** BG1 N2 (egasi 26.11.2026): amaldagi QQS stavkasini barcha mahsulotlarga qoʻllash — aniq ogohlantirish bilan, audit jurnaliga. */
+function VatBulkApply() {
+  const t = useTranslations("settings");
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const preview = useQuery({
+    queryKey: ["products", "vat-bulk", "preview"],
+    queryFn: () => unwrap(api.GET("/api/products/vat-bulk/preview")),
+    enabled: open,
+    staleTime: 0,
+  });
+  const apply = useMutation({
+    mutationFn: async (rate: string) => {
+      await ensureCsrf();
+      return unwrap(api.POST("/api/products/vat-bulk", { body: { rate } }));
+    },
+    onSuccess: (r) => {
+      setOpen(false);
+      void qc.invalidateQueries({ queryKey: ["products"] });
+      toast({ tone: "success", title: t("vatBulkDone", { n: r.changed, r: r.rate.replace(".", ",") }) });
+    },
+    onError: (e) => {
+      void preview.refetch();
+      toast({ tone: "danger", title: describeError(e).message ?? t("vatBulkFail") });
+    },
+  });
+  const p = preview.data;
+  const rate = p?.rate.replace(".", ",") ?? "";
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+      <Button variant="secondary" icon={Percent} onClick={() => setOpen(true)}>
+        {t("vatBulk")}
+      </Button>
+      <span className="text-[12px] leading-4 text-text-secondary">{t("vatBulkHint")}</span>
+      <Modal
+        open={open}
+        onClose={() => !apply.isPending && setOpen(false)}
+        title={t("vatBulkTitle")}
+        primaryAction={{
+          label: t("vatBulkGo"),
+          loading: apply.isPending,
+          disabled: !p || p.affected === 0,
+          onClick: () => p && apply.mutate(p.rate),
+        }}
+      >
+        {preview.isError ? (
+          <span className="text-danger">{describeError(preview.error).message ?? t("vatBulkFail")}</span>
+        ) : !p ? (
+          <Skeleton className="h-16" />
+        ) : p.affected === 0 ? (
+          <span>{t("vatBulkNone", { r: rate })}</span>
+        ) : (
+          <>
+            <span className="font-medium">{t("vatBulkWhat", { n: p.affected, r: rate })}</span>
+            <Consequences items={[t("vatBulkExempt", { n: p.exempt }), t("vatBulkPrices"), t("vatBulkDocs"), t("vatBulkAudit")]} />
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

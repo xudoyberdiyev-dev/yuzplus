@@ -17,6 +17,9 @@ export const AUDIT_ACTIONS = [
   "branch.update",
   "warehouse.create",
   "setup.complete",
+  "product.vatBulk",
+  "branch.signers",
+  "batch.edit",
 ] as const;
 type AuditAction = (typeof AUDIT_ACTIONS)[number];
 

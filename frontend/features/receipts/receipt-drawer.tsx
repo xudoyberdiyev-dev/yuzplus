@@ -72,7 +72,7 @@ import {
   type ReceiptRequest,
   type Resolution,
 } from "./api";
-import { ReceiptCatalogDialog } from "./receipt-catalog-dialog";
+import { ReceiptCatalogPage } from "./receipt-catalog-dialog";
 import { ReceiptLinesGrid } from "./receipt-lines-grid";
 import { readReceiptBackup, writeReceiptBackup } from "./receipt-backup";
 import { centsToMoney, dueBase, expectedBonus, receiptSteps, standardDue, toCentsBig } from "./receipt-doc";
@@ -808,31 +808,33 @@ function Editor({
       />
     </div>
   );
+  // BG1 B2: katalog — toʻliq sahifa; kirim shakli ortida yashirinib saqlanadi (yoʻqolmaydi)
+  const catalogView =
+    catalogOpen && warehouse ? (
+      <ReceiptCatalogPage
+        warehouseId={warehouse.id}
+        supplierId={supplier ? Number(supplier) : null}
+        zones={zones}
+        defaultZone={adding.zone || null}
+        pricesVisible={pricesVisible}
+        existing={new Set(lines.map((l) => `${l.productId}|${l.batchNumber.trim().toUpperCase()}`))}
+        header={[
+          doc?.number ?? t("newTitle"),
+          supplierLabel || t("noSupplier"),
+          warehouse.name,
+          t("lineCount", { count: formatQuantity(lines.length) }),
+        ].join(" · ")}
+        onClose={() => setCatalogOpen(false)}
+        onAdd={(picked) => {
+          setLines((ls) => [...ls, ...picked]);
+          setCatalogOpen(false);
+          setLocal(null);
+          toast({ tone: "success", title: t("linesAdded", { count: formatQuantity(picked.length) }) });
+        }}
+      />
+    ) : null;
   const dialogs = (
     <>
-      {catalogOpen && warehouse ? (
-        <ReceiptCatalogDialog
-          warehouseId={warehouse.id}
-          supplierId={supplier ? Number(supplier) : null}
-          zones={zones}
-          defaultZone={adding.zone || null}
-          pricesVisible={pricesVisible}
-          existing={new Set(lines.map((l) => `${l.productId}|${l.batchNumber.trim().toUpperCase()}`))}
-          header={[
-            doc?.number ?? t("newTitle"),
-            supplierLabel || t("noSupplier"),
-            warehouse.name,
-            t("lineCount", { count: formatQuantity(lines.length) }),
-          ].join(" · ")}
-          onClose={() => setCatalogOpen(false)}
-          onAdd={(picked) => {
-            setLines((ls) => [...ls, ...picked]);
-            setCatalogOpen(false);
-            setLocal(null);
-            toast({ tone: "success", title: t("linesAdded", { count: formatQuantity(picked.length) }) });
-          }}
-        />
-      ) : null}
       {dialog === "accept" && doc ? <AcceptDialog id={doc.id} onClose={() => setDialog(null)} /> : null}
       {dialog === "post" && doc ? <PostDialog doc={doc} onClose={() => setDialog(null)} /> : null}
       {dialog === "cancel" && doc ? (
@@ -856,51 +858,54 @@ function Editor({
   if (frame === "page")
     return (
       <div className="flex flex-col gap-4">
-        <DocumentHeader
-          parent={{ label: tr("list.title"), href: "/receipts" }}
-          crumb={doc ? doc.number : t("newTitle")}
-          crumbMono={doc !== null}
-          title={doc ? t("pageTitle") : t("newTitle")}
-          number={doc?.number}
-          status={<ReceiptStatusBadge status={doc?.status ?? "DRAFT"} />}
-          meta={<Steps steps={receiptSteps(doc?.status ?? "DRAFT").map((x) => ({ label: tr(`status.${x.key}`), state: x.state }))} />}
-          sub={
+        {catalogView}
+        <div className={catalogView ? "hidden" : "contents"}>
+          <DocumentHeader
+            parent={{ label: tr("list.title"), href: "/receipts" }}
+            crumb={doc ? doc.number : t("newTitle")}
+            crumbMono={doc !== null}
+            title={doc ? t("pageTitle") : t("newTitle")}
+            number={doc?.number}
+            status={<ReceiptStatusBadge status={doc?.status ?? "DRAFT"} />}
+            meta={<Steps steps={receiptSteps(doc?.status ?? "DRAFT").map((x) => ({ label: tr(`status.${x.key}`), state: x.state }))} />}
+            sub={
+              doc ? (
+                <>
+                  <span>{doc.supplier}</span>
+                  <span className="text-text-disabled">·</span>
+                  <span>{doc.warehouse}</span>
+                  <span className="text-text-disabled">·</span>
+                  <span className="tabular-nums">{day(doc.receiptDate)}</span>
+                  <span className="text-text-disabled">·</span>
+                  <span>{doc.createdBy}</span>
+                </>
+              ) : undefined
+            }
+            actions={actions}
+          />
+          <Tabs
+            aria-label={t("pageTitle")}
+            value={tab}
+            onChange={(k) => setTab(k === "history" ? "history" : "doc")}
+            items={[
+              { key: "doc", label: t("tabDoc") },
+              { key: "history", label: t("tabHistory") },
+            ]}
+          />
+          {tab === "history" ? (
             doc ? (
-              <>
-                <span>{doc.supplier}</span>
-                <span className="text-text-disabled">·</span>
-                <span>{doc.warehouse}</span>
-                <span className="text-text-disabled">·</span>
-                <span className="tabular-nums">{day(doc.receiptDate)}</span>
-                <span className="text-text-disabled">·</span>
-                <span>{doc.createdBy}</span>
-              </>
-            ) : undefined
-          }
-          actions={actions}
-        />
-        <Tabs
-          aria-label={t("pageTitle")}
-          value={tab}
-          onChange={(k) => setTab(k === "history" ? "history" : "doc")}
-          items={[
-            { key: "doc", label: t("tabDoc") },
-            { key: "history", label: t("tabHistory") },
-          ]}
-        />
-        {tab === "history" ? (
-          doc ? (
-            <ReceiptHistory id={doc.id} />
-          ) : (
-            <HistoryTimeline query={{ data: [], error: null, refetch: () => undefined }} label={(a) => a} />
-          )
-        ) : null}
-        {/* Yangi hujjat shakli «Tarix»da ham saqlanib turadi (yashiriladi, oʻchirilmaydi). */}
-        <div className={tab === "history" ? "hidden" : "contents"}>
-          {doc && (doc.status === "ACCEPTED" || doc.status === "POSTED") ? <ReceiptCards doc={doc} /> : null}
-          {doc ? <ReceiptPayment doc={doc} /> : null}
-          {doc && doc.pricesVisible && doc.status !== "CANCELLED" ? <ReceiptRefNote doc={doc} /> : null}
-          {content}
+              <ReceiptHistory id={doc.id} />
+            ) : (
+              <HistoryTimeline query={{ data: [], error: null, refetch: () => undefined }} label={(a) => a} />
+            )
+          ) : null}
+          {/* Yangi hujjat shakli «Tarix»da ham saqlanib turadi (yashiriladi, oʻchirilmaydi). */}
+          <div className={tab === "history" ? "hidden" : "contents"}>
+            {doc && (doc.status === "ACCEPTED" || doc.status === "POSTED") ? <ReceiptCards doc={doc} /> : null}
+            {doc ? <ReceiptPayment doc={doc} /> : null}
+            {doc && doc.pricesVisible && doc.status !== "CANCELLED" ? <ReceiptRefNote doc={doc} /> : null}
+            {content}
+          </div>
         </div>
         {dialogs}
       </div>
@@ -916,7 +921,7 @@ function Editor({
       status={doc ? <ReceiptStatusBadge status={doc.status} /> : undefined}
       actions={actions}
     >
-      {content}
+      {catalogView ?? content}
       {dialogs}
     </Drawer>
   );

@@ -193,8 +193,17 @@ class SettingsIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.print.invoiceVariant").value("NOPRICE"))
                 .andExpect(jsonPath("$.print.reprintMark").value(true));
+        // BG1 F1 (egasi qarori): rolidan qatʼi nazar istalgan faol xodim; bloklangan — rad
+        jdbc.sql("UPDATE employee SET status = 'BLOCKED' WHERE id = :id").param("id", picker).update();
         mvc.perform(put("/api/settings/print/signers/" + branch).with(csrf()).cookie(director).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"headId\":null,\"accountantId\":" + picker + "}")).andExpect(status().isBadRequest());
+        jdbc.sql("UPDATE employee SET status = 'ACTIVE' WHERE id = :id").param("id", picker).update();
+        mvc.perform(put("/api/settings/print/signers/" + branch).with(csrf()).cookie(director).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"headId\":" + picker + ",\"accountantId\":null}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.print.signers[?(@.branchId == " + branch + ")].headId").value((int) picker));
+        assertThat(jdbc.sql("SELECT director_employee_id FROM branch WHERE id = :b").param("b", branch).query(Long.class).single())
+                .isEqualTo(picker);
         mvc.perform(put("/api/settings/print/signers/" + branch).with(csrf()).cookie(director).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"headId\":null,\"accountantId\":" + acc + "}"))
                 .andExpect(status().isOk())
@@ -202,5 +211,6 @@ class SettingsIT {
         assertThat(jdbc.sql("SELECT count(*) FROM audit_log WHERE action IN ('settings.print', 'settings.signers')").query(Long.class).single())
                 .isGreaterThanOrEqualTo(2);
         jdbc.sql("UPDATE print_setting SET invoice_variant = 'PRICE'").update();
+        jdbc.sql("UPDATE branch SET director_employee_id = NULL, accountant_employee_id = NULL WHERE id = :b").param("b", branch).update();
     }
 }

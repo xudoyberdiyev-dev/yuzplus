@@ -21,6 +21,19 @@ const statusListeners = new Set<() => void>();
 let source: EventSource | null = null;
 let connected = false;
 let closeTimer: ReturnType<typeof setTimeout> | null = null;
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
+let retryAttempt = 0;
+/**
+ * TZ3: server/proksi xato javob qaytarsa (502/504, sessiya tugagan) `EventSource` CLOSED boʻladi va brauzer oʻzi qayta ulanmaydi —
+ * shunda biz qayta ochamiz: 5 s, 10 s, 20 s, 40 s, keyin har 60 s (tasodifiy ±20 %, hamma oyna birdan ulanmasin).
+ */
+export const RETRY_BASE_MS = 5_000;
+export const RETRY_MAX_MS = 60_000;
+
+export function retryDelayMs(attempt: number, random: () => number = Math.random): number {
+  const base = Math.min(RETRY_MAX_MS, RETRY_BASE_MS * 2 ** Math.max(0, attempt));
+  return Math.round(base * (0.8 + random() * 0.4));
+}
 /** Sahifa almashganda TopBar qayta yaratiladi — ulanish darhol yopilmaydi, yangi sahifa shu ulanishni oladi. */
 export const CLOSE_DELAY_MS = 3_000;
 
@@ -43,13 +56,30 @@ function open() {
   const es = new EventSource(STREAM_URL, { withCredentials: true });
   source = es;
   es.addEventListener("ready", () => {
+    retryAttempt = 0;
     setConnected(true);
     handlers.forEach((set) => set.forEach((h) => h()));
   });
   for (const ev of ["notifications", "orders", "trips", "receipts", "transfers", "messages"] as const) {
     es.addEventListener(ev, () => fire(ev));
   }
-  es.onerror = () => setConnected(false);
+  es.onerror = () => {
+    setConnected(false);
+    // CONNECTING (0) — brauzer oʻzi qayta ulanadi; CLOSED (2) — biz qayta ochamiz.
+    if (es.readyState !== 2 || source !== es) return;
+    es.close();
+    source = null;
+    scheduleRetry();
+  };
+}
+
+function scheduleRetry() {
+  if (retryTimer || idle()) return;
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    retryAttempt += 1;
+    if (!idle()) open();
+  }, retryDelayMs(retryAttempt));
 }
 
 function idle(): boolean {
@@ -62,6 +92,9 @@ function closeIfIdle() {
   closeTimer = setTimeout(() => {
     closeTimer = null;
     if (!idle()) return;
+    if (retryTimer) clearTimeout(retryTimer);
+    retryTimer = null;
+    retryAttempt = 0;
     source?.close();
     source = null;
     setConnected(false);
@@ -84,6 +117,9 @@ export function subscribeLive(event: LiveEvent, handler: Handler): () => void {
 export function resetLive() {
   if (closeTimer) clearTimeout(closeTimer);
   closeTimer = null;
+  if (retryTimer) clearTimeout(retryTimer);
+  retryTimer = null;
+  retryAttempt = 0;
   handlers.clear();
   source?.close();
   source = null;
@@ -126,6 +162,18 @@ export function useLiveConnected(): boolean {
     () => connected,
     () => false,
   );
+}
+
+/**
+ * TZ3: soʻrov oraligʻi — SSE ulangan boʻlsa zaxira (`LIVE_POLL_MS`), aks holda sahifaning odatdagi oraligʻi.
+ * Faqat kaliti `LIVE_INVALIDATES` da bor soʻrovlar uchun (ulanganda ular hodisa bilan yangilanadi).
+ */
+export function livePollMs(live: boolean, fallbackMs: number): number {
+  return live ? Math.max(LIVE_POLL_MS, fallbackMs) : fallbackMs;
+}
+
+export function useLivePoll(fallbackMs: number): number {
+  return livePollMs(useLiveConnected(), fallbackMs);
 }
 
 /**

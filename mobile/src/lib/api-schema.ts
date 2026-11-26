@@ -743,6 +743,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/branches/{id}/signers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Filial direktori va bosh hisobchisi (xodimlardan) */
+        get: operations["branchSigners"];
+        /**
+         * Filial direktori va bosh hisobchisini tanlash
+         * @description Rolidan qatʼi nazar: shu filial yoki barcha filiallar faol xodimi. null — tanlanmagan.
+         */
+        put: operations["updateBranchSigners"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cash-close": {
         parameters: {
             query?: never;
@@ -2013,8 +2034,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Buxgalterga barcha filiallar doirasi (faqat Direktor)
-         * @description Standart holatda Buxgalter faqat o'z filialini ko'radi (E3). Ochiq sessiyalari tugatiladi.
+         * Xodimga barcha filiallar doirasi (faqat Direktor)
+         * @description Istalgan rol (BG1 X1). Standart holatda xodim faqat o'z filialini ko'radi. Ochiq sessiyalari tugatiladi.
          */
         post: operations["allBranches"];
         delete?: never;
@@ -5870,6 +5891,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/products/vat-bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Amaldagi QQS stavkasini barcha mahsulotlarga qoʻllash
+         * @description QQSdan ozod mahsulotlar va narxlar oʻzgarmaydi. `rate` amaldagi stavkadan farq qilsa — 409 (sozlama oʻzgargan).
+         */
+        post: operations["vatBulkApply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/vat-bulk/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** QQS stavkasini barcha mahsulotlarga qoʻllash — oldindan koʻrish (nechta mahsulot oʻzgaradi) */
+        get: operations["vatBulkPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/products/{id}": {
         parameters: {
             query?: never;
@@ -7535,6 +7593,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stock/batch-edit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Qoldiqdagi partiyalar (tahrirlash uchun)
+         * @description Filial omborlarida qoldigʻi bor partiyalar; muddati yaqinlari birinchi.
+         */
+        get: operations["batchEditList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stock/batch-edit/{batchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Partiya raqami, ishlab chiqarilgan sana va yaroqlilik muddatini tahrirlash
+         * @description Sabab majburiy. Faqat filialda qoldigʻi bor partiya. Oʻtkazilgan hujjatlar oʻzgarmaydi.
+         */
+        put: operations["batchEditSave"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stock/batch-edit/{batchId}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Partiya tahrirlash tarixi */
+        get: operations["batchEditHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/stock/batches": {
         parameters: {
             query?: never;
@@ -7858,6 +7973,23 @@ export interface paths {
          * @description Tovar joyida qoladi.
          */
         post: operations["reject_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/telemetry/timings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Brauzerdagi sekin soʻrovlar va Web Vitals qaydlari (faqat log) */
+        post: operations["timings"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9662,6 +9794,32 @@ export interface components {
             /** @enum {string} */
             zoneType: "RECEIVING" | "MAIN" | "QUARANTINE" | "SHIPPING" | "COLD" | "SAFE";
         };
+        BatchEditRequest: {
+            /** Format: int64 */
+            branchId: number;
+            /** Format: date */
+            expiryDate: string;
+            number: string;
+            /** Format: date */
+            producedOn?: string;
+            reason: string;
+        };
+        BatchEditRow: {
+            /** Format: date-time */
+            at: string;
+            employee?: string;
+            /** Format: date */
+            newExpiry: string;
+            newNumber: string;
+            /** Format: date */
+            newProduced?: string;
+            /** Format: date */
+            oldExpiry: string;
+            oldNumber: string;
+            /** Format: date */
+            oldProduced?: string;
+            reason: string;
+        };
         BatchMove: {
             /**
              * Format: int64
@@ -10155,6 +10313,30 @@ export interface components {
             toZone?: components["schemas"]["ZoneRef"];
             /** @description Faqat special.cost ruxsati bilan */
             total?: string;
+        };
+        BranchSigners: {
+            /** @description Hujjatlarga tushadigan bosh hisobchi */
+            accountant?: string;
+            /** Format: int64 */
+            accountantEmployeeId?: number;
+            /** @description Hujjatlarga tushadigan rahbar (tanlangan / matn / rol boʻyicha) */
+            director?: string;
+            /** Format: int64 */
+            directorEmployeeId?: number;
+            /** @description Tanlash mumkin: shu filial yoki barcha filiallar faol xodimlari */
+            options: components["schemas"]["SignerEmployee"][];
+        };
+        BranchSignersUpdate: {
+            /**
+             * Format: int64
+             * @description null — tanlanmagan
+             */
+            accountantEmployeeId?: number;
+            /**
+             * Format: int64
+             * @description null — tanlanmagan (matn yoki rol boʻyicha)
+             */
+            directorEmployeeId?: number;
         };
         BranchStats: {
             /** Format: int64 */
@@ -11268,6 +11450,28 @@ export interface components {
         };
         EditRequest: {
             body: string;
+        };
+        EditableBatch: {
+            /** Format: int64 */
+            batchId: number;
+            /** Format: int32 */
+            edits: number;
+            /** Format: date */
+            expiryDate: string;
+            number: string;
+            /** Format: date */
+            producedOn?: string;
+            productCode: string;
+            /** Format: int64 */
+            productId: number;
+            productName: string;
+            /** Format: int64 */
+            qty: number;
+        };
+        EditableBatches: {
+            items: components["schemas"]["EditableBatch"][];
+            /** @description Roʻyxat cheklangan (qidiruvni aniqlashtiring) */
+            truncated: boolean;
         };
         Employee: {
             /** @description Buxgalterga Direktor bergan «barcha filiallar» doirasi (E3) */
@@ -16249,6 +16453,13 @@ export interface components {
             employeeId: number;
             reason: string;
         };
+        SignerEmployee: {
+            fullName: string;
+            /** Format: int64 */
+            id: number;
+            roleCode: string;
+            roleName: string;
+        };
         SignerOption: {
             /** Format: int64 */
             id: number;
@@ -16918,6 +17129,30 @@ export interface components {
             /** Format: int32 */
             pickMinutes: number;
         };
+        TimingEntry: {
+            /**
+             * @description api — sekin soʻrov, vital — Web Vitals
+             * @enum {string}
+             */
+            kind: "api" | "vital";
+            /**
+             * Format: int64
+             * @description Davomiylik, ms (CLS uchun ×1000)
+             */
+            ms: number;
+            /** @description API yoʻli (masalan GET /api/orders/{id}) yoki koʻrsatkich nomi (LCP) */
+            name: string;
+            /** @description Sahifa yoʻli (masalan /orders/{id}) */
+            page?: string;
+            /**
+             * Format: int32
+             * @description HTTP holati (api uchun)
+             */
+            status?: number;
+        };
+        TimingReport: {
+            entries: components["schemas"]["TimingEntry"][];
+        };
         Transfer: {
             amount: string;
             /** Format: int64 */
@@ -17378,6 +17613,34 @@ export interface components {
         UploadedFile: {
             /** Format: int64 */
             id: number;
+        };
+        VatBulkApply: {
+            /** @description Oldindan koʻrilgan stavka — amaldagi bilan mos boʻlishi shart */
+            rate: string;
+        };
+        VatBulkPreview: {
+            /**
+             * Format: int64
+             * @description Stavkasi oʻzgaradigan mahsulotlar
+             */
+            affected: number;
+            /**
+             * Format: int64
+             * @description QQSdan ozod — oʻzgarmaydi
+             */
+            exempt: number;
+            /** @description Amaldagi stavka (%), masalan «12» */
+            rate: string;
+            /**
+             * Format: int64
+             * @description Allaqachon shu stavkada
+             */
+            same: number;
+        };
+        VatBulkResult: {
+            /** Format: int64 */
+            changed: number;
+            rate: string;
         };
         VatRequest: {
             rate: string;
@@ -19045,6 +19308,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Branch"];
+                };
+            };
+        };
+    };
+    branchSigners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchSigners"];
+                };
+            };
+        };
+    };
+    updateBranchSigners: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchSignersUpdate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchSigners"];
                 };
             };
         };
@@ -26388,6 +26699,50 @@ export interface operations {
             };
         };
     };
+    vatBulkApply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VatBulkApply"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VatBulkResult"];
+                };
+            };
+        };
+    };
+    vatBulkPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VatBulkPreview"];
+                };
+            };
+        };
+    };
     get_6: {
         parameters: {
             query?: never;
@@ -28778,6 +29133,79 @@ export interface operations {
             };
         };
     };
+    batchEditList: {
+        parameters: {
+            query: {
+                branchId: number;
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditableBatches"];
+                };
+            };
+        };
+    };
+    batchEditSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batchId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchEditRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditableBatch"];
+                };
+            };
+        };
+    };
+    batchEditHistory: {
+        parameters: {
+            query: {
+                branchId: number;
+            };
+            header?: never;
+            path: {
+                batchId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchEditRow"][];
+                };
+            };
+        };
+    };
     stockBatches: {
         parameters: {
             query?: {
@@ -29233,6 +29661,28 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["SupplierReturnDetail"];
                 };
+            };
+        };
+    };
+    timings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TimingReport"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

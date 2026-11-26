@@ -1,6 +1,7 @@
 "use client";
 
 import { CircleAlert, Plus, Trash2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Alert } from "@/components/ui/alert";
@@ -11,7 +12,8 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Checkbox, Switch } from "@/components/ui/selection-controls";
 import { TextField } from "@/components/ui/text-field";
-import { ApiError } from "@/lib/api/client";
+import { ensureCsrf } from "@/features/auth/session";
+import { ApiError, api, unwrap } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { cn } from "@/lib/cn";
 import {
@@ -69,6 +71,25 @@ function BranchPanelInner({
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+  // BG1 F1: rahbar va bosh hisobchi — xodimlardan (rolidan qatʼi nazar); matn maydonlari — zaxira
+  const qc = useQueryClient();
+  const signers = useQuery({
+    queryKey: ["branches", "signers", branch?.id ?? 0],
+    queryFn: () => unwrap(api.GET("/api/branches/{id}/signers", { params: { path: { id: branch?.id ?? 0 } } })),
+    enabled: !!branch,
+    retry: false,
+  });
+  const [pick, setPick] = useState<{ d: number | null; a: number | null } | null>(null);
+  const sd = signers.data;
+  const picked = pick ?? { d: sd?.directorEmployeeId ?? null, a: sd?.accountantEmployeeId ?? null };
+  const signersDirty = !!sd && (picked.d !== (sd.directorEmployeeId ?? null) || picked.a !== (sd.accountantEmployeeId ?? null));
+  const signerOptions = useMemo(
+    () => [
+      { value: "", label: t("signerNone") },
+      ...(sd?.options ?? []).map((e) => ({ value: String(e.id), label: e.fullName, sub: e.roleName })),
+    ],
+    [sd, t],
+  );
 
   const local = validateBranch(form, isNew);
   const errorFor = (key: string): string | undefined => {
@@ -77,7 +98,7 @@ function BranchPanelInner({
     return server.fields[key];
   };
   const errorCount = tried ? Object.keys(local).length : 0;
-  const dirty = JSON.stringify(form) !== JSON.stringify(initial);
+  const dirty = JSON.stringify(form) !== JSON.stringify(initial) || signersDirty;
 
   const set =
     <K extends keyof BranchForm>(key: K) =>
@@ -108,6 +129,16 @@ function BranchPanelInner({
     setServer({ fields: {} });
     try {
       await onSave(bodyFromForm(form));
+      if (branch && signersDirty) {
+        await ensureCsrf();
+        await unwrap(
+          api.PUT("/api/branches/{id}/signers", {
+            params: { path: { id: branch.id } },
+            body: { directorEmployeeId: picked.d ?? undefined, accountantEmployeeId: picked.a ?? undefined },
+          }),
+        );
+        void qc.invalidateQueries({ queryKey: ["branches", "signers", branch.id] });
+      }
       onClose();
     } catch (err) {
       if (err instanceof ApiError) {
@@ -356,8 +387,42 @@ function BranchPanelInner({
           </Section>
 
           <Section title={t("s5")} description={t("s5d")}>
-            <TextField label={t("director")} value={form.directorName} onChange={set("directorName")} />
-            <TextField label={t("accountant")} value={form.accountantName} onChange={set("accountantName")} />
+            {sd ? (
+              <>
+                <Select
+                  label={t("directorEmp")}
+                  searchable
+                  value={picked.d !== null ? String(picked.d) : ""}
+                  onChange={(v) => setPick({ ...picked, d: v ? Number(v) : null })}
+                  options={signerOptions}
+                  hint={t("signerHint")}
+                />
+                <Select
+                  label={t("accountantEmp")}
+                  searchable
+                  value={picked.a !== null ? String(picked.a) : ""}
+                  onChange={(v) => setPick({ ...picked, a: v ? Number(v) : null })}
+                  options={signerOptions}
+                />
+              </>
+            ) : null}
+            <TextField
+              label={t("director")}
+              value={form.directorName}
+              onChange={set("directorName")}
+              hint={sd ? t("textFallback") : undefined}
+              disabled={picked.d !== null}
+            />
+            <TextField
+              label={t("accountant")}
+              value={form.accountantName}
+              onChange={set("accountantName")}
+              hint={sd ? t("textFallback") : undefined}
+              disabled={picked.a !== null}
+            />
+            {sd ? (
+              <p className="text-caption text-text-secondary">{t("signerNow", { d: sd.director ?? "—", a: sd.accountant ?? "—" })}</p>
+            ) : null}
           </Section>
         </div>
       </Drawer>

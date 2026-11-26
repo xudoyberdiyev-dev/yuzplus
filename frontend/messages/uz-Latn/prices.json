@@ -317,7 +317,13 @@
       "foot": "{n} ta narx oʻzgartirildi · {m} ta tannarxdan past",
       "dReceipt": "Kirim: {r} · narx turi: {t}",
       "dBatches": "Narx faqat shu kirim partiyalariga qoʻyiladi; boshqa partiyalar narxi oʻzgarmaydi"
-    }
+    },
+    "typeBatch": "partiya boʻyicha",
+    "typeInactive": "faol emas",
+    "typeInactiveHint": "{n, plural, other {# ta narx turi faol emas — narx qoʻyish uchun «Narx turlari»da faollashtiring}}",
+    "typeBatchTitle": "«{t}» — partiya boʻyicha narx turi",
+    "typeBatchText": "Bu turning narxi har bir kirim partiyasiga alohida qoʻyiladi. «Kirim boʻyicha» rejimiga oʻting va kirimni tanlang.",
+    "typeBatchGo": "Kirim boʻyicha ochish"
   },
   "doc": {
     "parent": "Narx oʻzgarishlari",

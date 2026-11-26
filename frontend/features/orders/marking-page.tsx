@@ -50,6 +50,7 @@ import type { components } from "@/lib/api/schema";
 import { cn } from "@/lib/cn";
 import { formatDateTime, formatQuantity } from "@/lib/format";
 import { GS, parseGs1 } from "@/lib/gs1";
+import { useLivePoll } from "@/lib/live";
 import { scanFeedback } from "@/lib/scan-feedback";
 import { isNetworkError, useOnline } from "@/lib/use-online";
 import { MobileActionBar, usePhone } from "@/components/ui/mobile-action-bar";
@@ -119,11 +120,12 @@ export function MarkingPage() {
     },
     enabled: allowed,
   });
+  const queuePoll = useLivePoll(15_000);
   const queue = useQuery({
     queryKey: ["marking", "queue"],
     queryFn: () => unwrap(api.GET("/api/marking/queue")),
     enabled: allowed,
-    refetchInterval: 15_000,
+    refetchInterval: queuePoll,
   });
 
   if (me.data && !allowed) return <ForbiddenState description={t("marking.forbidden")} />;
@@ -181,7 +183,12 @@ export function MarkingPage() {
 function Queue({ busy, onStarted }: { busy: boolean; onStarted: () => void }) {
   const t = useTranslations("orders");
   const qc = useQueryClient();
-  const queue = useQuery({ queryKey: ["marking", "queue"], queryFn: () => unwrap(api.GET("/api/marking/queue")), refetchInterval: 15_000 });
+  const queuePoll = useLivePoll(15_000);
+  const queue = useQuery({
+    queryKey: ["marking", "queue"],
+    queryFn: () => unwrap(api.GET("/api/marking/queue")),
+    refetchInterval: queuePoll,
+  });
   const [pending, setPending] = useState<number | null>(null);
   const [error, setError] = useState<unknown>(null);
 

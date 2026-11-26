@@ -141,7 +141,7 @@ class Trips {
                 SELECT e.id, e.full_name, e.phone,
                        (SELECT t.number FROM trip t WHERE t.driver_id = e.id AND t.status IN ('PLANNED', 'IN_TRANSIT', 'RETURN_WAIT') LIMIT 1) AS active_trip
                 FROM employee e JOIN role r ON r.id = e.role_id
-                WHERE r.code = 'DRIVER' AND e.branch_id = :b AND e.status = 'ACTIVE' ORDER BY e.full_name""")
+                WHERE r.code = 'DRIVER' AND (e.branch_id = :b OR e.all_branches) AND e.status = 'ACTIVE' ORDER BY e.full_name""")
                 .param("b", branchId)
                 .query((rs, n) -> new DriverOption(rs.getLong("id"), rs.getString("full_name"), rs.getString("phone"), rs.getString("active_trip")))
                 .list();
@@ -166,7 +166,7 @@ class Trips {
                 .orElseThrow(() -> YuzplusException.badRequest("trip.vehicleUnknown"));
         boolean driverOk = jdbc.sql("""
                 SELECT EXISTS (SELECT 1 FROM employee e JOIN role r ON r.id = e.role_id
-                               WHERE e.id = :d AND r.code = 'DRIVER' AND e.branch_id = :b AND e.status = 'ACTIVE')""")
+                               WHERE e.id = :d AND r.code = 'DRIVER' AND (e.branch_id = :b OR e.all_branches) AND e.status = 'ACTIVE')""")
                 .param("d", r.driverId())
                 .param("b", branchId)
                 .query(Boolean.class)
@@ -341,7 +341,7 @@ class Trips {
         }
         boolean driverOk = jdbc.sql("""
                 SELECT EXISTS (SELECT 1 FROM employee e JOIN role r ON r.id = e.role_id
-                               WHERE e.id = :d AND r.code = 'DRIVER' AND e.branch_id = :b AND e.status = 'ACTIVE')""")
+                               WHERE e.id = :d AND r.code = 'DRIVER' AND (e.branch_id = :b OR e.all_branches) AND e.status = 'ACTIVE')""")
                 .param("d", r.driverId())
                 .param("b", t.branchId())
                 .query(Boolean.class)

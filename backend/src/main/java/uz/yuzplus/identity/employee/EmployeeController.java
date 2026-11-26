@@ -149,8 +149,8 @@ class EmployeeController {
 
     @PostMapping("/{id}/all-branches")
     @PreAuthorize("hasRole('DIRECTOR')")
-    @Operation(summary = "Buxgalterga barcha filiallar doirasi (faqat Direktor)",
-            description = "Standart holatda Buxgalter faqat o'z filialini ko'radi (E3). Ochiq sessiyalari tugatiladi.")
+    @Operation(summary = "Xodimga barcha filiallar doirasi (faqat Direktor)",
+            description = "Istalgan rol (BG1 X1). Standart holatda xodim faqat o'z filialini ko'radi. Ochiq sessiyalari tugatiladi.")
     Employees.Employee allBranches(@PathVariable long id, @Valid @RequestBody AllBranchesRequest r) {
         return employees.setAllBranches(actor(), id, r.enabled());
     }

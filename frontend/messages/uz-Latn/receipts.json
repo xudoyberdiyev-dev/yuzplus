@@ -278,7 +278,7 @@
       "bonus": "aksiya bonusi",
       "price": "faktura narxi"
     },
-    "footer": "Toʻldirilgan qatorlar qoʻshiladi.{price} Ikkinchi partiya uchun katalogni qayta oching.",
+    "footer": "Toʻldirilgan qatorlar qoʻshiladi.{price} Bir mahsulotning yana bir partiyasi — «+ partiya».",
     "footerPrice": " Narx boʻsh boʻlsa — shu YB dan oxirgi narx.",
     "errors": {
       "batch": "Partiyani kiriting",
@@ -289,7 +289,14 @@
       "price": "Narx notoʻgʻri",
       "duplicate": "Bu partiya allaqachon qoʻshilgan",
       "zone": "Zonani tanlang"
-    }
+    },
+    "backToReceipt": "Kirimga qaytish",
+    "back": "Ortga",
+    "addBatch": "+ partiya",
+    "addBatchFor": "{p}: yana bir partiya qoʻshish",
+    "batchN": "{n}-partiya",
+    "removeBatch": "{n}-partiyani olib tashlash",
+    "hiddenFilled": "Boshqa qidiruvda toʻldirilgan {n, plural, other {# ta qator}} ham qoʻshiladi."
   },
   "cards": {
     "supplier": "Yetkazib beruvchi",
