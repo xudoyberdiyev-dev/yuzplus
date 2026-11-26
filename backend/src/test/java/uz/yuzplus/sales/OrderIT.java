@@ -1395,7 +1395,13 @@ class OrderIT {
                 names.add(e.getName());
             }
         }
-        assertThat(names).containsExactly("1478-hisob-varaq-faktura.xlsx", "1478-tijorat-taklifi.xlsx", "1478-spetsifikatsiya.xlsx");
+        assertThat(names).containsExactly("1478-hisob-varaq-faktura.xlsx", "1478-tijorat-taklifi.xlsx", "1478-spetsifikatsiya.xlsx",
+                "1478-hisob-varaq-faktura.pdf", "1478-tijorat-taklifi.pdf", "1478-spetsifikatsiya.pdf");
+        // PDF — Excel bilan bir xil raqamlar (namunadagidek yozuv)
+        assertThat(pdfText("/api/orders/" + o + "/client-docs/INVOICE/pdf", director))
+                .contains("HISOB VARAQ FAKTURA № 1478", "67 171 400,00", "8 060 568,00", "75 231 968,00", "MUSURMONOVA M.A.", "46180");
+        assertThat(pdfText("/api/orders/" + o + "/client-docs/OFFER/pdf", director)).contains("3 040,80", "9 420,32");
+        assertThat(pdfText("/api/orders/" + o + "/client-docs/SPECIFICATION/pdf", director)).contains("1478 sonli shartnomaga", "75 231 968,00");
         // Buyurtma o'zgarmadi
         assertThat(jdbc.sql("SELECT total::text FROM sales_order WHERE id = :o").param("o", o).query(String.class).single()).isEqualTo("75231968.00");
 

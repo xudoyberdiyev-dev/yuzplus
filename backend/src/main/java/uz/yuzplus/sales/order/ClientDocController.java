@@ -60,9 +60,20 @@ class ClientDocController {
                 .body(docs.xlsx(d, kind));
     }
 
+    @GetMapping(value = "/api/orders/{id}/client-docs/{kind}/pdf", produces = org.springframework.http.MediaType.APPLICATION_PDF_VALUE)
+    @PreAuthorize(CAN)
+    @Operation(summary = "Bitta hujjat PDF", description = "Excel bilan bir xil ma'lumot va matnlar.")
+    ResponseEntity<byte[]> pdf(@PathVariable long id, @PathVariable ClientDocs.Kind kind) {
+        ClientDocs.Doc d = docs.doc(actor(), id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, org.springframework.http.MediaType.APPLICATION_PDF_VALUE)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + docs.fileName(d, kind, "pdf") + "\"")
+                .body(docs.pdf(d, kind));
+    }
+
     @GetMapping("/api/orders/{id}/client-docs/zip")
     @PreAuthorize(CAN)
-    @Operation(summary = "Uchala hujjat bitta arxivda (.zip)")
+    @Operation(summary = "Uchala hujjat bitta arxivda (.zip): .xlsx va .pdf")
     ResponseEntity<byte[]> zip(@PathVariable long id) {
         ClientDocs.Doc d = docs.doc(actor(), id);
         return ResponseEntity.ok()

@@ -28,6 +28,7 @@ import uz.yuzplus.inventory.StockReservations;
 import uz.yuzplus.shared.audit.AuditEntry;
 import uz.yuzplus.shared.audit.AuditLog;
 import uz.yuzplus.shared.error.YuzplusException;
+import uz.yuzplus.shared.pdf.PdfRenderer;
 import uz.yuzplus.shared.pdf.PrintSettings;
 import uz.yuzplus.shared.security.Actor;
 
@@ -87,8 +88,11 @@ class ClientDocs {
     private final StockReservations reservations;
     private final PrintSettings printSettings;
     private final java.time.Clock clock;
+    private final PdfRenderer pdfRenderer;
 
-    ClientDocs(JdbcClient jdbc, AuditLog audit, StockReservations reservations, PrintSettings printSettings, java.time.Clock clock) {
+    ClientDocs(JdbcClient jdbc, AuditLog audit, StockReservations reservations, PrintSettings printSettings, java.time.Clock clock,
+            PdfRenderer pdfRenderer) {
+        this.pdfRenderer = pdfRenderer;
         this.jdbc = jdbc;
         this.audit = audit;
         this.reservations = reservations;
@@ -378,7 +382,11 @@ class ClientDocs {
     // ===== Fayllar =====
 
     String fileName(Doc d, Kind kind) {
-        return safe(d.contractNumber()) + "-" + kind.file + ".xlsx";
+        return fileName(d, kind, "xlsx");
+    }
+
+    String fileName(Doc d, Kind kind, String ext) {
+        return safe(d.contractNumber()) + "-" + kind.file + "." + ext;
     }
 
     String zipName(Doc d) {
@@ -413,11 +421,133 @@ class ClientDocs {
                 zip.write(xlsx(d, k));
                 zip.closeEntry();
             }
+            for (Kind k : Kind.values()) {
+                zip.putNextEntry(new ZipEntry(fileName(d, k, "pdf")));
+                zip.write(pdf(d, k));
+                zip.closeEntry();
+            }
             zip.finish();
             return out.toByteArray();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    // ===== Matnlar (Excel va PDF uchun bir xil) =====
+
+    private static String invoiceTitle(Doc d) {
+        return "HISOB VARAQ FAKTURA № " + nz(d.contractNumber());
+    }
+
+    private static String invoiceDate(Doc d) {
+        return "Sana " + date(d.docDate(), d.docDate().getYear());
+    }
+
+    private static String invoiceBasis(Doc d) {
+        return "№ " + nz(d.contractNumber()) + " sonli shartnomaga asosan  " + date(d.contractDate(), d.docDate().getYear());
+    }
+
+    private static String specDate(Doc d) {
+        LocalDate c = d.contractDate();
+        int year = c != null ? c.getYear() : d.docDate().getYear();
+        return c == null ? year + " yil «____» ______________ dagi" : year + " yil «" + two(c.getDayOfMonth()) + "» " + MONTHS[c.getMonthValue() - 1]
+                + " dagi";
+    }
+
+    private static String offerRequisites(Party s) {
+        return nz(s.address()) + ", H/R " + nz(s.account()) + ", STIR " + nz(s.tin()) + ", МФО " + nz(s.mfo());
+    }
+
+    private static String offerNumber(Doc d) {
+        return "№ " + nz(d.contractNumber()) + " " + date(d.docDate(), d.docDate().getYear());
+    }
+
+    private static String offerIntro(Party s) {
+        return nz(s.name()) + " sizga o'z omboridan xorijda va respublika farmsanoatida ishlab chiqarilgan quyidagi sifatli dori-darmonlarni "
+                + "taklif qiladi";
+    }
+
+    private static String vatText(ClientDocMath.Line c) {
+        return c.vatFree() ? "QQSsiz" : c.vatRate().stripTrailingZeros().toPlainString() + "%";
+    }
+
+    /** Namunadagidek: «1 629 000,00» (minglar bo'sh joy bilan, vergul). */
+    static String num(BigDecimal v) {
+        if (v == null) {
+            return "";
+        }
+        String plain = v.setScale(2, RoundingMode.HALF_UP).abs().toPlainString();
+        String intPart = plain.substring(0, plain.indexOf('.'));
+        StringBuilder sb = new StringBuilder();
+        int lead = intPart.length() % 3;
+        for (int i = 0; i < intPart.length(); i++) {
+            if (i > 0 && (i - lead) % 3 == 0) {
+                sb.append(' ');
+            }
+            sb.append(intPart.charAt(i));
+        }
+        return (v.signum() < 0 ? "-" : "") + sb + "," + plain.substring(plain.indexOf('.') + 1);
+    }
+
+    byte[] pdf(Doc d, Kind kind) {
+        Map<String, Object> v = new HashMap<>();
+        Party s = d.seller();
+        Party b = d.buyer();
+        v.put("kind", kind.name());
+        v.put("seller", Map.of("name", nz(s.name()), "bank", nz(s.bank())));
+        v.put("director", nz(d.director()));
+        v.put("accountant", nz(d.accountant()));
+        v.put("offerRequisites", offerRequisites(s));
+        v.put("offerNumber", offerNumber(d));
+        v.put("offerIntro", offerIntro(s));
+        if (kind == Kind.SPECIFICATION) {
+            v.put("title", "S P E T S I F I K A T S I Y A");
+            v.put("subtitles", List.of(specDate(d), nz(d.contractNumber()) + " sonli shartnomaga", "1- sonli ilova"));
+        } else {
+            v.put("title", kind == Kind.OFFER ? "TIJORAT TAKLIFI" : invoiceTitle(d));
+            v.put("subtitles", List.of(invoiceDate(d), invoiceBasis(d)));
+        }
+        String[][] req = {
+            {"Nomi:", s.name(), "Nomi:", b.name()},
+            {"Manzil:", s.address(), "Manzil:", b.address()},
+            {"Telefon:", s.phone(), "Telefon:", b.phone()},
+            {"H/R:", s.account(), "H/R:", b.account()},
+            {"MFO:", s.mfo(), "MFO:", b.mfo()},
+            {"IFUT:", s.ifut(), "STIR:", b.tin()},
+            {"Bank:", s.bank(), "G'azna H/R:", b.treasuryAccount()},
+            {"STIR:", s.tin(), "Bank:", b.bank()},
+            {"", "", "STIR:", b.treasuryTin()},
+        };
+        List<List<String>> requisites = new ArrayList<>();
+        for (String[] r : req) {
+            requisites.add(java.util.Arrays.stream(r).map(ClientDocs::nz).toList());
+        }
+        v.put("requisites", requisites);
+        List<Map<String, Object>> lines = new ArrayList<>();
+        for (DocLine l : d.lines()) {
+            ClientDocMath.Line c = l.calc();
+            Map<String, Object> m = new HashMap<>();
+            m.put("no", l.no());
+            m.put("name", nz(l.name()));
+            m.put("unit", nz(l.unit()));
+            m.put("ikpu", nz(l.ikpu()));
+            m.put("qty", num(BigDecimal.valueOf(c.qty())));
+            m.put("base", num(c.base()));
+            m.put("markup", num(c.markup()));
+            m.put("sell", num(c.sell()));
+            m.put("net", num(c.net()));
+            m.put("vatRate", vatText(c));
+            m.put("vat", num(c.vat()));
+            m.put("gross", num(c.gross()));
+            m.put("offer", num(c.offerPrice()));
+            lines.add(m);
+        }
+        v.put("lines", lines);
+        v.put("net", num(d.totals().net()));
+        v.put("vat", num(d.totals().vat()));
+        v.put("gross", num(d.totals().gross()));
+        v.put("words", "JAMI: " + d.words());
+        return pdfRenderer.render("client-doc", v);
     }
 
     /** Shablondagi qator raqamlari (0 dan): tovar qatori va undan keyingi qatorlar {@code n − 1} ga suriladi. */
@@ -426,9 +556,9 @@ class ClientDocs {
     static final int SPEC_ITEM_ROW = 19;
 
     private static void invoice(XSSFWorkbook wb, XSSFSheet sh, Doc d) {
-        text(sh, 0, 0, "HISOB VARAQ FAKTURA № " + nz(d.contractNumber()));
-        text(sh, 1, 0, "Sana " + date(d.docDate(), d.docDate().getYear()));
-        text(sh, 2, 0, "№ " + nz(d.contractNumber()) + " sonli shartnomaga asosan  " + date(d.contractDate(), d.docDate().getYear()));
+        text(sh, 0, 0, invoiceTitle(d));
+        text(sh, 1, 0, invoiceDate(d));
+        text(sh, 2, 0, invoiceBasis(d));
         parties(sh, d);
         int shift = items(wb, sh, INVOICE_ITEM_ROW, d, true);
         int total = INVOICE_ITEM_ROW + 1 + shift;
@@ -439,10 +569,7 @@ class ClientDocs {
     }
 
     private static void specification(XSSFWorkbook wb, XSSFSheet sh, Doc d) {
-        LocalDate c = d.contractDate();
-        int year = c != null ? c.getYear() : d.docDate().getYear();
-        text(sh, 1, 0, c == null ? year + " yil «____» ______________ dagi" : year + " yil «" + two(c.getDayOfMonth()) + "» "
-                + MONTHS[c.getMonthValue() - 1] + " dagi");
+        text(sh, 1, 0, specDate(d));
         text(sh, 2, 8, nz(d.contractNumber()) + " sonli shartnomaga");
         parties(sh, d);
         int shift = items(wb, sh, SPEC_ITEM_ROW, d, false);
@@ -454,11 +581,10 @@ class ClientDocs {
     private static void offer(XSSFWorkbook wb, XSSFSheet sh, Doc d) {
         Party s = d.seller();
         text(sh, 4, 1, nz(s.name()));
-        text(sh, 5, 1, nz(s.address()) + ", H/R " + nz(s.account()) + ", STIR " + nz(s.tin()) + ", МФО " + nz(s.mfo()));
+        text(sh, 5, 1, offerRequisites(s));
         text(sh, 6, 1, nz(s.bank()));
-        text(sh, 7, 1, "№ " + nz(d.contractNumber()) + " " + date(d.docDate(), d.docDate().getYear()));
-        text(sh, 11, 1, nz(s.name()) + " sizga o'z omboridan xorijda va respublika farmsanoatida ishlab chiqarilgan quyidagi sifatli "
-                + "dori-darmonlarni taklif qiladi");
+        text(sh, 7, 1, offerNumber(d));
+        text(sh, 11, 1, offerIntro(s));
         int n = d.lines().size();
         int shift = expand(sh, OFFER_ITEM_ROW, n);
         CellStyle money = format(wb, sh, OFFER_ITEM_ROW, 5);
@@ -511,7 +637,7 @@ class ClientDocs {
             money(sh, r, 6, c.markup(), money.get(6));
             money(sh, r, 7, c.sell(), money.get(7));
             money(sh, r, 8, c.net(), money.get(8));
-            text(sh, r, 9, c.vatFree() ? "QQSsiz" : c.vatRate().stripTrailingZeros().toPlainString() + "%");
+            text(sh, r, 9, vatText(c));
             money(sh, r, 10, c.vat(), money.get(10));
             money(sh, r, 11, c.gross(), money.get(11));
             if (ikpu) {
