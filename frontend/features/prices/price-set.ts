@@ -198,3 +198,21 @@ export function importIssues(issues: readonly { row: number; reason: string }[])
     rows: issues.length > 5 ? `${rows.join(", ")}…` : rows.join(", "),
   };
 }
+
+/**
+ * Kirim boʻyicha ustama (egasi 26.11.2026, FT6 bilan bir xil — backend `PriceMath.markupNetRounded`): kirim narxi (QQS bilan)
+ * → QQSsiz (tiyingacha) → × (1 + %) → soʻmgacha HALF_UP → QQS qaytariladi (tiyingacha). Namuna: 2 644,32 (2 361 + 12%), 15% → 3 040,80
+ * (QQSsiz 2 715). Shunda mijoz hujjatlarida «Ust.%» aniq foiz chiqadi.
+ */
+export function markupNetRounded(baseWithVatCents: bigint, pctHundredths: bigint, vatRate: string | null | undefined): bigint {
+  const r = (vatRate ? toCents(vatRate) : 0n) ?? 0n; // 12% → 1200n
+  const net = divHalfUp(baseWithVatCents * 10000n, 10000n + r);
+  const netSell = divHalfUp(net * (10000n + pctHundredths), 10000n * 100n) * 100n;
+  return divHalfUp(netSell * (10000n + r), 10000n);
+}
+
+/** Haqiqiy ustama (QQSsiz narxlar boʻyicha), %: (sotish ÷ kirim − 1) × 100. */
+export function netMarkupPct(sellWithVatCents: bigint, baseWithVatCents: bigint): number | null {
+  if (baseWithVatCents <= 0n) return null;
+  return pctDiff(sellWithVatCents, baseWithVatCents);
+}

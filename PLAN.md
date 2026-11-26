@@ -402,6 +402,7 @@ Bu javoblar SPEC/T12 dan ustun. Har birini kod + test + e2e bilan joriy qiling, 
 - [ ] (Ixtiyoriy) Bulut muhiti tarmoq sozlamasida Maven Central (`repo.maven.apache.org`), `services.gradle.org` va Docker Hub'ga ruxsat — shunda backend sessiya ichida ham tekshiriladi, CI kutish shart bo'lmaydi.
 
 ## Egasiga savollar
+- ❗ (26.11 13:40) Oyna oxirida 100+ rejalashtirilgan vazifalarini oʻchirish sessiyadan rad etildi (avtomatik ruxsat tekshiruvi). Qoʻlda oʻchiring: «100+ zaxira :00 (14–18)», «100+ zaxira :30 (14–18)», «100+ zanjir (davom)».
 - ❓ (25.11) Mijozdan soʻrash: (1) «Oylik» (V2-M7) — xodimlar oyligini hisoblashmi yoki oylik reja/hisobotmi? (2) CRM dagi «5 ta izoh» (V2-M5) — qoʻngʻiroq natijalarining tayyor variantlarimi?
 - ❓ (25.11) V2-M1…M6 qaysi versiyada va qachon bajariladi — egasi bilan kelishiladi.
 - **S1 6-qism (23.11) — zaxira va repo private:** GitHub Free da private repo uchun Actions xotirasi 500 MB va 2 000 daqiqa/oy. 2 yillik bazaning nusxasi ~1 GB (14 kun × kunlik → ~14 GB), toʻliq CI ≈ 21 daqiqa (kuniga 20–60 marta) → private qilinsa bepul daqiqalar 2–5 kunda tugaydi. Tanlang: (a) repo public qoladi, zaxira — Railway Postgres «Backups» + (ixtiyoriy) S3/R2 (pullik); (b) private + pullik Actions; (c) private + CI faqat PR/oyna oxirida. Qoʻshimcha: `notification` jadvali tozalanmaydi (~0,5–1 mln/yil, tezlikka taʼsiri yoʻq) — «oʻqilgan va 180 kundan eski» bildirishnomalarni avtomatik oʻchiraylikmi? Railway Postgres'da `log_min_duration_statement = 1000` ni yoqish tavsiya qilinadi.
@@ -793,3 +794,4 @@ _(07.11.2026 18:12 — 6 savolga javob berildi va 20:00–20:30 da joriy qilindi
 - 26.11 11:55 — egasi FT6 ni (ustama % bilan) tasdiqladi; bugun 14:00 oyna 12:00 da boshlanadi (12:00–18:00, faqat 26.11, egasi qarori). Oyna oxirida hisobot, 6a, soʻng BARCHA 100+ oynalari yana oʻchiriladi.
 - 26.11 12:00–13:00 (bir martalik oyna, 1-sessiya): FT6 ✅ — backend (V119, ClientDocs/ClientDocMath, xlsx shablon, PDF, zip), frontend (Mijoz hujjatlari oynasi, gʻazna rekvizitlari, IFUT, ustama soʻmgacha), testlar (IT namuna bilan katakma-katak, unit, vitest, e2e). CI: backend + frontend yashil.
 - 26.11 13:25 — oyna erta yopildi (FT6 tugadi, boshqa tasdiqlangan vazifa yoʻq): hisobot, 6a (develop → main), barcha 100+ oynalari oʻchiriladi.
+- 26.11 17:40 (egasi bilan): «Narx oʻrnatish» → «Kirim boʻyicha» endi shu sahifaning oʻzida (kirim tanlash, partiyalar, kirim narxi, ustama % — QQSsiz soʻmgacha, FT6 bilan bir xil), NO hujjati kirimga bogʻlanadi; oldin «Narxlar» sahifasiga oʻtib ketardi (egasi: chalkash).
