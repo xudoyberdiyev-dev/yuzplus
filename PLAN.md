@@ -2,6 +2,8 @@
 
 Manba: `docs/SPEC.md` 16-bo'lim. Har bosqich: kichik vazifalar → kod → testlar → CI yashil → hisobot. Bosqich tugasa — `develop → main` PR.
 
+> **⚠️ EGASI (27.11.2026 14:00): V1 HALI TUGAMAGAN** — egasi yana qoʻshimcha va oʻzgartirishlar beradi. V1 yopilmaydi, V2 (SA, V2-M…) egasi aniq «V2 ni boshla» demaguncha boshlanmaydi.
+
 ## 🔴 BG1 — EGASI JISMONIY SINOVI XATOLARI (26.11.2026 23:30) — EGASI TASDIQLADI, NAVBATDAGI OYNADA BIRINCHI
 Manba: `docs/notes/bg1/` (egasi xati, rasmlar). Egasi: «eng nozik joylar — faktura va narxlar». Tartib: N1 → N2 → F1 → F2 → Q1 → X1 → B1 → B2 → B3. Har band — test bilan.
 - [x] **N1 Yangi narx turi «Narx oʻrnatish»da chiqmaydi** — sabab: `price-set-page.tsx` `typeOptions = types.filter(!x.batch)` — «partiya boʻyicha» narx turlari yashiringan, «Kirim boʻyicha» rejimida ham (26.11 dagi oʻzgarish shu roʻyxatni ishlatadi). Tuzatish: «Mahsulot boʻyicha» — oddiy turlar; «Kirim boʻyicha» — barcha faol turlar (partiyaviylar birinchi); mahsulot rejimida partiyaviy tur tanlansa — «bu tur partiya boʻyicha → Kirim boʻyicha» yoʻl-yoʻriq. Faol emas turlar — ogohlantirish bilan. E2E: yangi tur yaratish → Narx oʻrnatishda koʻrinadi.
