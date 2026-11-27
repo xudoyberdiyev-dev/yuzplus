@@ -475,10 +475,12 @@ class PriceChangeIT {
     @Autowired
     PriceBook priceBook;
 
-    private long receiptLine(long receipt, int no, long product, long zone) {
+    private long receiptLine(long receipt, int no, long product, long zone, int received) {
         return jdbc.sql("""
-                INSERT INTO receipt_line (receipt_id, line_no, product_id, batch_number, expiry_date, zone_id, qty, price)
-                VALUES (:r, :no, :p, :bn, DATE '2030-01-31', :z, 10, 1000) RETURNING id""")
+                INSERT INTO receipt_line (receipt_id, line_no, product_id, batch_number, expiry_date, zone_id, qty, price, received_qty,
+                                          damaged_qty)
+                VALUES (:r, :no, :p, :bn, DATE '2030-01-31', :z, :q, 1000, :q, 0) RETURNING id""")
+                .param("q", received)
                 .param("r", receipt)
                 .param("no", no)
                 .param("p", product)
@@ -522,9 +524,9 @@ class PriceChangeIT {
         // 65 qatorli kirimdan faqat 1 ta partiya chiqqan edi).
         long rc = receipt(branch, w.id(), "DRAFT");
         long draftRc = receipt(branch, w.id(), "DRAFT");
-        long l1 = receiptLine(rc, 1, p, main);
-        long l2 = receiptLine(rc, 2, p, main);
-        long l3 = receiptLine(draftRc, 1, other, main);
+        long l1 = receiptLine(rc, 1, p, main, 3);
+        long l2 = receiptLine(rc, 2, p, main, 7);
+        long l3 = receiptLine(draftRc, 1, other, main, 1);
         jdbc.sql("UPDATE receipt SET status = 'POSTED', accepted_at = now(), posted_at = now(), debt_amount = 0 WHERE id = :r")
                 .param("r", rc)
                 .update();

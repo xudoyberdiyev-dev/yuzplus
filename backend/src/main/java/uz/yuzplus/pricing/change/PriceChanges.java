@@ -692,9 +692,14 @@ class PriceChanges {
                 BigDecimal cost) {}
         List<Row> rows = jdbc.sql("""
                 SELECT b.id AS batch_id, b.product_id, p.code, p.name, b.number AS batch_number, b.expiry_date, b.bonus,
-                       coalesce((SELECT sum(m.qty) FROM stock_move m WHERE m.batch_id = b.id AND m.doc_type = 'KR' AND m.qty > 0), 0) AS qty,
+                       -- Soni — kirim qatoridan (stock_move dagi KR harakatlari qabul → joylash ichki koʻchirishini ham oʻz ichiga
+                       -- oladi, yigʻindisi ikki barobar chiqardi — egasi 27.11)
+                       CASE WHEN b.id = l.bonus_batch_id THEN l.bonus_qty
+                            ELSE coalesce(l.received_qty, 0) + coalesce(l.damaged_qty, 0)
+                                 + CASE WHEN r.from_bonus THEN l.bonus_qty ELSE 0 END END AS qty,
                        b.cost
                 FROM batch b JOIN product p ON p.id = b.product_id JOIN receipt_line l ON l.id = b.source_id
+                JOIN receipt r ON r.id = l.receipt_id
                 WHERE b.source_type = 'KR' AND l.receipt_id = :r ORDER BY l.line_no, b.bonus, b.id""")
                 .param("r", receiptId)
                 .query(Row.class)
