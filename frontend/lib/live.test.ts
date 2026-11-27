@@ -157,7 +157,8 @@ describe("livePollMs (TZ3)", () => {
     const all = Object.values(LIVE_INVALIDATES)
       .flat()
       .map((k) => k.join("/"));
-    for (const k of ["marking/queue", "orders/returns", "nav-badges", "trips/cash"]) expect(all).toContain(k);
+    for (const k of ["marking/queue", "orders/returns", "nav-badges", "trips/cash", "orders/issues", "trips/money/open"])
+      expect(all).toContain(k);
   });
 });
 

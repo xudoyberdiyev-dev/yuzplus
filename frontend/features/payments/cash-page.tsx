@@ -55,7 +55,7 @@ export function CashPage() {
     queryKey: ["trips", "money", "open", branchId],
     queryFn: () => unwrap(api.GET("/api/trips/cash/extras", { params: { query: { branchId: branchId ?? undefined } } })),
     enabled: canAccept && (branchId != null || overall),
-    refetchInterval: 30_000,
+    refetchInterval: cashPoll,
   });
   const supervisor = can(me.data, CASH_APPROVE);
   const canAssign = supervisor || can(me.data, "settings.view");

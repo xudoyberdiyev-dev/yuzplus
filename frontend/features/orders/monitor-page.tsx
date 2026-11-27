@@ -49,7 +49,7 @@ import { KkHomeCard } from "@/features/expected-receipts/kk-home-card";
 import { IssuesList } from "./issues";
 import { ReturnsList } from "./returns";
 import { OrderDrawer } from "./order-drawer";
-import { useLiveConnected } from "@/lib/live";
+import { useLiveConnected, useLivePoll } from "@/lib/live";
 
 export type MonitorCard = components["schemas"]["MonitorCard"];
 
@@ -151,11 +151,12 @@ export function MonitorPage() {
   const phone = useMediaQuery("(max-width: 767px)");
   const branches = useBranches();
   const branchName = branches.data?.find((b) => b.id === (branchId ?? me.data?.branchId))?.name;
+  const issuesPoll = useLivePoll(15_000);
   const openIssues = useQuery({
     queryKey: ["orders", "issues", branchId ?? "all"],
     queryFn: () => unwrap(api.GET("/api/orders/issues", { params: { query: { open: true, branchId: branchId ?? undefined } } })),
     enabled: allowed,
-    refetchInterval: 15_000,
+    refetchInterval: issuesPoll,
   });
   const [receipt, setReceipt] = useState<number | null>(null);
   const router = useRouter();
