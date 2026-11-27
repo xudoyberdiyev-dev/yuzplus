@@ -35,7 +35,7 @@ Egasi: «kodni umuman koʻrmagan agent» loyihani xolis tekshirsin (arxitektura 
 - [ ] HQ5 Railway: `YUZPLUS_API_DOCS=false`; zaxira (repo private / Railway PITR) qarori.
 - ⚠️ 27.11 13:40: Railway hisobi (25.11, 30,93 $) toʻlanmagan — kartada mablagʻ yetmagan; egasi toʻlaydi. TZ2 (frontend → Railway) toʻlovdan keyin.
 
-## ⏸ SA — SUPER ADMIN PANELI (dizayn 27.11.2026: `design/superadmin/`, ~250 freym, 16 ekran + planshet) — TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
+## ⏸ SA — SUPER ADMIN PANELI — **V2 DA** (egasi 27.11 14:00) (dizayn 27.11.2026: `design/superadmin/`, ~250 freym, 16 ekran + planshet) — TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
 Biznes qoidalari: `design/superadmin/Qoidalar.dc.html` (tariflar Start/Biznes/Korporativ, 14 kun → avto-toʻxtatish, sinov 14–30 kun, 4 rol, 2FA, SLA, audit 3 yil).
 - [ ] SA0 Koʻp kompaniyali poydevor (eng katta xavf): hozir `company` — bitta qator (`company_single_row`), filial → company. Barcha filialsiz jadvallar (katalog, mijoz, taʼminotchi, narx turlari, sozlamalar…) ga `company_id`, server filtri, hujjat raqamlari kompaniya boʻyicha, izolyatsiya testlari; mavjud maʼlumot → 1-kompaniya.
 - [ ] SA1 Platforma xodimlari: alohida login, 4 rol (Egasi/Qoʻllab-quvvatlash/Sotuv/Buxgalter), TOTP 2FA + zaxira kodlar, bloklash, parol tiklash.
