@@ -475,6 +475,19 @@ class PriceChangeIT {
     @Autowired
     PriceBook priceBook;
 
+    private long receiptLine(long receipt, int no, long product, long zone) {
+        return jdbc.sql("""
+                INSERT INTO receipt_line (receipt_id, line_no, product_id, batch_number, expiry_date, zone_id, qty, price)
+                VALUES (:r, :no, :p, :bn, DATE '2030-01-31', :z, 10, 1000) RETURNING id""")
+                .param("r", receipt)
+                .param("no", no)
+                .param("p", product)
+                .param("bn", "KB-" + no)
+                .param("z", zone)
+                .query(Long.class)
+                .single();
+    }
+
     private long receipt(long branch, long warehouse, String status) {
         long supplier = jdbc.sql("INSERT INTO counterparty (tin, name, is_supplier) VALUES (:t, :n, true) RETURNING id")
                 .param("t", String.valueOf(700_000_000L + ThreadLocalRandom.current().nextLong(99_999_999L)))
@@ -505,13 +518,21 @@ class PriceChangeIT {
         long base = type("BASE");
         var w = tx.execute(st -> warehouses.create(branch, "KB ombor " + branch, null, java.util.Set.of()));
         long main = w.zones().stream().filter(z -> z.type() == uz.yuzplus.inventory.ZoneType.MAIN).findFirst().orElseThrow().id();
-        long rc = receipt(branch, w.id(), "POSTED");
+        // Partiya manbai — kirim QATORI (batch.source_id = receipt_line.id, Receipts.accept kabi), kirimning oʻzi emas (egasi 27.11:
+        // 65 qatorli kirimdan faqat 1 ta partiya chiqqan edi).
+        long rc = receipt(branch, w.id(), "DRAFT");
         long draftRc = receipt(branch, w.id(), "DRAFT");
+        long l1 = receiptLine(rc, 1, p, main);
+        long l2 = receiptLine(rc, 2, p, main);
+        long l3 = receiptLine(draftRc, 1, other, main);
+        jdbc.sql("UPDATE receipt SET status = 'POSTED', accepted_at = now(), posted_at = now(), debt_amount = 0 WHERE id = :r")
+                .param("r", rc)
+                .update();
         long[] b = new long[3];
         tx.executeWithoutResult(st -> {
-            b[0] = ledger.createBatch(p, "KB-1", null, LocalDate.of(2028, 1, 31), uz.yuzplus.shared.money.Money.of("1000"), false, "KR", rc);
-            b[1] = ledger.createBatch(p, "KB-2", null, LocalDate.of(2029, 1, 31), uz.yuzplus.shared.money.Money.of("1000"), false, "KR", rc);
-            b[2] = ledger.createBatch(other, "KB-3", null, LocalDate.of(2029, 1, 31), uz.yuzplus.shared.money.Money.of("500"), false, "KR", draftRc);
+            b[0] = ledger.createBatch(p, "KB-1", null, LocalDate.of(2028, 1, 31), uz.yuzplus.shared.money.Money.of("1000"), false, "KR", l1);
+            b[1] = ledger.createBatch(p, "KB-2", null, LocalDate.of(2029, 1, 31), uz.yuzplus.shared.money.Money.of("1000"), false, "KR", l2);
+            b[2] = ledger.createBatch(other, "KB-3", null, LocalDate.of(2029, 1, 31), uz.yuzplus.shared.money.Money.of("500"), false, "KR", l3);
             ledger.post(new uz.yuzplus.inventory.StockLedger.DocRef("KR", rc, "KR-TST-" + rc),
                     java.util.List.of(uz.yuzplus.inventory.StockLedger.Move.in(main, b[0], 3), uz.yuzplus.inventory.StockLedger.Move.in(main, b[1], 7)));
         });
