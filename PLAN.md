@@ -27,6 +27,14 @@ Egasi: «kodni umuman koʻrmagan agent» loyihani xolis tekshirsin (arxitektura 
 - [x] TZ4 Har tugmada darhol javob: yuklanish holati, ikki marta bosishdan himoya (barcha mutatsiya tugmalari). — **27.11 02:10:** `Button loading` (aria-busy + bosish bloklanadi) va Modal `primaryAction.loading` deyarli hamma joyda bor edi (skript bilan tekshirildi: mutatsiya chaqiradigan `Button`/modal tugmalari); yagona teshik — parol sahifasidagi «Chiqish» — tuzatildi.
 - [ ] TZ5 Ogʻir sahifalarda soʻrovlar sonini kamaytirish (birlashtirilgan endpoint/kesh). — **27.11:** koʻr-koʻrona emas, TZ1 oʻlchovlari boʻyicha: production’da 1–2 kun `slow-client`/`slow-request`/`SQL_SLOW` loglari yigʻilgach eng sekin 5 ta sahifa/endpoint tanlanadi (QueryClient: staleTime 30 s — joyida).
 
+## ⏸ HQ — HISOB-KITOB AUDITI VA MUDDAT TAKLIFLARI (27.11.2026) — TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
+- [ ] HQ1 🔴 Yalpi foyda kam koʻrsatilmoqda: `SalesReport`/`ProductSalesReport` da tushum QQSsiz, tannarx esa QQS bilan ayriladi (noyabr: 5.703,57 koʻrsatilyapti, toʻgʻrisi ≈ 13.375). Taklif: QQS toʻlovchi filialda tannarx ham QQSsiz.
+- [ ] HQ2 🟠 Shikastlangan tovar ta’minotchi qarziga kiryapti (KR-TSH-000005, 1.150.000). Savol: qarzdan ayirilsinmi (yoki da’vo/qaytarish hujjati)?
+- [ ] HQ3 🟠 Yaroqlilik muddati: kirimda muddat N kundan kam boʻlsa ogohlantirish (taklif 90 kun) + «Muddat nazorati» dan tez tuzatish tugmasi (partiya tahririga).
+- [ ] HQ4 (jarayon) Haydovchi Bekzod Nodirov 14.11 dan BY-TSH-000007 boʻyicha 47.580 naqdni topshirmagan — V2-M4 bilan bogʻliq; dasturiy xato emas.
+- [ ] HQ5 Railway: `YUZPLUS_API_DOCS=false`; zaxira (repo private / Railway PITR) qarori.
+- ⚠️ 27.11 13:40: Railway hisobi (25.11, 30,93 $) toʻlanmagan — kartada mablagʻ yetmagan; egasi toʻlaydi. TZ2 (frontend → Railway) toʻlovdan keyin.
+
 ## ⏸ V2 — MIJOZ TALABLARI (25.11.2026, egasi orqali) — TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
 Manba: `docs/notes/v2/mijoz-talablari-25-11.docx`. Egasi qarorlari: 25.11 23:50 soʻrovnoma. Egasi 25.11 23:56: M1–M6 tasdiq kutayotgan rejalarga qoʻshildi; **qaysi versiyada va qachon qilinishi keyin egasi bilan aniqlanadi**. M7 va M5 dagi «5 ta izoh» — mijozdan soʻraladi (javob kelguncha rejaga kiritilmaydi).
 - [ ] **V2-M1 Inventar (korxona mol-mulki)** — oddiy roʻyxat (egasi qarori): nomi, inventar raqami, toifa, qiymati, sotib olingan sana, joyi (filial/xona), mas'ul xodim, holati (ishlayapti/taʼmirda/hisobdan chiqarilgan); xodimga topshirish/qaytarish tarixi (jurnal), xodim ishdan ketsa — undagi buyumlar roʻyxati. Amortizatsiya yoʻq.
