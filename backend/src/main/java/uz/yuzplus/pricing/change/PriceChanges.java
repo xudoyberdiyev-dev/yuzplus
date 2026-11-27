@@ -645,7 +645,10 @@ class PriceChanges {
     /** Kirim partiyalari: partiya → mahsulot. */
     private Map<Long, Long> batchProducts(long receiptId) {
         Map<Long, Long> m = new HashMap<>();
-        jdbc.sql("SELECT id, product_id FROM batch WHERE source_type = 'KR' AND source_id = :r")
+        // Partiya manbai — kirim qatori (Receipts.accept: source_id = receipt_line.id)
+        jdbc.sql("""
+                SELECT b.id, b.product_id FROM batch b JOIN receipt_line l ON l.id = b.source_id
+                WHERE b.source_type = 'KR' AND l.receipt_id = :r""")
                 .param("r", receiptId)
                 .query((rs, n) -> m.put(rs.getLong("id"), rs.getLong("product_id")))
                 .list();
@@ -691,8 +694,8 @@ class PriceChanges {
                 SELECT b.id AS batch_id, b.product_id, p.code, p.name, b.number AS batch_number, b.expiry_date, b.bonus,
                        coalesce((SELECT sum(m.qty) FROM stock_move m WHERE m.batch_id = b.id AND m.doc_type = 'KR' AND m.qty > 0), 0) AS qty,
                        b.cost
-                FROM batch b JOIN product p ON p.id = b.product_id
-                WHERE b.source_type = 'KR' AND b.source_id = :r ORDER BY lower(p.name), b.expiry_date, b.id""")
+                FROM batch b JOIN product p ON p.id = b.product_id JOIN receipt_line l ON l.id = b.source_id
+                WHERE b.source_type = 'KR' AND l.receipt_id = :r ORDER BY l.line_no, b.bonus, b.id""")
                 .param("r", receiptId)
                 .query(Row.class)
                 .list();

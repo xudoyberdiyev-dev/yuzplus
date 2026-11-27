@@ -827,4 +827,4 @@ _(07.11.2026 18:12 — 6 savolga javob berildi va 20:00–20:30 da joriy qilindi
 - 27.11 02:50 — oyna yopildi (AU 06:00 da, TZ2/TZ5 — egasi/oʻlchov kutadi): hisobot, 6a.
 - 27.11 03:05 (zaxira): oyna 02:50 da yopilgan; ochiq ish yoʻq (AU — 06:00, TZ2 — egasi, TZ5 — oʻlchov, TZ3 qoldigʻi — backend, CI koʻrinmaydi: `gh` 403). Oʻzgarishsiz chiqildi.
 - 27.11 06:00–06:20: AU — subagent auditi (34 topilma, 🔴 I1 zaxira ishlamaydi: repo ochiq), 5 dalil tasdiqlandi; tuzatilmadi — egasi.
-- 27.11 06:25–06:55: TZ3 qoldigʻi — V123 (sales_order_issue → orders, trip_advance/trip_expense → trips signallari, PG16 da sinaldi), frontend polling zaxiraga; CI yashil. Oyna yopildi (ochiq avtonom ish yoʻq), 6a.
+- 27.11 06:25–06:55: TZ3 qoldigʻi — V123 (sales_order_issue → orders, trip_advance/trip_expense → trips signallari, PG16 da sinaldi), frontend polling zaxiraga; CI yashil. Oyna yopildi (ochiq avtonom ish yoʻq), 6a: PR #52 CI yashil → main ga merge qilindi.
