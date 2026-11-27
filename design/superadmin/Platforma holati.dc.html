@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+body{margin:0;background:#E2E8F0;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+button,input,textarea{font-family:inherit}
+:focus-visible{outline:2px solid #0D9488;outline-offset:2px}
+svg.lucide{display:block;flex:none}
+</style>
+</helmet>
+<div style="padding:64px;display:flex;flex-direction:column;gap:48px;width:max-content">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:24px;line-height:32px;font-weight:600">100+ · Super admin paneli — 8-bosqich: Platforma holati</div>
+<div style="font-size:14px;line-height:20px;color:#5B6B6A">Desktop 1440px · 25.11.2026, 16:40 holatiga · B, C, D2, I, J — 1024px ekran balandligi; qolganlari to‘liq sahifa</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;max-width:2944px;font-size:14px;line-height:20px"><sc-for list="{{ frames }}" as="f"><a href="#frame-{{ f.id }}">{{ f.id }} · {{ f.title }}</a></sc-for></div>
+</div>
+<div style="display:grid;grid-template-columns:1440px 1440px;gap:64px;align-items:start">
+<sc-for list="{{ frames }}" as="f" hint-placeholder-count="2">
+<div id="frame-{{ f.id }}" data-screen-label="{{ f.id }} {{ f.title }}" style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px"><span style="padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600">{{ f.id }}</span><span style="font-size:15px;line-height:22px;font-weight:600">{{ f.title }}</span><span style="font-size:14px;line-height:20px;color:#5B6B6A">{{ f.note }}</span></div>
+<div style="position:relative;width:1440px;height:{{ f.h }};display:flex;background:#F5F7F8;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<aside style="width:240px;flex:none;background:#123C3A;display:flex;flex-direction:column">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="font-size:15px;line-height:22px;font-weight:600;color:#FFFFFF">100+</span><span style="font-size:14px;line-height:20px;color:#A9C7C3">· Platforma</span></div>
+<nav style="flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:4px"><sc-for list="{{ f.nav }}" as="g"><div style="display:flex;flex-direction:column;gap:4px">
+<sc-if value="{{ g.hasTitle }}"><div style="padding:12px 12px 4px;font-size:12px;line-height:16px;color:#A9C7C3">{{ g.title }}</div></sc-if>
+<sc-for list="{{ g.items }}" as="it">
+<sc-if value="{{ it.active }}"><a href="#" style="position:relative;min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,0.08);color:#FFFFFF;font-size:14px;line-height:20px;text-decoration:none"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2DD4BF"></span><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span></a></sc-if>
+<sc-if value="{{ it.idle }}"><a href="#" style="min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;color:#A9C7C3;font-size:14px;line-height:20px;text-decoration:none" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF;text-decoration:none"><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span><sc-if value="{{ it.hasBadge }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;background:#DDF5EE;color:#123C3A">{{ it.badge }}</span></sc-if></a></sc-if>
+</sc-for></div></sc-for></nav>
+<div style="padding:12px 8px;border-top:1px solid rgba(255,255,255,0.08)"><div style="display:flex;align-items:center;gap:12px;padding:8px 12px"><span style="width:32px;height:32px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span><div style="display:flex;flex-direction:column"><span style="font-size:14px;line-height:20px;color:#FFFFFF">{{ f.user.name }}</span><span style="display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#A9C7C3">{{ f.user.role }}<span style="display:flex;align-items:center;gap:4px"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>2FA yoqilgan</span></span></div></div></div>
+</aside>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="height:56px;flex:none;box-sizing:border-box;background:#FFFFFF;border-bottom:1px solid #E2E8F0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,400px) minmax(0,1fr);align-items:center;gap:24px;padding:0 24px">
+<div style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;white-space:nowrap"><a href="#" style="color:#5B6B6A">Platforma</a><span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span><a href="#" style="color:#5B6B6A">Tizim</a><span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span><span>Platforma holati</span></div>
+<label style="height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;font-size:14px;line-height:20px;padding:0 8px 0 12px"><span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span><span style="flex:1;color:#94A3A1;white-space:nowrap;overflow:hidden">Kompaniya, STIR yoki tiket raqami</span><span style="padding:0 4px;border:1px solid #E2E8F0;border-radius:6px;color:#5B6B6A;font-size:12px;line-height:16px">Ctrl K</span></label>
+<div style="justify-self:end;display:flex;align-items:center;gap:12px"><span style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>Platforma boshqaruvi</span><span style="position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#5B6B6A"><span style="display:flex"><i data-lucide="bell" width="16" height="16"></i></span><span style="position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;background:#FEF2F2;color:#B91C1C">3</span></span><span style="width:32px;height:32px;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span></div>
+</header>
+<main style="position:relative;padding:24px;display:flex;flex-direction:column;gap:20px;min-width:0">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap">
+<div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Platforma holati</h1>
+<div style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:#5B6B6A">
+<sc-if value="{{ f.updOk }}"><span>Oxirgi yangilanish <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:#172B2A">16:40:12</span> · har <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">30</span> soniyada</span></sc-if>
+<sc-if value="{{ f.updStale }}"><span style="display:flex;align-items:center;gap:4px;color:#B45309"><span style="display:flex"><i data-lucide="triangle-alert" width="16" height="16"></i></span>Oxirgi ma’lum holat <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">16:38:42</span> · yangilanmayapti</span></sc-if>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;white-space:nowrap"><span style="display:flex"><i data-lucide="refresh-cw" width="16" height="16"></i></span>Yangilash</button>
+</div></div>
+<div style="display:flex;align-items:center;gap:8px">
+<sc-if value="{{ f.annOn }}"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="megaphone" width="16" height="16"></i></span>Hodisa haqida e’lon</button></sc-if>
+<sc-if value="{{ f.priOn }}"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF" style-hover="background:#115E59"><span style="display:flex"><i data-lucide="database-backup" width="16" height="16"></i></span>Tiklash sinovini boshlash</button></sc-if>
+<sc-if value="{{ f.priDis }}"><button disabled="{{ true }}" style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;border:0;background:#E2E8F0;color:#5B6B6A;cursor:not-allowed"><span style="display:flex"><i data-lucide="loader" width="16" height="16"></i></span>Tiklash sinovi davom etmoqda</button></sc-if>
+</div></div>
+<sc-if value="{{ f.viewNote }}"><div style="display:flex;align-items:flex-start;gap:8px;padding:12px;border-radius:6px;background:#EFF6FF;font-size:13px;line-height:18px;color:#172B2A"><span style="display:flex;color:#1D4ED8"><i data-lucide="eye" width="16" height="16"></i></span><span>Siz bu sahifani faqat ko‘rasiz. Tiklash sinovini boshlash va hodisa haqida e’lon berish — Egasi rolida.</span></div></sc-if>
+<sc-if value="{{ f.content }}">
+<div style="display:flex;align-items:flex-start;gap:12px;padding:16px;border-radius:8px;background:{{ f.bn.bg }}">
+<span style="display:flex;color:{{ f.bn.fg }};padding-top:2px"><i data-lucide="{{ f.bn.icon }}" width="20" height="20"></i></span>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+<span style="font-size:15px;line-height:22px;font-weight:600;color:{{ f.bn.fg }}">{{ f.bn.title }}</span>
+<span style="font-size:13px;line-height:18px;color:#172B2A;text-wrap:pretty"><sc-for list="{{ f.bn.sub }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span>
+<sc-for list="{{ f.bn.items }}" as="b"><div style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;margin-top:4px"><span style="display:flex;color:{{ f.bn.fg }}"><i data-lucide="unplug" width="16" height="16"></i></span><span><span style="font-weight:600">{{ b.name }}</span> — {{ b.co }}, <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ b.since }}</span> dan beri</span><a href="#" style="font-weight:600">Ko‘rish</a></div></sc-for>
+</div>
+<sc-if value="{{ f.bnBtn }}"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="megaphone" width="16" height="16"></i></span>Hodisa haqida e’lon</button></sc-if>
+</div>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Xizmatlar</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">{{ f.svcMeta }}</span></div>
+<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13px;line-height:18px"><thead><tr>
+<th style="height:36px;padding:0 12px 0 16px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Xizmat</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:180px">Holat</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:200px">Javob vaqti (p95)</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:200px">Mavjudlik (30 kun)</th>
+<th style="height:36px;padding:0 16px 0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:200px">Oxirgi hodisa</th>
+</tr></thead><tbody>
+<sc-for list="{{ f.svc }}" as="r" hint-placeholder-count="6"><tr style="background:{{ r.bg }}">
+<td style="height:44px;padding:0 12px 0 16px;border-bottom:1px solid #E2E8F0;font-weight:600;white-space:nowrap">{{ r.name }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ r.st.bg }};color:{{ r.st.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ r.st.icon }}" width="16" height="16"></i></span>{{ r.st.text }}</span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.p95 }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.up }}</td>
+<td style="padding:0 16px 0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap;color:{{ r.lastFg }}">{{ r.last }}</td>
+</tr></sc-for></tbody></table>
+</section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Navbatlar</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">{{ f.qMeta }}</span></div>
+<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13px;line-height:18px"><thead><tr>
+<th style="height:36px;padding:0 12px 0 16px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Navbat</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:180px">Holat</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:110px">Navbatda</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:110px">Ishlanmoqda</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:110px">Xato</th>
+<th style="height:36px;padding:0 16px 0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:380px">Eng uzoq kutayotgan</th>
+</tr></thead><tbody>
+<sc-for list="{{ f.q }}" as="r" hint-placeholder-count="5"><tr>
+<td style="height:44px;padding:0 12px 0 16px;border-bottom:1px solid #E2E8F0;font-weight:600;white-space:nowrap">{{ r.name }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ r.st.bg }};color:{{ r.st.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ r.st.icon }}" width="16" height="16"></i></span>{{ r.st.text }}</span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.qd }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.pr }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-weight:600;color:{{ r.errFg }}">{{ r.er }}</td>
+<td style="padding:0 16px 0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap"><span style="display:flex;align-items:center;gap:8px"><span><sc-for list="{{ r.wait }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span><sc-if value="{{ r.hasCo }}"><span style="color:#94A3A1">·</span><a href="#" style="font-weight:600">{{ r.co }}</a></sc-if></span></td>
+</tr></sc-for></tbody></table>
+</section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Integratsiyalar</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">{{ f.inMeta }}</span></div>
+<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13px;line-height:18px"><thead><tr>
+<th style="height:36px;padding:0 12px 0 16px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:180px">Integratsiya</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:220px">Holat</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:170px">Ulangan kompaniyalar</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:230px">Muammoli kompaniyalar</th>
+<th style="height:36px;padding:0 16px 0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Izoh</th>
+</tr></thead><tbody>
+<sc-for list="{{ f.integ }}" as="r" hint-placeholder-count="8"><tr>
+<td style="height:44px;padding:0 12px 0 16px;border-bottom:1px solid #E2E8F0;font-weight:600;white-space:nowrap">{{ r.name }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ r.st.bg }};color:{{ r.st.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ r.st.icon }}" width="16" height="16"></i></span>{{ r.st.text }}</span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.conn }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap"><sc-if value="{{ r.hasBad }}"><a href="#" style="font-weight:600">{{ r.bad }}</a></sc-if><sc-if value="{{ r.noBad }}"><span style="color:#5B6B6A">—</span></sc-if></td>
+<td style="padding:8px 16px 8px 12px;border-bottom:1px solid #E2E8F0;color:#5B6B6A;text-wrap:pretty"><sc-for list="{{ r.note }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for><sc-if value="{{ r.hasLink }}"> · <a href="#" style="font-weight:600">{{ r.link }}</a></sc-if></td>
+</tr></sc-for></tbody></table>
+</section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Xatolar (24 soat)</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">{{ f.errMeta }}</span></div>
+<sc-if value="{{ f.errOn }}"><table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13px;line-height:18px"><thead><tr>
+<th style="height:36px;padding:0 12px 0 16px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Xato</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:170px">Xizmat</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:80px">Soni</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:230px">Ta’sirlangan kompaniyalar</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:110px">Birinchi marta</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:110px">Oxirgi marta</th>
+<th style="height:36px;width:40px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0"></th>
+</tr></thead><tbody>
+<sc-for list="{{ f.errs }}" as="r" hint-placeholder-count="5"><tr style="background:{{ r.bg }};cursor:pointer" style-hover="background:#F8FAFA">
+<td style="height:44px;padding:0 12px 0 16px;border-bottom:1px solid #E2E8F0;font-weight:600">{{ r.t }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap;color:#5B6B6A">{{ r.svc }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-weight:600">{{ r.n }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap"><sc-if value="{{ r.coLink }}"><a href="#" style="font-weight:600">{{ r.co }}</a></sc-if><sc-if value="{{ r.coText }}"><span><sc-for list="{{ r.coP }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></sc-if></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.first }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.last }}</td>
+<td style="padding:0 12px 0 0;border-bottom:1px solid #E2E8F0;color:#5B6B6A"><span style="display:flex;justify-content:flex-end"><i data-lucide="chevron-right" width="16" height="16"></i></span></td>
+</tr></sc-for></tbody></table></sc-if>
+<sc-if value="{{ f.errEmpty }}"><div style="border-top:1px solid #E2E8F0;padding:32px 24px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center"><span style="width:40px;height:40px;border-radius:8px;background:#F0FDF4;color:#15803D;display:flex;align-items:center;justify-content:center"><i data-lucide="circle-check" width="20" height="20"></i></span><span style="font-size:14px;line-height:20px;font-weight:600">Oxirgi 24 soatda xato qayd etilmadi</span><span style="font-size:13px;line-height:18px;color:#5B6B6A">Yangi xato paydo bo‘lsa, shu yerda guruhlangan holda ko‘rinadi.</span></div></sc-if>
+</section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Zaxira nusxalar va tiklash sinovi</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">Nusxa har kuni <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">03:00</span> da, <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">30</span> kun saqlanadi · tiklash sinovi oyiga <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">2</span> marta</span></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:0 16px 16px">
+<div style="border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:600"><span style="display:flex;color:#5B6B6A"><i data-lucide="hard-drive" width="16" height="16"></i></span>Zaxira nusxa</span><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:#F0FDF4;color:#15803D;font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="circle-check" width="16" height="16"></i></span>Muvaffaqiyatli</span></div>
+<div style="display:flex;flex-direction:column"><sc-for list="{{ bkRows }}" as="d"><div style="display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;padding:8px 0;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px"><span style="color:#5B6B6A">{{ d.k }}</span><span><sc-for list="{{ d.v }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></div></sc-for></div>
+</div>
+<div style="border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:600"><span style="display:flex;color:#5B6B6A"><i data-lucide="database-backup" width="16" height="16"></i></span>Tiklash sinovi</span><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ f.rcSt.bg }};color:{{ f.rcSt.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ f.rcSt.icon }}" width="16" height="16"></i></span>{{ f.rcSt.text }}</span></div>
+<sc-if value="{{ f.rcRun }}"><div style="display:flex;flex-direction:column;gap:8px">
+<div role="progressbar" aria-valuenow="18" aria-valuemin="0" aria-valuemax="55" aria-label="Tiklash sinovi" style="height:4px;border-radius:4px;background:#E2E8F0;overflow:hidden"><div style="width:33%;height:100%;border-radius:4px;background:#0D9488"></div></div>
+<span style="font-size:14px;line-height:20px;font-weight:600">Ma’lumotlar tiklanmoqda · <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">18 / 55</span> kompaniya tekshirildi</span>
+<span style="font-size:13px;line-height:18px;color:#5B6B6A">Boshlandi <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">16:25</span> · nusxa <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">25.11.2026, 03:00</span> · taxminan <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">17:10</span> gacha · sinov serverida</span>
+<sc-if value="{{ f.full }}"><button style="align-self:flex-start;height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;margin-left:-8px;border:0;border-radius:6px;background:transparent;color:#B91C1C;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;white-space:nowrap"><span style="display:flex"><i data-lucide="square" width="16" height="16"></i></span>Sinovni to‘xtatish</button></sc-if>
+</div></sc-if>
+<sc-if value="{{ f.rcFail }}"><div style="display:flex;align-items:flex-start;gap:8px;padding:12px;border-radius:6px;background:#FEF2F2;font-size:13px;line-height:18px;color:#172B2A"><span style="display:flex;color:#B91C1C"><i data-lucide="circle-x" width="16" height="16"></i></span><div style="display:flex;flex-direction:column;gap:8px;min-width:0;align-items:flex-start"><span><span style="font-weight:600;color:#B91C1C">Tiklash sinovi tugallanmadi: <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">3</span> ta kompaniya ma’lumotlari nusxa bilan mos kelmadi.</span> Texnik tafsilotlarni ko‘rib chiqing va sinovni qayta boshlang.</span>
+<div style="display:flex;flex-wrap:wrap;gap:4px 12px"><a href="#" style="font-weight:600">Ziyo Farm</a><a href="#" style="font-weight:600">Saxovat Oziq-ovqat</a><a href="#" style="font-weight:600">Poydevor Qurilish Mollari</a></div>
+<a href="#" style="display:flex;align-items:center;gap:4px;font-weight:600">Mos kelmagan kompaniyalar ro‘yxati<span style="display:flex"><i data-lucide="arrow-right" width="16" height="16"></i></span></a>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;margin-left:-8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer"><span style="display:flex"><i data-lucide="chevron-down" width="16" height="16"></i></span>Texnik tafsilotlar</button>
+</div></div></sc-if>
+<div style="display:flex;flex-direction:column"><sc-for list="{{ f.rcRows }}" as="d"><div style="display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;padding:8px 0;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px"><span style="color:#5B6B6A">{{ d.k }}</span><span><sc-for list="{{ d.v }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></div></sc-for></div>
+</div>
+</div>
+<div style="padding:4px 16px 8px;font-size:13px;line-height:18px;font-weight:600">Oxirgi 7 kun</div>
+<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13px;line-height:18px"><thead><tr>
+<th style="height:36px;padding:0 12px 0 16px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:190px">Sana</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:180px">Holat</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:120px">Hajmi</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;width:130px">Davomiyligi</th>
+<th style="height:36px;padding:0 16px 0 24px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Izoh</th>
+</tr></thead><tbody>
+<sc-for list="{{ bk7 }}" as="r" hint-placeholder-count="7"><tr>
+<td style="height:44px;padding:0 12px 0 16px;border-bottom:1px solid #E2E8F0;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.d }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ r.st.bg }};color:{{ r.st.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ r.st.icon }}" width="16" height="16"></i></span>{{ r.st.text }}</span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.size }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.dur }}</td>
+<td style="padding:8px 16px 8px 24px;border-bottom:1px solid #E2E8F0"><sc-if value="{{ r.hasNote }}"><span style="display:flex;align-items:center;gap:8px"><span style="display:flex;color:#15803D"><i data-lucide="rotate-cw" width="16" height="16"></i></span><span><sc-for list="{{ r.note }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></span></sc-if><sc-if value="{{ r.noNote }}"><span style="color:#5B6B6A">—</span></sc-if></td>
+</tr></sc-for></tbody></table>
+</section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Hodisalar tarixi</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">Oxirgi <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">30</span> kun · <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ f.histN }}</span> ta hodisa</span></div>
+<div style="display:flex;flex-direction:column"><sc-for list="{{ f.hist }}" as="x"><div style="display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 16px;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px">
+<span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ x.d }}</span>
+<div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:14px;line-height:20px;font-weight:600"><sc-for list="{{ x.t }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span><span style="color:#5B6B6A"><sc-for list="{{ x.s }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></div>
+<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ x.st.bg }};color:{{ x.st.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ x.st.icon }}" width="16" height="16"></i></span>{{ x.st.text }}</span>
+</div></sc-for></div>
+</section>
+</sc-if>
+<sc-if value="{{ f.loading }}">
+<div style="height:88px;border-radius:8px;background:#FFFFFF;border:1px solid #E2E8F0;display:flex;align-items:center;gap:12px;padding:0 16px;box-sizing:border-box"><span style="width:20px;height:20px;border-radius:6px;background:#E2E8F0"></span><div style="flex:1;display:flex;flex-direction:column;gap:8px"><span style="width:40%;height:14px;border-radius:6px;background:#E2E8F0"></span><span style="width:60%;height:12px;border-radius:6px;background:#F5F7F8"></span></div></div>
+<sc-for list="{{ sk3 }}" as="s"><section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden"><div style="height:54px;display:flex;align-items:center;padding:0 16px"><span style="width:160px;height:14px;border-radius:6px;background:#E2E8F0"></span></div><div style="height:36px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0"></div><sc-for list="{{ sk5 }}" as="r"><div style="display:grid;grid-template-columns:minmax(0,1fr) 140px 160px 160px 160px;gap:24px;align-items:center;height:44px;padding:0 16px;border-bottom:1px solid #E2E8F0"><span style="width:50%;height:12px;border-radius:6px;background:#E2E8F0"></span><span style="width:96px;height:24px;border-radius:6px;background:#F5F7F8"></span><span style="height:12px;border-radius:6px;background:#F5F7F8"></span><span style="height:12px;border-radius:6px;background:#F5F7F8"></span><span style="height:12px;border-radius:6px;background:#E2E8F0"></span></div></sc-for></section></sc-for>
+</sc-if>
+<sc-if value="{{ f.error }}"><section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:48px 24px;display:flex;justify-content:center"><div style="max-width:600px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:16px;border-radius:6px;background:#FEF2F2">
+<span style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:600;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>Monitoring ma’lumotlari olinmadi</span>
+<span style="font-size:13px;line-height:18px;text-wrap:pretty">Monitoring xizmati javob bermadi, shuning uchun holat <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">16:38:42</span> dan beri yangilanmayapti. Bir daqiqadan so‘ng qayta urinib ko‘ring; xato takrorlansa, texnik jamoaga xabar bering.</span>
+<span style="font-size:13px;line-height:18px;color:#5B6B6A">Oxirgi ma’lum holat (<span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">25.11.2026, 16:38:42</span>): 2 ta integratsiyada muammo · platforma xizmatlari ishlayapti.</span>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="rotate-cw" width="16" height="16"></i></span>Qayta urinish</button>
+</div></section></sc-if>
+</main></div>
+<sc-if value="{{ f.drawer }}"><div style="position:absolute;inset:0;z-index:30;background:rgba(18,60,58,0.4)"></div>
+<aside role="dialog" aria-modal="true" aria-labelledby="drT" style="position:absolute;top:0;right:0;bottom:0;width:560px;z-index:31;background:#FFFFFF;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:flex-start;gap:12px;padding:24px 24px 16px;border-bottom:1px solid #E2E8F0"><div style="flex:1;display:flex;flex-direction:column;gap:8px"><h2 id="drT" style="margin:0;font-size:18px;line-height:26px;font-weight:600">Asl belgisi tizimi ulanishni rad etmoqda</h2><div style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:#FEF2F2;color:#B91C1C;font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="circle-x" width="16" height="16"></i></span>Davom etmoqda</span>Markirovka · <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:#172B2A">37</span> marta</div></div><button title="Yopish (Esc)" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><span style="display:flex"><i data-lucide="x" width="16" height="16"></i></span></button></div>
+<div style="flex:1;min-height:0;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;line-height:18px;font-weight:600">Nima bo‘lyapti</span><p style="margin:0;font-size:14px;line-height:20px;text-wrap:pretty">Malham Farm Logistika markirovka kodlarini «Asl belgisi» tizimiga yubora olmayapti: tizim kompaniya ulanishini rad etmoqda. <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">37</span> ta hujjat navbatda saqlanib turibdi va ulanish tiklangach avtomatik yuboriladi.</p></div>
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;line-height:18px;font-weight:600">Nima qilish kerak</span><p style="margin:0;font-size:14px;line-height:20px;text-wrap:pretty">Kompaniyadan «Asl belgisi» kabinetidagi elektron kalit muddatini tekshirishni so‘rang. Kalit yangilangach, navbat o‘zi ishlay boshlaydi.</p></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Ta’sirlangan kompaniyalar · <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">1</span></span>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:16px;align-items:center;padding:8px 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:13px;line-height:18px"><a href="#" style="font-weight:600">Malham Farm Logistika</a><span style="color:#5B6B6A">STIR <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">301872643</span></span><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">37 marta</span></div></div>
+<div style="display:flex;flex-direction:column">
+<div style="display:grid;grid-template-columns:180px minmax(0,1fr);gap:16px;padding:8px 0;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px"><span style="color:#5B6B6A">Birinchi marta</span><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">25.11.2026, 13:40:05</span></div>
+<div style="display:grid;grid-template-columns:180px minmax(0,1fr);gap:16px;padding:8px 0;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px"><span style="color:#5B6B6A">Oxirgi marta</span><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">25.11.2026, 16:38:51</span></div>
+<div style="display:grid;grid-template-columns:180px minmax(0,1fr);gap:16px;padding:8px 0;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px"><span style="color:#5B6B6A">Navbatdagi hujjatlar</span><span><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">37</span> ta</span></div>
+</div>
+<div style="border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 8px 8px 12px;background:#F8FAFA"><button aria-expanded="true" style="height:32px;display:flex;align-items:center;gap:8px;padding:0;border:0;background:transparent;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer"><span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-up" width="16" height="16"></i></span>Texnik tafsilotlar</button><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="copy" width="16" height="16"></i></span>Nusxa olish</button></div>
+<div style="padding:12px;border-top:1px solid #E2E8F0;display:grid;grid-template-columns:120px minmax(0,1fr);gap:4px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:18px"><sc-for list="{{ tech }}" as="t"><span style="color:#5B6B6A">{{ t.k }}</span><span style="word-break:break-all">{{ t.v }}</span></sc-for></div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;white-space:nowrap"><span style="display:flex"><i data-lucide="building-2" width="16" height="16"></i></span>Kompaniya kartasini ochish</button><span style="flex:1"></span><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="life-buoy" width="16" height="16"></i></span>Murojaat yaratish</button></div>
+</aside></sc-if>
+<sc-if value="{{ f.mStart }}"><div style="position:absolute;inset:0;z-index:40;background:rgba(18,60,58,0.4);display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box"><div role="dialog" aria-modal="true" aria-labelledby="mS" style="width:480px;max-height:100%;background:#FFFFFF;border-radius:12px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:flex-start;gap:12px;padding:24px 24px 16px"><div style="flex:1;display:flex;flex-direction:column;gap:4px"><h2 id="mS" style="margin:0;font-size:18px;line-height:26px;font-weight:600">Tiklash sinovini boshlash</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">Alohida sinov serverida o‘tkaziladi</span></div><button title="Yopish (Esc)" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><span style="display:flex"><i data-lucide="x" width="16" height="16"></i></span></button></div>
+<div style="padding:0 24px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:20px"><span style="display:flex;color:#5B6B6A;padding-top:2px"><i data-lucide="database-backup" width="16" height="16"></i></span><span>Oxirgi nusxa (<span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">25.11.2026, 03:00</span>) sinov serveriga tiklanadi va tekshiriladi.</span></div>
+<div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:20px"><span style="display:flex;color:#5B6B6A;padding-top:2px"><i data-lucide="timer" width="16" height="16"></i></span><span>Davomiyligi — taxminan <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">40–50</span> daqiqa.</span></div>
+<div style="display:flex;align-items:flex-start;gap:12px;font-size:14px;line-height:20px"><span style="display:flex;color:#15803D;padding-top:2px"><i data-lucide="shield-check" width="16" height="16"></i></span><span>Kompaniyalar ishiga ta’sir qilmaydi.</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Zaxira nusxa</span><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;font-size:14px;line-height:20px"><span><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">25.11.2026, 03:00 · 18,4 GB</span> · oxirgi</span><span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></label><span style="font-size:12px;line-height:16px;color:#5B6B6A">Faqat muvaffaqiyatli nusxalar · <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">30</span> ta</span></div>
+<span style="font-size:13px;line-height:18px;color:#5B6B6A">Sinovning boshlanishi va natijasi audit jurnaliga yoziladi.</span>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A">Ortga</button><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">Sinovni boshlash</button></div>
+</div></div></sc-if>
+<sc-if value="{{ f.mStop }}"><div style="position:absolute;inset:0;z-index:40;background:rgba(18,60,58,0.4);display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box"><div role="alertdialog" aria-modal="true" aria-labelledby="mT" style="width:480px;background:#FFFFFF;border-radius:12px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="padding:24px 24px 16px;display:flex;flex-direction:column;gap:8px"><h2 id="mT" style="margin:0;font-size:18px;line-height:26px;font-weight:600">Tiklash sinovini to‘xtatasizmi?</h2><p style="margin:0;font-size:14px;line-height:20px;text-wrap:pretty"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">18 / 55</span> kompaniya tekshirildi. To‘xtatilsa, natija saqlanmaydi va sinovni qaytadan boshlash kerak bo‘ladi. Kompaniyalar ishiga ta’sir qilmaydi.</p></div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A">Ortga</button><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#B91C1C;color:#FFFFFF">Sinovni to‘xtatish</button></div>
+</div></div></sc-if>
+</div></div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const T = { danger: { bg: '#FEF2F2', fg: '#B91C1C' }, warning: { bg: '#FFFBEB', fg: '#B45309' }, success: { bg: '#F0FDF4', fg: '#15803D' }, info: { bg: '#EFF6FF', fg: '#1D4ED8' }, neutral: { bg: '#F5F7F8', fg: '#5B6B6A' } };
+const B = (tone, icon, text) => ({ ...T[tone], icon, text });
+const sp = s => String(s).split(/(\d[\d.,/:–\s]*\d|\d)/).filter(x => x !== '').map(t => { const m = /^\d/.test(t); return { t: m ? t : t.replace(/^ (so‘m|сум)/, '\u00A0$1').replace(/ (so‘m|сум)/g, '\u00A0$1'), m, n: !m }; });
+const OK = B('success', 'circle-check', 'Ishlayapti');
+const STOP = B('danger', 'circle-x', 'To‘xtagan');
+const dl = rows => rows.map(([k, v]) => ({ k, v: sp(v) }));
+
+const SVC = g => [
+  ['Veb-ilova', '182 ms', '100,00%', '14.10.2026'],
+  ['API', '96 ms', '100,00%', '21.09.2026'],
+  ['Haydovchi ilovasi serveri', '240 ms', '99,98%', '03.11.2026'],
+  ['Fon vazifalar', '410 ms', '100,00%', '07.10.2026'],
+  ['Ma’lumotlar bazasi', '18 ms', '100,00%', '19.08.2026'],
+  ['Fayl saqlash', '64 ms', '100,00%', '02.09.2026']
+].map(([name, p95, up, last]) => {
+  const down = g && name === 'Fon vazifalar';
+  return { name, st: down ? STOP : OK, p95: down ? '—' : p95, up: down ? '99,94%' : up, last: down ? '25.11.2026, 16:12' : last, lastFg: down ? '#B91C1C' : '#172B2A', bg: down ? '#FEF2F2' : '#FFFFFF' };
+});
+
+const ERRQ = B('danger', 'circle-alert', 'Xatolar bor');
+const QUEUES = {
+  a: [
+    ['Markirovka («Asl belgisi»)', ERRQ, 37, 0, 37, '13:40 dan beri', 'Malham Farm Logistika'],
+    ['E-faktura', ERRQ, 5, 0, 5, '11:15 dan beri', 'Motor Ehtiyot Markazi'],
+    ['SMS va Telegram xabarlari', OK, 0, 0, 0, '—'],
+    ['Bank ko‘chirmalari', OK, 0, 0, 0, 'Oxirgi ishlov 09:00'],
+    ['Hisobotlar', OK, 0, 2, 0, '—']
+  ],
+  ok: [
+    ['Markirovka («Asl belgisi»)', OK, 0, 0, 0, '—'],
+    ['E-faktura', OK, 0, 0, 0, '—'],
+    ['SMS va Telegram xabarlari', OK, 0, 0, 0, '—'],
+    ['Bank ko‘chirmalari', OK, 0, 0, 0, 'Oxirgi ishlov 09:00'],
+    ['Hisobotlar', OK, 0, 2, 0, '—']
+  ],
+  g: [
+    ['Markirovka («Asl belgisi»)', STOP, 61, 0, 37, '13:40 dan beri', 'Malham Farm Logistika'],
+    ['E-faktura', STOP, 128, 0, 5, '11:15 dan beri', 'Motor Ehtiyot Markazi'],
+    ['SMS va Telegram xabarlari', STOP, 412, 0, 0, '16:12 dan beri'],
+    ['Bank ko‘chirmalari', B('warning', 'clock', 'Ishlov kutilmoqda'), 0, 0, 0, 'Keyingi ishlov 26.11.2026, 09:00'],
+    ['Hisobotlar', STOP, 9, 0, 0, '16:14 dan beri']
+  ]
+};
+const Q = md => QUEUES[md].map(([name, st, qd, pr, er, wait, co]) => ({ name, st, qd: String(qd), pr: String(pr), er: String(er), errFg: er ? '#B91C1C' : '#172B2A', wait: sp(wait), hasCo: !!co, co: co || '' }));
+
+const WARN1 = B('warning', 'triangle-alert', '1 kompaniyada muammo');
+const NOSEND = B('danger', 'circle-x', 'Yuborilmayapti');
+const INTEG = md => [
+  ['Asl belgisi', md === 'a' ? WARN1 : md === 'g' ? NOSEND : OK, '13', md === 'ok' ? '' : 'Malham Farm Logistika', md === 'g' ? 'Fon vazifalar to‘xtagani sababli yuborilmayapti' : 'Farmatsevtika va tibbiy buyumlar · Biznes va Korporativ'],
+  ['E-faktura', md === 'a' ? WARN1 : md === 'g' ? NOSEND : OK, '49', md === 'ok' ? '' : 'Motor Ehtiyot Markazi', md === 'g' ? 'Fon vazifalar to‘xtagani sababli yuborilmayapti' : '42 faol + 7 sinovda'],
+  ['Bank', OK, '—', '', 'Ko‘chirmalar har kuni 09:00 da olinadi · 1 ta to‘lov biriktirilmagan', 'To‘lovlar'],
+  ['Click', OK, '—', '', 'Obuna to‘lovlarini qabul qilish'],
+  ['Payme', OK, '—', '', '22.11.2026 dagi rad etish mijoz kartasi sababli, integratsiya xatosi emas'],
+  ['Uzum', OK, '—', '', 'Obuna to‘lovlarini qabul qilish'],
+  ['SMS provayder', md === 'g' ? NOSEND : OK, '49', '', md === 'g' ? 'Fon vazifalar to‘xtagani sababli yuborilmayapti' : 'Bildirishnomalar va tasdiqlash kodlari'],
+  ['Telegram bot', md === 'g' ? NOSEND : OK, '49', '', md === 'g' ? 'Fon vazifalar to‘xtagani sababli yuborilmayapti' : 'Bildirishnomalar']
+].map(([name, st, conn, bad, note, link]) => ({ name, st, conn, bad, hasBad: !!bad, noBad: !bad, note: sp(note), hasLink: !!link, link: link || '' }));
+
+const ERR_A = [
+  ['Asl belgisi tizimi ulanishni rad etmoqda', 'Markirovka', 37, 'Malham Farm Logistika', '13:40', '16:38'],
+  ['E-faktura operatori hujjatni qabul qilmadi', 'E-faktura', 5, 'Motor Ehtiyot Markazi', '11:15', '15:52'],
+  ['Haydovchi ilovasidan rasm yuklanmadi', 'Fayl saqlash', 4, 'Dasturxon Ulgurji Savdo', '08:12', '12:47'],
+  ['Hisobotni yaratish vaqti oshib ketdi', 'Hisobotlar', 3, '2 kompaniya', '10:05', '14:20']
+];
+const ERR = (md, sel) => (md === 'g' ? [['Fon vazifalar to‘xtadi', 'Fon vazifalar', 1, '49 kompaniya', '16:12', '16:12'], ...ERR_A] : ERR_A)
+  .map(([t, svc, n, co, first, last], i) => { const link = !/^\d|aniqlanmagan/.test(co); return { t, svc, n: String(n), co, coLink: link, coText: !link, coP: sp(co), first, last, bg: sel && i === 0 ? '#DDF5EE' : '#FFFFFF' }; });
+
+const BN = {
+  a: { ...T.warning, icon: 'triangle-alert', title: '2 ta integratsiyada muammo · platforma xizmatlari ishlayapti', sub: sp('Barcha 6 ta xizmat ishlayapti. Muammo 2 ta kompaniyaning tashqi tizim bilan ulanishida.'),
+    items: [{ name: 'Asl belgisi', co: 'Malham Farm Logistika', since: '13:40' }, { name: 'E-faktura', co: 'Motor Ehtiyot Markazi', since: '11:15' }] },
+  ok: { ...T.success, icon: 'circle-check', title: 'Barcha tizimlar ishlayapti', sub: sp('6 ta xizmat, 5 ta navbat va 8 ta integratsiya muammosiz. Oxirgi hodisa 12.11.2026.'), items: [] },
+  g: { ...T.danger, icon: 'circle-x', title: 'Fon vazifalar to‘xtagan · 16:12 dan beri', sub: sp('E-faktura va SMS yuborilmayapti · 49 kompaniya. Hujjatlar va xabarlar navbatda saqlanadi va xizmat tiklangach avtomatik yuboriladi. Texnik jamoa xabardor qilingan.'), items: [] }
+};
+
+const RC = {
+  idle: { st: B('success', 'circle-check', 'Muvaffaqiyatli'), rows: dl([['Oxirgi sinov', '17.11.2026'], ['Davomiyligi', '42 daqiqa'], ['Natija', '55 ta kompaniya ma’lumotlari tekshirildi'], ['Keyingi rejalashtirilgan', '01.12.2026']]) },
+  run: { st: B('info', 'loader', 'Jarayonda'), rows: dl([['Oxirgi muvaffaqiyatli sinov', '17.11.2026 · 42 daqiqa'], ['Keyingi rejalashtirilgan', '01.12.2026']]) },
+  fail: { st: B('danger', 'circle-x', 'Muvaffaqiyatsiz'), rows: dl([['Sinov', '25.11.2026, 15:48 – 16:32 · 44 daqiqa'], ['Oxirgi muvaffaqiyatli sinov', '17.11.2026'], ['Keyingi rejalashtirilgan', '01.12.2026']]) }
+};
+
+const OKB = B('success', 'circle-check', 'Muvaffaqiyatli');
+const bk7 = [
+  ['25.11.2026, 03:00', OKB, '18,4 GB', '23 daqiqa'], ['24.11.2026, 03:00', OKB, '18,3 GB', '22 daqiqa'], ['23.11.2026, 03:00', OKB, '18,3 GB', '23 daqiqa'],
+  ['22.11.2026, 03:00', OKB, '18,2 GB', '22 daqiqa'],
+  ['21.11.2026, 03:00', B('danger', 'circle-x', 'Muvaffaqiyatsiz'), '—', '—', 'Avtomatik qayta urinish: Muvaffaqiyatli, 04:10 · 18,1 GB · 24 daqiqa'],
+  ['20.11.2026, 03:00', OKB, '18,1 GB', '22 daqiqa'], ['19.11.2026, 03:00', OKB, '18,0 GB', '21 daqiqa']
+].map(([d, st, size, dur, note]) => ({ d, st, size, dur, hasNote: !!note, noNote: !note, note: sp(note || '') }));
+
+const SOLVED = B('success', 'circle-check', 'Hal qilindi');
+const HIST = [
+  ['12.11.2026', 'Payme to‘lovlari 40 daqiqa qabul qilinmadi', 'Payme tomonidagi uzilish · 14:05 – 14:45 · to‘lovlar keyin avtomatik o‘tkazildi'],
+  ['03.11.2026', 'Haydovchi ilovasi 15 daqiqa sekin ishladi', 'Haydovchi ilovasi serveri · 10:20 – 10:35']
+].map(([d, t, s]) => ({ d, t: sp(t), s: sp(s), st: SOLVED }));
+const HIST_G = [{ d: '25.11.2026', t: sp('Fon vazifalar to‘xtadi'), s: sp('16:12 dan beri · E-faktura, SMS, Telegram va hisobotlar navbatda'), st: B('danger', 'circle-x', 'Davom etmoqda') }, ...HIST];
+
+const nav = support => [
+  { title: null, items: [{ label: 'Bosh sahifa', icon: 'house' }] },
+  { title: 'Mijozlar', items: [{ label: 'Kompaniyalar', icon: 'building-2' }, { label: 'Qo‘llab-quvvatlash', icon: 'life-buoy', badge: '5' }] },
+  !support && { title: 'Moliya', items: [{ label: 'Tariflar va modullar', icon: 'layers' }, { label: 'To‘lovlar va hisob-fakturalar', icon: 'receipt' }] },
+  { title: 'Tizim', items: support ? [{ label: 'Platforma holati', icon: 'activity', active: true }] : [{ label: 'Platforma holati', icon: 'activity', active: true }, { label: 'Audit jurnali', icon: 'scroll-text' }] },
+  !support && { title: 'Boshqaruv', items: [{ label: 'Xodimlar va rollar', icon: 'user-cog' }, { label: 'Sozlamalar', icon: 'settings' }] }
+].filter(Boolean).map(x => ({ ...x, hasTitle: !!x.title, items: x.items.map(i => ({ ...i, active: !!i.active, idle: !i.active, hasBadge: !!i.badge })) }));
+
+const OWNER = { name: 'Dilshod Karimov', role: 'Egasi', initials: 'DK' };
+const SUPPORT = { name: 'Madina Ergasheva', role: 'Qo‘llab-quvvatlash', initials: 'ME' };
+
+const FR = [
+  { id: 'A', title: 'Asosiy ko‘rinish', note: 'Egasi · 2 ta integratsiyada muammo', mode: 'a' },
+  { id: 'B', title: 'Xato tafsiloti', note: 'Asl belgisi / Malham · «Texnik tafsilotlar» ochiq', mode: 'a', drawer: true, vp: true },
+  { id: 'C', title: 'Tiklash sinovini boshlash', note: 'Oyna 480px', mode: 'a', m: 'start', vp: true },
+  { id: 'D', title: 'Sinov jarayonda', note: '18 / 55 · asosiy tugma bloklangan', mode: 'a', rc: 'run' },
+  { id: 'D2', title: 'Sinovni to‘xtatish', note: 'Tasdiqlash oynasi 480px', mode: 'a', rc: 'run', m: 'stop', vp: true },
+  { id: 'E', title: 'Sinov muvaffaqiyatsiz', note: '3 ta kompaniya mos kelmadi', mode: 'a', rc: 'fail' },
+  { id: 'F', title: 'Hammasi joyida', note: 'Barcha tizimlar ishlayapti', mode: 'ok' },
+  { id: 'G', title: 'Jiddiy nosozlik', note: 'Fon vazifalar to‘xtagan · 49 kompaniya', mode: 'g' },
+  { id: 'H', title: 'Qo‘llab-quvvatlash roli', note: 'Faqat ko‘rish · harakat tugmalari yo‘q', mode: 'a', support: true },
+  { id: 'H2', title: 'Qo‘llab-quvvatlash · xato paneli', note: '«Murojaat yaratish» mavjud', mode: 'a', support: true, drawer: true, vp: true },
+  { id: 'I', title: 'Yuklanmoqda', note: 'Skeleton', mode: 'load', vp: true },
+  { id: 'J', title: 'Monitoring ma’lumotlari olinmadi', note: 'Oxirgi ma’lum holat 16:38:42', mode: 'err', vp: true }
+];
+
+const META = {
+  a: { svc: '6 ta · hammasi ishlayapti', q: '2 ta navbatda xato', in: '8 ta · 2 tasida muammo', err: '4 guruh · 49 marta' },
+  ok: { svc: '6 ta · hammasi ishlayapti', q: 'Xato yo‘q', in: '8 ta · hammasi ishlayapti', err: 'Xato yo‘q' },
+  g: { svc: '5 / 6 ishlayapti', q: '4 ta navbat to‘xtagan', in: '8 ta · 4 tasida yuborish to‘xtagan', err: '5 guruh · 50 marta' }
+};
+
+class Component extends DCLogic {
+  componentDidMount() { const run = () => { if (window.lucide && document.querySelector('i[data-lucide]')) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }); }; run(); this._t = setInterval(run, 400); }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const frames = FR.map(fr => {
+      const sup = !!fr.support, mode = fr.mode;
+      const md = mode === 'ok' || mode === 'g' ? mode : 'a';
+      const rc = RC[fr.rc || 'idle'];
+      return {
+        ...fr, h: fr.vp ? '1024px' : 'auto',
+        user: sup ? SUPPORT : OWNER, nav: nav(sup), full: !sup, viewNote: sup,
+        annOn: !sup && md !== 'g', priOn: !sup && fr.rc !== 'run', priDis: !sup && fr.rc === 'run',
+        updOk: mode !== 'err', updStale: mode === 'err',
+        content: mode === 'a' || mode === 'ok' || mode === 'g', loading: mode === 'load', error: mode === 'err',
+        bn: BN[md], bnBtn: md === 'g' && !sup,
+        svc: SVC(md === 'g'), svcMeta: META[md].svc,
+        q: Q(md), qMeta: META[md].q,
+        integ: INTEG(md), inMeta: META[md].in,
+        errs: md === 'ok' ? [] : ERR(md, fr.drawer), errOn: md !== 'ok', errEmpty: md === 'ok', errMeta: META[md].err,
+        rcSt: rc.st, rcRows: rc.rows, rcRun: fr.rc === 'run', rcFail: fr.rc === 'fail',
+        hist: md === 'g' ? HIST_G : HIST, histN: String(md === 'g' ? 3 : 2),
+        drawer: !!fr.drawer, mStart: fr.m === 'start', mStop: fr.m === 'stop'
+      };
+    });
+    return {
+      frames, bk7,
+      bkRows: dl([['Oxirgi nusxa', '25.11.2026, 03:00'], ['Hajmi', '18,4 GB'], ['Davomiyligi', '23 daqiqa'], ['Keyingi nusxa', '26.11.2026, 03:00'], ['Saqlanayotgan nusxalar', '30 ta · 30 kun']]),
+      tech: [
+        { k: 'xizmat', v: 'markirovka-worker' },
+        { k: 'endpoint', v: 'POST /api/v3/true-api/lk/documents/create' },
+        { k: 'javob', v: '401 Unauthorized · certificate expired' },
+        { k: 'stir', v: '301872643' },
+        { k: 'request_id', v: '7f3c9a12-4b8e-4d21-9a6f-2e51c0d8b7a4' },
+        { k: 'oxirgi urinish', v: '2026-11-25T16:38:51+05:00' },
+        { k: 'urinishlar', v: '37 · qayta urinish har 5 daqiqada' }
+      ],
+      sk3: [0, 1, 2], sk5: [0, 1, 2, 3, 4]
+    };
+  }
+}
+</script>
+</body>
+</html>

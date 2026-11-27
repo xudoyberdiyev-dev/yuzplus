@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+body{margin:0;background:#F5F7F8;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+svg.lucide{display:block;flex:none}
+</style>
+</helmet>
+<div style="padding:48px;display:flex;flex-direction:column;gap:24px;width:max-content;max-width:1900px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Namuna ma’lumotlar — 55 ta kompaniya</h1>
+<p style="margin:0;max-width:960px;font-size:14px;line-height:20px;color:#5B6B6A;text-wrap:pretty">Barcha ekranlar uchun yagona manba. 25.11.2026, 16:40 holatiga. Noyabr to‘lovi — noyabr davri hisob-fakturasi (to‘lov muddati 02.11–01.12.2026). Limitlar: Start 10 foydalanuvchi / 1 filial, Biznes 25 / 3, Korporativ 100 / 10.</p>
+</div>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Jami qatorlar bo‘yicha tekshiruv</h2>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px">
+<sc-for list="{{ checks }}" as="c" hint-placeholder-count="8"><div style="display:grid;grid-template-columns:20px 240px minmax(0,1fr);gap:12px;align-items:start;padding:8px 0;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px">
+<span style="display:flex;color:{{ c.fg }}"><i data-lucide="{{ c.icon }}" width="16" height="16"></i></span>
+<span style="font-weight:600">{{ c.k }}</span>
+<span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ c.v }}</span>
+</div></sc-for>
+</div>
+</section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<table style="border-collapse:separate;border-spacing:0;font-size:13px;line-height:18px">
+<thead><tr>
+<th style="height:36px;padding:0 12px 0 16px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">№</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Nomi</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">STIR</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Soha</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Shahar</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Tarif</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Holat</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Foydalanuvchilar</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Filiallar</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Keyingi to‘lov</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Noyabr to‘lovi</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Asl belgisi</th>
+<th style="height:36px;padding:0 16px 0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Izoh</th>
+</tr></thead>
+<tbody><sc-for list="{{ rows }}" as="r" hint-placeholder-count="20"><tr>
+<td style="height:40px;padding:0 12px 0 16px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:#5B6B6A">{{ r.no }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;font-weight:600;white-space:nowrap">{{ r.name }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.stir }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap">{{ r.soha }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap">{{ r.city }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0">{{ r.tarif }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ r.st.bg }};color:{{ r.st.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ r.st.icon }}" width="16" height="16"></i></span>{{ r.st.text }}</span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:{{ r.uFg }}">{{ r.usr }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:{{ r.fFg }}">{{ r.fil }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.next }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap"><span style="display:flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ r.nv.bg }};color:{{ r.nv.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ r.nv.icon }}" width="16" height="16"></i></span>{{ r.nv.text }}</span><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.sum }}</span></span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap"><span style="display:flex;align-items:center;gap:4px;color:{{ r.aslFg }}"><span style="display:flex"><i data-lucide="{{ r.aslIcon }}" width="16" height="16"></i></span>{{ r.asl }}</span></td>
+<td style="padding:8px 16px 8px 12px;border-bottom:1px solid #E2E8F0;min-width:280px;color:#5B6B6A">{{ r.note }}</td>
+</tr></sc-for></tbody>
+</table>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const T = { danger: { bg: '#FEF2F2', fg: '#B91C1C' }, warning: { bg: '#FFFBEB', fg: '#B45309' }, success: { bg: '#F0FDF4', fg: '#15803D' }, info: { bg: '#EFF6FF', fg: '#1D4ED8' }, neutral: { bg: '#F5F7F8', fg: '#5B6B6A' } };
+const B = (tone, icon, text) => ({ ...T[tone], icon, text });
+const ST = { trial: B('info', 'timer', 'Sinov'), active: B('success', 'circle-check', 'Faol'), pending: B('danger', 'circle-alert', 'To‘lov kutilmoqda'), paused: B('neutral', 'circle-pause', 'To‘xtatilgan'), closed: B('neutral', 'archive', 'Yopilgan') };
+const NV = { paid: B('success', 'circle-check', 'To‘langan'), late: B('danger', 'circle-alert', 'Kechikdi'), wait: B('info', 'clock', 'Kutilmoqda'), none: B('neutral', 'minus', '—') };
+const LIM = { Start: [10, 1], Biznes: [25, 3], Korporativ: [100, 10] };
+const PRICE = { Start: 750000, Biznes: 1200000, Korporativ: 2500000 };
+const F = 'Farmatsevtika', M = 'Tibbiy buyumlar', O = 'Oziq-ovqat', Q = 'Qurilish mollari', A = 'Avtoehtiyot';
+// nomi, STIR, soha, shahar, tarif, holat, foyd., filial, keyingi to‘lov, noyabr, qo‘shimcha to‘lov, izoh
+const D = [
+  ['Shifo-Nur Farm Distribyutsiya', '305482917', F, 'Toshkent', 'Biznes', 'pending', 18, 3, '13.11.2026 · 12 kun kechikdi', 'late', 0, 'Avtomatik to‘xtatish 27.11.2026 · murojaat #1051'],
+  ['Mustahkam Qurilish Savdo', '307891245', Q, 'Samarqand', 'Biznes', 'pending', 21, 3, '17.11.2026 · 8 kun kechikdi', 'late', 0, 'Avtomatik to‘xtatish 01.12.2026 · 24.11 bank to‘lovi biriktirilmagan'],
+  ['Tezkor Avtodetal', '309456712', A, 'Toshkent', 'Start', 'pending', 7, 1, '22.11.2026 · 3 kun kechikdi', 'late', 0, 'Payme rad etdi 22.11.2026 · murojaat #1054'],
+  ['Dasturxon Ulgurji Savdo', '302775164', O, 'Toshkent', 'Biznes', 'active', 19, 2, '26.11.2026', 'wait', 0, 'Murojaat #1048'],
+  ['Poydevor Qurilish Mollari', '311208459', Q, 'Toshkent', 'Biznes', 'trial', 6, 1, '27.11.2026', 'none', 0, 'Sinov 27.11.2026 da tugaydi · murojaat #1055 (biriktirilmagan)'],
+  ['Sog‘lom Medtexnika Ta’minot', '308325917', M, 'Toshkent', 'Biznes', 'active', 20, 4, '28.11.2026', 'wait', 250000, 'Limitdan oshgan: filiallar 4/3 (+250.000,00)'],
+  ['Shifobaxsh Medbuyum', '312047385', M, 'Andijon', 'Start', 'trial', 4, 1, '29.11.2026', 'none', 0, 'Sinov 29.11.2026 da tugaydi'],
+  ['G‘ildirak Avtoehtiyot', '306932518', A, 'Namangan', 'Start', 'active', 9, 1, '01.12.2026', 'wait', 0, ''],
+  ['Ziyo Farm', '312560194', F, 'Farg‘ona', 'Biznes', 'trial', 11, 2, '01.12.2026', 'none', 0, 'Sinov 01.12.2026 da tugaydi'],
+  ['Najot Farm Ombor', '304618927', F, 'Buxoro', 'Biznes', 'active', 22, 3, '03.12.2026', 'paid', 0, ''],
+  ['Barakali Oziq-ovqat Savdo', '303149826', O, 'Toshkent', 'Biznes', 'active', 27, 3, '03.12.2026', 'paid', 300000, 'Limitdan oshgan: foydalanuvchilar 27/25 (+300.000,00)'],
+  ['Malham Farm Logistika', '301872643', F, 'Toshkent', 'Korporativ', 'active', 64, 6, '04.12.2026', 'paid', 0, 'Integratsiya xatosi: Asl belgisi, 13:40 dan beri · murojaat #1053'],
+  ['Motor Ehtiyot Markazi', '305507281', A, 'Toshkent', 'Biznes', 'active', 15, 2, '04.12.2026', 'paid', 0, 'Integratsiya xatosi: E-faktura, 11:15 dan beri'],
+  ['Oltin Don Oziq-ovqat', '307364052', O, 'Qarshi', 'Start', 'active', 8, 1, '04.12.2026', 'paid', 0, ''],
+  ['Tayanch Qurilish Bozori', '304093718', Q, 'Andijon', 'Biznes', 'active', 14, 2, '05.12.2026', 'paid', 0, 'Oxirgi faollik 16.11.2026'],
+  ['Nafas Farm Savdo', '309871430', F, 'Samarqand', 'Biznes', 'active', 12, 1, '05.12.2026', 'paid', 0, ''],
+  ['Qo‘rg‘on Qurilish Mollari', '312794603', Q, 'Jizzax', 'Start', 'trial', 3, 1, '05.12.2026', 'none', 0, 'Sinov 05.12.2026 da tugaydi'],
+  ['Medlayn Ta’minot', '306248159', M, 'Toshkent', 'Biznes', 'active', 17, 2, '06.12.2026', 'paid', 0, 'E-faktura rad etilgan (HF-2026-0404)'],
+  ['Rizq Ulgurji Savdo', '303682947', O, 'Namangan', 'Biznes', 'active', 18, 3, '06.12.2026', 'paid', 0, ''],
+  ['Avtomir Ehtiyot Qismlari', '308117362', A, 'Urganch', 'Start', 'active', 5, 1, '07.12.2026', 'paid', 0, 'Oxirgi faollik 14.11.2026'],
+  ['Davo Plyus Distribyutsiya', '302459831', F, 'Toshkent', 'Korporativ', 'active', 87, 8, '08.12.2026', 'paid', 0, ''],
+  ['Saxovat Oziq-ovqat', '312931076', O, 'Buxoro', 'Biznes', 'trial', 8, 1, '08.12.2026', 'none', 0, 'Sinov 08.12.2026 da tugaydi'],
+  ['Qurilish Markazi Ulgurji', '307045286', Q, 'Toshkent', 'Biznes', 'active', 16, 2, '09.12.2026', 'paid', 0, ''],
+  ['Shifokor Medbuyum', '305983614', M, 'Nukus', 'Start', 'active', 6, 1, '09.12.2026', 'paid', 0, ''],
+  ['Yo‘ldosh Avtodetal', '309602753', A, 'Farg‘ona', 'Biznes', 'active', 13, 2, '10.12.2026', 'paid', 0, ''],
+  ['Mezon Qurilish Mollari', '310457826', Q, 'Samarqand', 'Start', 'paused', 9, 1, '—', 'none', 0, 'To‘lov qilinmagan (27.10.2026) · to‘xtatildi 10.11.2026 · qarz 750.000,00'],
+  ['Shirin Oziq-ovqat Savdo', '306714295', O, 'Toshkent', 'Biznes', 'paused', 14, 2, '—', 'none', 0, 'Kompaniya so‘rovi bilan to‘xtatildi 04.11.2026'],
+  ['Bog‘ishamol Farm Savdo', '303916258', F, 'Toshkent', 'Biznes', 'active', 16, 2, '25.12.2026', 'paid', 0, ''],
+  ['Sarbon Oziq-ovqat', '308642719', O, 'Samarqand', 'Start', 'active', 6, 1, '24.12.2026', 'paid', 0, ''],
+  ['Qal’a Qurilish Ta’minot', '305718364', Q, 'Buxoro', 'Biznes', 'active', 12, 2, '23.12.2026', 'paid', 0, ''],
+  ['Nur Medika Ta’minot', '306385127', M, 'Toshkent', 'Biznes', 'active', 14, 2, '22.12.2026', 'paid', 0, ''],
+  ['Sharq Avtoehtiyot', '304257639', A, 'Andijon', 'Biznes', 'active', 11, 2, '21.12.2026', 'paid', 0, ''],
+  ['Yashil Vodiy Oziq-ovqat', '309134856', O, 'Farg‘ona', 'Start', 'active', 7, 1, '20.12.2026', 'paid', 0, ''],
+  ['Zamin Farm', '310268495', F, 'Jizzax', 'Biznes', 'active', 10, 1, '19.12.2026', 'paid', 0, ''],
+  ['Lola Medtexnika', '307529341', M, 'Namangan', 'Biznes', 'active', 13, 2, '18.12.2026', 'paid', 0, ''],
+  ['Bunyod Qurilish Bozori', '302694718', Q, 'Qarshi', 'Biznes', 'active', 15, 2, '17.12.2026', 'paid', 0, ''],
+  ['Dilkash Oziq-ovqat', '308071426', O, 'Toshkent', 'Biznes', 'active', 17, 2, '15.12.2026', 'paid', 0, ''],
+  ['Pishiq Avtodetal', '311593062', A, 'Termiz', 'Start', 'active', 4, 1, '14.12.2026', 'paid', 0, ''],
+  ['Saodat Farm', '304825193', F, 'Samarqand', 'Biznes', 'active', 19, 3, '12.12.2026', 'paid', 0, ''],
+  ['Hosildor Oziq-ovqat Savdo', '304771582', O, 'Samarqand', 'Biznes', 'active', 15, 2, '02.12.2026', 'paid', 0, 'Sinovdan to‘lovga o‘tdi 02.11.2026 (shu oy yangi)'],
+  ['Ne’mat Ulgurji Savdo', '306120947', O, 'Namangan', 'Biznes', 'active', 12, 1, '02.12.2026', 'paid', 0, ''],
+  ['Sharbat Oziq-ovqat Ta’minot', '308953214', O, 'Buxoro', 'Biznes', 'active', 18, 2, '03.12.2026', 'paid', 0, ''],
+  ['Granit Qurilish Mollari', '303507816', Q, 'Toshkent', 'Biznes', 'active', 20, 3, '02.12.2026', 'paid', 0, ''],
+  ['Ustoz Qurilish Savdo', '305264970', Q, 'Andijon', 'Biznes', 'active', 9, 1, '03.12.2026', 'paid', 0, ''],
+  ['Turbo Avtoehtiyot', '307689125', A, 'Toshkent', 'Biznes', 'active', 14, 2, '02.12.2026', 'paid', 0, 'Sinovdan to‘lovga o‘tdi 02.11.2026 (shu oy yangi)'],
+  ['Karvon Avtodetal', '309218463', A, 'Qarshi', 'Biznes', 'active', 10, 1, '03.12.2026', 'paid', 0, ''],
+  ['Dorixona Plyus Farm', '310836572', F, 'Jizzax', 'Start', 'active', 6, 1, '02.12.2026', 'paid', 0, 'Start tarifida Asl belgisi yo‘q'],
+  ['Sihat Medbuyum', '311470285', M, 'Nukus', 'Start', 'active', 5, 1, '03.12.2026', 'paid', 0, 'Sinovdan to‘lovga o‘tdi 03.11.2026 (shu oy yangi) · Start tarifida Asl belgisi yo‘q'],
+  ['Non-Qand Oziq-ovqat', '310592814', O, 'Termiz', 'Start', 'active', 8, 1, '02.12.2026', 'paid', 0, 'Sinovdan to‘lovga o‘tdi 02.11.2026 (shu oy yangi)'],
+  ['Chaqqon Avtodetal', '312618507', A, 'Toshkent', 'Start', 'trial', 3, 1, '07.12.2026', 'none', 0, 'Sinov 07.12.2026 da tugaydi'],
+  ['Mustaqil Qurilish Ta’minot', '312705349', Q, 'Farg‘ona', 'Biznes', 'trial', 7, 1, '09.12.2026', 'none', 0, 'Sinov 09.12.2026 da tugaydi (25.11.2026 da yaratilgan)'],
+  ['Shifo Line Farm', '302018634', F, 'Toshkent', 'Start', 'closed', 0, 0, '—', 'none', 0, 'Yopilgan 30.09.2026 · kompaniya so‘rovi bilan'],
+  ['Ozuqa Savdo', '303845217', O, 'Samarqand', 'Biznes', 'closed', 0, 0, '—', 'none', 0, 'Yopilgan 15.08.2026 · faoliyat to‘xtagan'],
+  ['Bino Qurilish Mollari', '304392651', Q, 'Andijon', 'Start', 'closed', 0, 0, '—', 'none', 0, 'Yopilgan 02.07.2026 · boshqa tizimga o‘tdi'],
+  ['Detal Servis Avto', '305031748', A, 'Toshkent', 'Start', 'closed', 0, 0, '—', 'none', 0, 'Yopilgan 20.10.2026 · sinovdan keyin to‘lamadi']
+];
+const fmt = n => { const s = Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return s + ',00'; };
+const isAsl = d => (d[2] === F || d[2] === M) && d[4] !== 'Start' && ['active', 'pending', 'trial'].includes(d[5]);
+const ROWS = D.map((d, i) => {
+  const [name, stir, soha, city, tarif, st, usr, fil, next, nov, extra, note] = d;
+  const [ul, fl] = LIM[tarif], closed = st === 'closed', amt = nov === 'none' ? 0 : PRICE[tarif] + extra;
+  const asl = isAsl(d);
+  return { no: String(i + 1), name, stir, soha, city, tarif, st: ST[st], usr: closed ? '—' : usr + ' / ' + ul, fil: closed ? '—' : fil + ' / ' + fl,
+    uFg: usr > ul ? '#B45309' : '#172B2A', fFg: fil > fl ? '#B45309' : '#172B2A', next, nv: NV[nov], sum: amt ? fmt(amt) : '', amt, novK: nov,
+    asl: asl ? 'Ha' : 'Yo‘q', aslIcon: asl ? 'circle-check' : 'minus', aslFg: asl ? '#15803D' : '#5B6B6A', note: note || '—', raw: d };
+});
+const cnt = f => ROWS.filter(f).length;
+const sum = f => ROWS.filter(f).reduce((a, r) => a + r.amt, 0);
+const st = k => r => r.raw[5] === k;
+const pay = r => ['active', 'pending'].includes(r.raw[5]);
+const chk = (k, v, ok) => ({ k, v, icon: ok ? 'circle-check' : 'circle-x', fg: ok ? '#15803D' : '#B91C1C' });
+class Component extends DCLogic {
+  componentDidMount() { const run = () => { if (window.lucide && document.querySelector('i[data-lucide]')) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }); }; run(); this._t = setInterval(run, 400); }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const s = [cnt(st('trial')), cnt(st('active')), cnt(st('pending')), cnt(st('paused')), cnt(st('closed'))];
+    const pt = ['Start', 'Biznes', 'Korporativ'].map(t => cnt(r => pay(r) && r.raw[4] === t));
+    const tt = ['Start', 'Biznes'].map(t => cnt(r => st('trial')(r) && r.raw[4] === t));
+    const nv = ['paid', 'late', 'wait'].map(k => [cnt(r => r.novK === k), sum(r => r.novK === k)]);
+    const soha = [F, M, O, Q, A].map(x => cnt(r => r.raw[2] === x));
+    const flt = [F, M, O, Q, A].map(x => cnt(r => r.raw[2] === x && r.raw[4] === 'Biznes' && (r.raw[6] > 25 || r.raw[7] > 3)));
+    const asl = cnt(r => isAsl(r.raw)), ef = cnt(r => ['active', 'pending', 'trial'].includes(r.raw[5]));
+    const mrr = sum(pay);
+    const stirs = new Set(D.map(d => d[1])).size;
+    const checks = [
+      chk('Jami kompaniyalar', ROWS.length + ' ta · STIR takrorlanmaydi (' + stirs + ')', ROWS.length === 55 && stirs === 55),
+      chk('Holatlar', 'Sinov ' + s[0] + ' · Faol ' + s[1] + ' · To‘lov kutilmoqda ' + s[2] + ' · To‘xtatilgan ' + s[3] + ' · Yopilgan ' + s[4], s.join() === '7,39,3,2,4'),
+      chk('To‘lovchilar (42)', 'Start ' + pt[0] + ' · Biznes ' + pt[1] + ' · Korporativ ' + pt[2], pt.join() === '11,29,2'),
+      chk('Sinovdagilar', 'Start ' + tt[0] + ' · Biznes ' + tt[1], tt.join() === '3,4'),
+      chk('Noyabr · To‘langan', nv[0][0] + ' ta · ' + fmt(nv[0][1]), nv[0][0] === 36 && nv[0][1] === 42050000),
+      chk('Noyabr · Kechikdi', nv[1][0] + ' ta · ' + fmt(nv[1][1]), nv[1][0] === 3 && nv[1][1] === 3150000),
+      chk('Noyabr · Kutilmoqda', nv[2][0] + ' ta · ' + fmt(nv[2][1]), nv[2][0] === 3 && nv[2][1] === 3400000),
+      chk('MRR (to‘lovchilar)', fmt(mrr) + ' so‘m', mrr === 48600000),
+      chk('Soha bo‘yicha', 'Farm. ' + soha[0] + ' · Tibbiy ' + soha[1] + ' · Oziq-ovqat ' + soha[2] + ' · Qurilish ' + soha[3] + ' · Avto ' + soha[4], soha.reduce((a, b) => a + b) === 55),
+      chk('«Kompaniyalar» G filtri (Biznes + limitdan oshgan)', 'Farm. ' + flt[0] + ' · Tibbiy ' + flt[1] + ' · Oziq-ovqat ' + flt[2] + ' · Qurilish ' + flt[3] + ' · Avto ' + flt[4], flt.join() === '0,1,1,0,0'),
+      chk('Asl belgisi ulangan', asl + ' ta («Platforma holati» — 13)', asl === 13),
+      chk('E-faktura ulangan', ef + ' ta (42 + 7)', ef === 49)
+    ];
+    return { rows: ROWS, checks };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+body{margin:0;background:#E2E8F0;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+button,input,textarea{font-family:inherit}
+:focus-visible{outline:2px solid #0D9488;outline-offset:2px}
+svg.lucide{display:block;flex:none}
+</style>
+</helmet>
+<div style="padding:64px;display:flex;flex-direction:column;gap:48px;width:max-content">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:24px;line-height:32px;font-weight:600">100+ · Super admin paneli — 4-bosqich: Yangi kompaniya qo‘shish ustasi</div>
+<div style="font-size:14px;line-height:20px;color:#5B6B6A">Desktop 1440px · bugun 25.11.2026 · namuna: «Oltin Vodiy Agro Ta’minot» MChJ (to‘qima) · 3c tuzatishlari: «Kompaniya kartasi 3c» (2b, 4, 10c, 10d, 11b), «Kompaniya kartasi 3b» (E2), «Kompaniyalar» (K tooltip)</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;max-width:2944px;font-size:14px;line-height:20px"><sc-for list="{{ frames }}" as="f"><a href="#frame-{{ f.id }}">{{ f.id }} · {{ f.title }}</a></sc-for></div>
+</div>
+<div style="display:grid;grid-template-columns:1440px 1440px;gap:64px;align-items:start">
+<sc-for list="{{ frames }}" as="f" hint-placeholder-count="2">
+<div id="frame-{{ f.id }}" data-screen-label="{{ f.id }} {{ f.title }}" style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px"><span style="padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600">{{ f.id }}</span><span style="font-size:15px;line-height:22px;font-weight:600">{{ f.title }}</span><span style="font-size:14px;line-height:20px;color:#5B6B6A">{{ f.note }}</span></div>
+<div style="position:relative;width:1440px;min-height:960px;display:flex;background:#F5F7F8;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<aside style="width:240px;flex:none;background:#123C3A;display:flex;flex-direction:column">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="font-size:15px;line-height:22px;font-weight:600;color:#FFFFFF">100+</span><span style="font-size:14px;line-height:20px;color:#A9C7C3">· Platforma</span></div>
+<nav style="flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:4px">
+<sc-for list="{{ nav }}" as="g"><div style="display:flex;flex-direction:column;gap:4px">
+<sc-if value="{{ g.hasTitle }}"><div style="padding:12px 12px 4px;font-size:12px;line-height:16px;color:#A9C7C3">{{ g.title }}</div></sc-if>
+<sc-for list="{{ g.items }}" as="it">
+<sc-if value="{{ it.active }}"><a href="#" style="position:relative;min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,0.08);color:#FFFFFF;font-size:14px;line-height:20px;text-decoration:none"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2DD4BF"></span><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span></a></sc-if>
+<sc-if value="{{ it.idle }}"><a href="#" style="min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;color:#A9C7C3;font-size:14px;line-height:20px;text-decoration:none" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF;text-decoration:none"><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span><sc-if value="{{ it.hasBadge }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;background:#DDF5EE;color:#123C3A">{{ it.badge }}</span></sc-if></a></sc-if>
+</sc-for></div></sc-for>
+</nav>
+<div style="padding:12px 8px;border-top:1px solid rgba(255,255,255,0.08)"><div style="display:flex;align-items:center;gap:12px;padding:8px 12px"><span style="width:32px;height:32px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">DK</span><div style="display:flex;flex-direction:column"><span style="font-size:14px;line-height:20px;color:#FFFFFF">Dilshod Karimov</span><span style="display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#A9C7C3">Egasi<span style="display:flex;align-items:center;gap:4px"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>2FA yoqilgan</span></span></div></div></div>
+</aside>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column"><header style="height:56px;flex:none;box-sizing:border-box;background:#FFFFFF;border-bottom:1px solid #E2E8F0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,400px) minmax(0,1fr);align-items:center;gap:24px;padding:0 24px">
+<div style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;white-space:nowrap"><a href="#" style="color:#5B6B6A">Platforma</a><span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span><a href="#" style="color:#5B6B6A">Kompaniyalar</a><span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span><span>Yangi kompaniya</span></div>
+<label style="height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;border:1px solid #E2E8F0;border-radius:6px"><span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span><span style="flex:1;font-size:14px;line-height:20px;color:#94A3A1;white-space:nowrap;overflow:hidden">Kompaniya, STIR yoki tiket raqami</span><span style="padding:0 4px;border:1px solid #E2E8F0;border-radius:6px;color:#5B6B6A;font-size:12px;line-height:16px">Ctrl K</span></label>
+<div style="justify-self:end;display:flex;align-items:center;gap:12px"><span style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>Platforma boshqaruvi</span><span style="position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#5B6B6A"><span style="display:flex"><i data-lucide="bell" width="16" height="16"></i></span><span style="position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;background:#FEF2F2;color:#B91C1C">3</span></span><span style="width:32px;height:32px;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">DK</span></div>
+</header>
+<main style="padding:24px;display:flex;flex-direction:column;gap:20px;min-width:0">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:24px"><h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Yangi kompaniya</h1><sc-if value="{{ f.wizard }}"><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#FFFFFF;color:#115E59"><span style="display:flex"><i data-lucide="x" width="16" height="16"></i></span>Ustadan chiqish</button></sc-if></div>
+<sc-if value="{{ f.wizard }}"><nav aria-label="Qadamlar" style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px 20px;display:flex;align-items:center;gap:12px">
+<sc-for list="{{ f.steps }}" as="s"><div style="display:flex;align-items:center;gap:12px;flex:{{ s.flex }};min-width:0">
+<sc-if value="{{ s.done }}"><a href="#" title="Shu qadamga qaytish" style="display:flex;align-items:center;gap:8px;color:#172B2A;text-decoration:none;white-space:nowrap"><span style="width:24px;height:24px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center"><i data-lucide="check" width="16" height="16"></i></span><span style="font-size:14px;line-height:20px">{{ s.label }}</span></a></sc-if>
+<sc-if value="{{ s.cur }}"><span aria-current="step" style="display:flex;align-items:center;gap:8px;white-space:nowrap"><span style="width:24px;height:24px;flex:none;box-sizing:border-box;border-radius:6px;border:2px solid #0D9488;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ s.n }}</span><span style="font-size:14px;line-height:20px;font-weight:600">{{ s.label }}</span></span></sc-if>
+<sc-if value="{{ s.next }}"><span style="display:flex;align-items:center;gap:8px;color:#94A3A1;white-space:nowrap"><span style="width:24px;height:24px;flex:none;box-sizing:border-box;border-radius:6px;border:1px solid #E2E8F0;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ s.n }}</span><span style="font-size:14px;line-height:20px">{{ s.label }}</span></span></sc-if>
+<sc-if value="{{ s.line }}"><span style="flex:1;height:1px;min-width:16px;background:{{ s.lineC }}"></span></sc-if>
+</div></sc-for></nav>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start">
+<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;max-width:720px;width:100%;box-sizing:border-box;padding:24px;display:flex;flex-direction:column;gap:24px">
+<sc-if value="{{ f.err }}"><div style="display:flex;align-items:flex-start;gap:8px;padding:12px 16px;border-radius:6px;background:#FEF2F2;font-size:13px;line-height:18px;color:#172B2A"><span style="display:flex;color:#B91C1C"><i data-lucide="circle-alert" width="16" height="16"></i></span><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-weight:600;color:#B91C1C">{{ f.errT }}</span><span>{{ f.errH }}</span></div></div></sc-if>
+<sc-if value="{{ f.s1 }}">
+<section style="display:flex;flex-direction:column;gap:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Kompaniya</h2>
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="font-size:13px;line-height:18px;font-weight:600">STIR</span>
+<div style="display:flex;gap:8px">
+<div style="flex:1;max-width:280px;height:44px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid {{ f.stir.bd }};border-radius:6px;background:#FFFFFF;outline:{{ f.stir.ring }};outline-offset:2px"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px;color:{{ f.stir.fg }}">{{ f.stir.text }}</span></div>
+<sc-if value="{{ f.stir.loading }}"><button disabled="{{ true }}" style="height:44px;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#E2E8F0;color:#94A3A1;cursor:not-allowed"><span style="display:flex"><i data-lucide="loader-circle" width="16" height="16"></i></span>Qidirilmoqda…</button></sc-if>
+<sc-if value="{{ f.stir.idle }}"><button style="height:44px;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="search" width="16" height="16"></i></span>Ma’lumotlarni olish</button></sc-if>
+</div>
+<sc-if value="{{ f.stir.loading }}"><span style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:flex;color:#0D9488"><i data-lucide="loader-circle" width="16" height="16"></i></span>Soliq bazasidan ma’lumot olinmoqda…</span></sc-if>
+<sc-if value="{{ f.stir.found }}"><span style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:#15803D;font-weight:600"><span style="display:flex"><i data-lucide="circle-check" width="16" height="16"></i></span>Ma’lumotlar soliq bazasidan olindi. Tekshirib chiqing, kerak bo‘lsa tahrirlang.</span></sc-if>
+<sc-if value="{{ f.stir.fmt }}"><span style="display:flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>STIR 9 ta raqamdan iborat bo‘lishi kerak</span></sc-if>
+<sc-if value="{{ f.stir.none }}"><div style="display:flex;align-items:flex-start;gap:8px;padding:12px 16px;border-radius:6px;background:#EFF6FF;font-size:13px;line-height:18px;color:#172B2A"><span style="display:flex;color:#1D4ED8"><i data-lucide="info" width="16" height="16"></i></span><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span>Bu STIR bo‘yicha ma’lumot topilmadi. Rekvizitlarni qo‘lda kiriting.</span></div></div></sc-if>
+<sc-if value="{{ f.stir.dup }}"><div style="display:flex;align-items:flex-start;gap:8px;padding:12px 16px;border-radius:6px;background:#FFFBEB;font-size:13px;line-height:18px;color:#172B2A"><span style="display:flex;color:#B45309"><i data-lucide="triangle-alert" width="16" height="16"></i></span><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-weight:600;color:#B45309">Bu STIR bilan kompaniya ro‘yxatdan o‘tgan: Shifo-Nur Farm Distribyutsiya</span><span>Bir STIR bilan ikkinchi kompaniya ochib bo‘lmaydi.</span><a href="#" style="display:flex;align-items:center;gap:4px;font-weight:600">Kompaniya kartasini ochish<span style="display:flex"><i data-lucide="arrow-right" width="16" height="16"></i></span></a></div></div></sc-if>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px"><sc-for list="{{ f.fCompany }}" as="x">
+<div style="grid-column:{{ x.span }};display:flex;flex-direction:column;gap:8px;min-width:0">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:13px;line-height:18px;font-weight:600">{{ x.label }}</span><sc-if value="{{ x.opt }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">ixtiyoriy</span></sc-if><sc-if value="{{ x.tag }}"><span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:#5B6B6A"><span style="display:flex"><i data-lucide="database" width="16" height="16"></i></span>Soliq bazasidan</span></sc-if></div>
+<div style="height:44px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid {{ x.bd }};border-radius:6px;background:{{ x.bg }};outline:{{ x.ring }};outline-offset:2px"><span style="flex:1;min-width:0;white-space:nowrap;font-family:{{ x.ff }};font-size:{{ x.fs }};color:{{ x.fg }}">{{ x.text }}</span><sc-if value="{{ x.chev }}"><span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></sc-if></div>
+<sc-if value="{{ x.hasHelp }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ x.help }}</span></sc-if>
+<sc-if value="{{ x.hasErr }}"><span style="display:flex;align-items:flex-start;gap:4px;font-size:12px;line-height:16px;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>{{ x.err }}</span></sc-if>
+</div></sc-for></div>
+</section>
+<section style="display:flex;flex-direction:column;gap:16px;padding-top:24px;border-top:1px solid #E2E8F0"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Bank rekvizitlari</h2><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px"><sc-for list="{{ f.fBank }}" as="x">
+<div style="grid-column:{{ x.span }};display:flex;flex-direction:column;gap:8px;min-width:0">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:13px;line-height:18px;font-weight:600">{{ x.label }}</span><sc-if value="{{ x.opt }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">ixtiyoriy</span></sc-if><sc-if value="{{ x.tag }}"><span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:#5B6B6A"><span style="display:flex"><i data-lucide="database" width="16" height="16"></i></span>Soliq bazasidan</span></sc-if></div>
+<div style="height:44px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid {{ x.bd }};border-radius:6px;background:{{ x.bg }};outline:{{ x.ring }};outline-offset:2px"><span style="flex:1;min-width:0;white-space:nowrap;font-family:{{ x.ff }};font-size:{{ x.fs }};color:{{ x.fg }}">{{ x.text }}</span><sc-if value="{{ x.chev }}"><span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></sc-if></div>
+<sc-if value="{{ x.hasHelp }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ x.help }}</span></sc-if>
+<sc-if value="{{ x.hasErr }}"><span style="display:flex;align-items:flex-start;gap:4px;font-size:12px;line-height:16px;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>{{ x.err }}</span></sc-if>
+</div></sc-for></div></section>
+<section style="display:flex;flex-direction:column;gap:16px;padding-top:24px;border-top:1px solid #E2E8F0"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Mas’ul shaxs</h2><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px"><sc-for list="{{ f.fContact }}" as="x">
+<div style="grid-column:{{ x.span }};display:flex;flex-direction:column;gap:8px;min-width:0">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:13px;line-height:18px;font-weight:600">{{ x.label }}</span><sc-if value="{{ x.opt }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">ixtiyoriy</span></sc-if><sc-if value="{{ x.tag }}"><span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:#5B6B6A"><span style="display:flex"><i data-lucide="database" width="16" height="16"></i></span>Soliq bazasidan</span></sc-if></div>
+<div style="height:44px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid {{ x.bd }};border-radius:6px;background:{{ x.bg }};outline:{{ x.ring }};outline-offset:2px"><span style="flex:1;min-width:0;white-space:nowrap;font-family:{{ x.ff }};font-size:{{ x.fs }};color:{{ x.fg }}">{{ x.text }}</span><sc-if value="{{ x.chev }}"><span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></sc-if></div>
+<sc-if value="{{ x.hasHelp }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ x.help }}</span></sc-if>
+<sc-if value="{{ x.hasErr }}"><span style="display:flex;align-items:flex-start;gap:4px;font-size:12px;line-height:16px;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>{{ x.err }}</span></sc-if>
+</div></sc-for></div></section>
+</sc-if><sc-if value="{{ f.s2 }}">
+<section style="display:flex;flex-direction:column;gap:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Soha</h2>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px"><sc-for list="{{ f.sohas }}" as="o"><label style="min-height:44px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:12px;border:1px solid {{ o.bd }};border-radius:8px;background:{{ o.bg }};cursor:pointer;font-size:14px;line-height:20px;font-weight:600"><span style="display:flex;color:{{ o.ic }}"><i data-lucide="{{ o.icon }}" width="20" height="20"></i></span>{{ o.t }}</label></sc-for></div>
+</section>
+<section style="display:flex;flex-direction:column;gap:16px;padding-top:24px;border-top:1px solid #E2E8F0"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Tarif</h2>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px"><sc-for list="{{ plans }}" as="p"><label style="display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid {{ p.bd }};border-radius:8px;background:{{ p.bg }};cursor:pointer"><span style="display:flex;align-items:center;gap:8px"><sc-if value="{{ p.sel }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:50%;border:1px solid #0F766E;display:flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:50%;background:#0F766E"></span></span></sc-if><sc-if value="{{ p.selNot }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:50%;border:1px solid #94A3A1;background:#FFFFFF"></span></sc-if><span style="font-size:15px;line-height:22px;font-weight:600">{{ p.name }}</span></span><span style="font-size:13px;line-height:18px"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ p.price }}</span> so‘m/oy</span><span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ p.limits }}</span></label></sc-for></div>
+</section>
+<section style="display:flex;flex-direction:column;gap:16px;padding-top:24px;border-top:1px solid #E2E8F0"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Sinov</h2>
+<div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ trialOpts }}" as="o"><label style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border:1px solid {{ o.bd }};border-radius:8px;background:{{ o.bg }};cursor:pointer"><span style="padding-top:2px"><sc-if value="{{ o.sel }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:50%;border:1px solid #0F766E;display:flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:50%;background:#0F766E"></span></span></sc-if><sc-if value="{{ o.selNot }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:50%;border:1px solid #94A3A1;background:#FFFFFF"></span></sc-if></span><span style="display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;line-height:20px;font-weight:600">{{ o.t }}</span><span style="font-size:13px;line-height:18px;color:#5B6B6A"><sc-for list="{{ o.sub }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></span></label></sc-for></div>
+<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:6px;background:#F8FAFA;font-size:14px;line-height:20px"><span style="display:flex;color:#0D9488"><i data-lucide="calendar-check" width="16" height="16"></i></span><span>Tarif narxi: <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">750.000,00</span> so‘m/oy · sinov <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">09.12.2026</span> gacha</span></div>
+</section>
+</sc-if><sc-if value="{{ f.s3 }}">
+<section style="display:flex;flex-direction:column;gap:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Birinchi administrator</h2>
+<span style="font-size:13px;line-height:18px;color:#5B6B6A">Administrator kompaniya ichida foydalanuvchilar, rollar va filiallarni boshqaradi.</span>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px"><sc-for list="{{ f.fAdmin }}" as="x">
+<div style="grid-column:{{ x.span }};display:flex;flex-direction:column;gap:8px;min-width:0">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:13px;line-height:18px;font-weight:600">{{ x.label }}</span><sc-if value="{{ x.opt }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">ixtiyoriy</span></sc-if><sc-if value="{{ x.tag }}"><span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:#5B6B6A"><span style="display:flex"><i data-lucide="database" width="16" height="16"></i></span>Soliq bazasidan</span></sc-if></div>
+<div style="height:44px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid {{ x.bd }};border-radius:6px;background:{{ x.bg }};outline:{{ x.ring }};outline-offset:2px"><span style="flex:1;min-width:0;white-space:nowrap;font-family:{{ x.ff }};font-size:{{ x.fs }};color:{{ x.fg }}">{{ x.text }}</span><sc-if value="{{ x.chev }}"><span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></sc-if></div>
+<sc-if value="{{ x.hasHelp }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ x.help }}</span></sc-if>
+<sc-if value="{{ x.hasErr }}"><span style="display:flex;align-items:flex-start;gap:4px;font-size:12px;line-height:16px;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>{{ x.err }}</span></sc-if>
+</div></sc-for></div>
+<sc-if value="{{ f.phoneWarn }}"><div style="display:flex;align-items:flex-start;gap:8px;padding:12px 16px;border-radius:6px;background:#FFFBEB;font-size:13px;line-height:18px;color:#172B2A"><span style="display:flex;color:#B45309"><i data-lucide="triangle-alert" width="16" height="16"></i></span><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-weight:600;color:#B45309">Bu raqam «Barakali Oziq-ovqat Savdo»da foydalanuvchi sifatida ro‘yxatdan o‘tgan.</span><span>Boshqa raqam kiriting yoki shu raqam bilan davom eting.</span></div></div></sc-if>
+</section>
+<section style="display:flex;flex-direction:column;gap:16px;padding-top:24px;border-top:1px solid #E2E8F0"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Taklifni yuborish</h2>
+<div style="display:flex;gap:24px"><sc-for list="{{ invite }}" as="c"><label style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px;line-height:20px;cursor:pointer"><sc-if value="{{ c.on }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:4px;background:#0F766E;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i data-lucide="check" width="16" height="16"></i></span></sc-if><sc-if value="{{ c.onNot }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border:1px solid #94A3A1;border-radius:4px;background:#FFFFFF"></span></sc-if>{{ c.t }}</label></sc-for></div>
+<div style="display:flex;align-items:flex-start;gap:8px;padding:12px 16px;border-radius:6px;background:#EFF6FF;font-size:13px;line-height:18px;color:#172B2A"><span style="display:flex;color:#1D4ED8"><i data-lucide="info" width="16" height="16"></i></span><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span>Administrator havola orqali parol o‘rnatadi. Havola <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">72</span> soat amal qiladi.</span></div></div>
+</section>
+</sc-if><sc-if value="{{ f.s4 }}">
+<sc-if value="{{ f.rec }}"><div style="display:flex;align-items:flex-start;gap:8px;padding:12px 16px;border-radius:6px;background:#FFFBEB;font-size:13px;line-height:18px;color:#172B2A"><span style="display:flex;color:#B45309"><i data-lucide="triangle-alert" width="16" height="16"></i></span><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-weight:600;color:#B45309">Farmatsevtika uchun markirovka («Asl belgisi») majburiy, Start tarifida u yo‘q. Biznes tarifini tanlashni tavsiya qilamiz.</span><span>Start bilan ham davom etishingiz mumkin.</span><a href="#" style="display:flex;align-items:center;gap:4px;font-weight:600">Tarifni o‘zgartirish<span style="display:flex"><i data-lucide="arrow-right" width="16" height="16"></i></span></a></div></div></sc-if>
+<section style="display:flex;flex-direction:column;gap:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Tarifga kiritilgan modullar</h2>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px"><sc-for list="{{ modules }}" as="m"><div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;background:{{ m.bg }}"><span style="display:flex;color:{{ m.ic }}"><i data-lucide="{{ m.icon }}" width="20" height="20"></i></span><span style="flex:1;font-size:14px;line-height:20px;font-weight:600;color:{{ m.fg }}">{{ m.name }}</span><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ m.b.bg }};color:{{ m.b.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ m.b.icon }}" width="16" height="16"></i></span>{{ m.b.text }}</span></div></sc-for></div>
+</section>
+<section style="display:flex;flex-direction:column;gap:12px;padding-top:24px;border-top:1px solid #E2E8F0"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Qo‘shimcha modullar</h2>
+<sc-for list="{{ addons }}" as="a"><label style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid {{ a.bd }};border-radius:8px;background:{{ a.bg }};cursor:pointer"><sc-if value="{{ a.on }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:4px;background:#0F766E;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i data-lucide="check" width="16" height="16"></i></span></sc-if><sc-if value="{{ a.onNot }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border:1px solid #94A3A1;border-radius:4px;background:#FFFFFF"></span></sc-if><span style="flex:1;display:flex;flex-direction:column"><span style="font-size:14px;line-height:20px;font-weight:600">{{ a.name }}</span><span style="font-size:13px;line-height:18px;color:#5B6B6A">{{ a.desc }}</span></span><span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font-size:13px;line-height:18px"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ a.price }}</span> so‘m/oy</span><span style="font-size:12px;line-height:16px;color:#15803D">Sinov davrida bepul</span></span></label></sc-for>
+</section>
+<section style="display:flex;flex-direction:column;gap:8px;padding-top:24px;border-top:1px solid #E2E8F0"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">Limitlar · Start</h2><span style="font-size:14px;line-height:20px"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">1</span> filial · <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">10</span> foydalanuvchi · <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">1</span> ombor</span><span style="font-size:12px;line-height:16px;color:#5B6B6A">Limitdan oshish: har qo‘shimcha foydalanuvchi — 150.000,00 so‘m/oy, filial — 250.000,00 so‘m/oy</span></section>
+</sc-if><sc-if value="{{ f.s5 }}">
+<sc-for list="{{ review }}" as="r"><section style="display:flex;flex-direction:column;gap:8px;padding-bottom:16px;border-bottom:1px solid #E2E8F0">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">{{ r.title }}</h2><sc-if value="{{ f.editable }}"><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#F5F7F8;color:#115E59"><span style="display:flex"><i data-lucide="pencil" width="16" height="16"></i></span>O‘zgartirish</button></sc-if></div>
+<sc-for list="{{ r.rows }}" as="d"><div style="display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2fr);gap:16px;font-size:13px;line-height:18px;color:{{ f.formFg }}"><span style="color:#5B6B6A">{{ d.k }}</span><span><sc-for list="{{ d.v }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></div></sc-for>
+</section></sc-for>
+<section style="display:flex;flex-direction:column;border:1px solid #E2E8F0;border-radius:8px;background:#F8FAFA">
+<sc-for list="{{ priceRows }}" as="d"><div style="display:flex;justify-content:space-between;gap:12px;padding:8px 16px;border-bottom:1px solid #E2E8F0;font-size:13px;line-height:18px;color:{{ f.formFg }}"><span style="color:#5B6B6A">{{ d.k }}</span><span style="font-weight:{{ d.w }}"><sc-for list="{{ d.v }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></div></sc-for>
+<div style="display:flex;justify-content:space-between;gap:12px;padding:12px 16px;font-size:15px;line-height:22px;font-weight:600;color:{{ f.formFg }}"><span>09.12.2026 dan</span><span><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">1.150.000,00</span> so‘m/oy</span></div>
+</section>
+<label style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px;line-height:20px;color:{{ f.formFg }}"><sc-if value="{{ f.ofer }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:4px;background:#0F766E;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i data-lucide="check" width="16" height="16"></i></span></sc-if><sc-if value="{{ f.oferNot }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border:1px solid #94A3A1;border-radius:4px;background:#FFFFFF"></span></sc-if>Mijoz ommaviy oferta (2.1-versiya) bilan tanishtirildi<span style="font-size:12px;line-height:16px;color:#5B6B6A">· majburiy</span></label>
+</sc-if>
+<div style="display:flex;align-items:center;gap:12px;padding-top:20px;border-top:1px solid #E2E8F0">
+<sc-if value="{{ f.back }}"><button style="height:44px;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="arrow-left" width="16" height="16"></i></span>Ortga</button></sc-if>
+<span style="flex:1"></span>
+<span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ f.stepOf }}</span>
+<sc-if value="{{ f.nextOn }}"><button style="height:44px;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF" style-hover="background:#115E59">{{ f.nextT }}<sc-if value="{{ f.arrow }}"><span style="display:flex"><i data-lucide="arrow-right" width="16" height="16"></i></span></sc-if></button></sc-if>
+<sc-if value="{{ f.nextLoad }}"><button disabled="{{ true }}" style="height:44px;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#E2E8F0;color:#94A3A1;cursor:not-allowed"><span style="display:flex"><i data-lucide="loader-circle" width="16" height="16"></i></span>Yaratilmoqda…</button></sc-if>
+<sc-if value="{{ f.nextOff }}"><button disabled="{{ true }}" style="height:44px;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#E2E8F0;color:#94A3A1;cursor:not-allowed">{{ f.nextT }}<span style="display:flex"><i data-lucide="arrow-right" width="16" height="16"></i></span></button></sc-if>
+</div>
+</div>
+<aside style="position:sticky;top:24px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:16px">
+<span style="font-size:15px;line-height:22px;font-weight:600">Xulosa</span>
+<sc-for list="{{ f.sum }}" as="s"><div style="display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid #E2E8F0">
+<span style="font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">{{ s.title }}</span>
+<sc-if value="{{ s.empty }}"><span style="font-size:13px;line-height:18px;color:#94A3A1">To‘ldirilmagan</span></sc-if>
+<sc-for list="{{ s.rows }}" as="d"><span style="font-size:13px;line-height:18px"><sc-for list="{{ d }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></sc-for>
+</div></sc-for>
+<div style="display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:6px;background:#F8FAFA">
+<span style="font-size:12px;line-height:16px;color:#5B6B6A">Taxminiy oylik narx</span>
+<span style="font-size:18px;line-height:26px;font-weight:600"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">{{ f.price }}</span> so‘m</span>
+<span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ f.priceNote }}</span>
+</div>
+</aside>
+</div>
+</sc-if>
+<sc-if value="{{ f.done }}"><section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;max-width:640px;width:100%;margin:40px auto 0;padding:40px 32px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;box-sizing:border-box">
+<span style="width:48px;height:48px;border-radius:8px;background:#F0FDF4;color:#15803D;display:flex;align-items:center;justify-content:center"><i data-lucide="circle-check" width="20" height="20"></i></span>
+<h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">«Oltin Vodiy Agro Ta’minot» MChJ yaratildi</h1>
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;text-align:left;font-size:14px;line-height:20px">
+<span style="display:flex;align-items:center;gap:8px"><span style="display:flex;color:#0D9488"><i data-lucide="send" width="16" height="16"></i></span>Sardor Yusupovga SMS orqali taklif yuborildi</span>
+<span style="display:flex;align-items:center;gap:8px"><span style="display:flex;color:#0D9488"><i data-lucide="calendar-check" width="16" height="16"></i></span>Sinov <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">09.12.2026</span> gacha</span>
+<span style="display:flex;align-items:center;gap:8px"><span style="display:flex;color:#0D9488"><i data-lucide="tag" width="16" height="16"></i></span>Holat:<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:#EFF6FF;color:#1D4ED8;font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="timer" width="16" height="16"></i></span>Sinov</span></span>
+</div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"><button style="height:44px;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="plus" width="16" height="16"></i></span>Yana kompaniya qo‘shish</button><button style="height:44px;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF" style-hover="background:#115E59">Kompaniya kartasini ochish<span style="display:flex"><i data-lucide="arrow-right" width="16" height="16"></i></span></button></div>
+</section></sc-if>
+</main></div>
+<sc-if value="{{ f.exit }}"><div style="position:absolute;inset:0;z-index:30;background:rgba(18,60,58,0.4);display:flex;align-items:center;justify-content:center"><div role="dialog" aria-modal="true" style="width:480px;background:#FFFFFF;border-radius:12px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:flex-start;gap:12px;padding:24px 24px 16px"><h2 style="flex:1;margin:0;font-size:18px;line-height:26px;font-weight:600">Ustadan chiqasizmi?</h2><button title="Yopish (Esc)" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A;cursor:pointer"><span style="display:flex"><i data-lucide="x" width="16" height="16"></i></span></button></div>
+<div style="padding:0 24px 24px;font-size:14px;line-height:20px;color:#5B6B6A">Kiritilgan ma’lumotlar saqlanmaydi. 3 ta qadamda to‘ldirilgan rekvizitlar, tarif va administrator ma’lumotlari o‘chadi.</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer">Ortga</button><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:0;border-radius:6px;background:#B91C1C;color:#FFFFFF;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#991B1B">Ustadan chiqish</button></div>
+</div></div></sc-if>
+</div></div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const T = { danger: { bg: '#FEF2F2', fg: '#B91C1C' }, warning: { bg: '#FFFBEB', fg: '#B45309' }, success: { bg: '#F0FDF4', fg: '#15803D' }, info: { bg: '#EFF6FF', fg: '#1D4ED8' }, neutral: { bg: '#F5F7F8', fg: '#5B6B6A' } };
+const B = (tone, icon, text) => ({ ...T[tone], icon, text });
+const sp = s => String(s).split(/(\d[\d.,/:]*\d|\d)/).filter(x => x !== '').map(t => { const m = /^\d/.test(t); return { t: m ? t : t.replace(/^ (so‘m|сум)/, '\u00A0$1').replace(/ (so‘m|сум)/g, '\u00A0$1'), m, n: !m }; });
+const MONOF = "'JetBrains Mono', monospace";
+const fld = (label, o = {}) => {
+  const val = o.v || '', err = o.err || '';
+  return { label, text: val || o.ph || '', fg: val ? '#172B2A' : '#94A3A1', ff: o.mono && val ? MONOF : 'Inter, sans-serif', fs: o.mono && val ? '13px' : '14px',
+    span: o.wide ? '1 / -1' : 'auto', opt: !!o.opt, tag: !!o.tag, chev: !!o.chev, help: o.help || '', hasHelp: !!o.help && !err,
+    err, hasErr: !!err, bd: err ? '#B91C1C' : (o.ring ? '#0D9488' : '#E2E8F0'), ring: o.ring ? '2px solid #0D9488' : 'none', bg: '#FFFFFF' };
+};
+const NAME = '«Oltin Vodiy Agro Ta’minot» MChJ';
+const STEPS = ['Rekvizitlar', 'Soha va tarif', 'Administrator', 'Modullar', 'Tasdiqlash'];
+const FR = [
+  { id: '1a', title: 'Rekvizitlar · bo‘sh', note: 'STIR maydonida fokus', s: 1, v: 'a' },
+  { id: '1b', title: 'STIR qidirilmoqda', note: 'Soliq bazasiga so‘rov', s: 1, v: 'b' },
+  { id: '1c', title: 'Topildi', note: 'Avtomatik to‘ldirilgan maydonlar', s: 1, v: 'c' },
+  { id: '1d', title: 'Topilmadi', note: 'Qo‘lda kiritish', s: 1, v: 'd' },
+  { id: '1e', title: 'Allaqachon platformada', note: '«Davom etish» disabled', s: 1, v: 'e' },
+  { id: '1f', title: 'Tekshiruv xatolari', note: '«Davom etish» bosildi · fokus birinchi xatoli maydonda', s: 1, v: 'f' },
+  { id: '1g', title: 'STIR noto‘g‘ri format', note: '8 ta raqam kiritilgan', s: 1, v: 'g' },
+  { id: '2a', title: 'Soha va tarif', note: 'Agro · Start · sinov bilan', s: 2 },
+  { id: '3a', title: 'Administrator', note: 'SMS orqali taklif', s: 3 },
+  { id: '3b', title: 'Telefon boshqa kompaniyada', note: 'Warning, davom etish mumkin', s: 3, warn: true },
+  { id: '4a', title: 'Modullar · Start', note: '1C belgilangan, Xulosa narxi yangilangan', s: 4 },
+  { id: '4b', title: 'Modullar · Farmatsevtika + Start', note: 'Warning: markirovka majburiy, davom etish mumkin', s: 4, pharma: true },
+  { id: '5a', title: 'Tasdiqlash', note: 'Oferta belgilangan', s: 5 },
+  { id: '5b', title: 'Yaratishda xato', note: 'Ma’lumotlar saqlangan, tugma yana faol', s: 5, fail: true },
+  { id: '5c', title: 'Yaratilmoqda', note: 'Tugma yuklanmoqda, forma disabled', s: 5, loading: true },
+  { id: '6', title: 'Muvaffaqiyat', note: 'Kompaniya yaratildi', s: 6 },
+  { id: '7', title: '«Ustadan chiqish» oynasi', note: '3-qadamda', s: 3, exit: true }
+];
+const navG = [
+  { title: null, items: [{ label: 'Bosh sahifa', icon: 'house' }] },
+  { title: 'Mijozlar', items: [{ label: 'Kompaniyalar', icon: 'building-2', active: true }, { label: 'Qo‘llab-quvvatlash', icon: 'life-buoy', badge: '5' }] },
+  { title: 'Moliya', items: [{ label: 'Tariflar va modullar', icon: 'layers' }, { label: 'To‘lovlar va hisob-fakturalar', icon: 'receipt' }] },
+  { title: 'Tizim', items: [{ label: 'Platforma holati', icon: 'activity' }, { label: 'Audit jurnali', icon: 'scroll-text' }] },
+  { title: 'Boshqaruv', items: [{ label: 'Xodimlar va rollar', icon: 'user-cog' }, { label: 'Sozlamalar', icon: 'settings' }] }
+].map(x => ({ ...x, hasTitle: !!x.title, items: x.items.map(i => ({ ...i, active: !!i.active, idle: !i.active, hasBadge: !!i.badge })) }));
+function step1(v) {
+  const auto = v === 'c' || v === 'f';
+  const full = v === 'f';
+  const stirV = { a: '', b: '307915264', c: '307915264', d: '309114582', e: '305482917', f: '307915264', g: '30791526' }[v];
+  const stir = { text: stirV || '9 ta raqam', fg: stirV ? '#172B2A' : '#94A3A1', bd: v === 'g' ? '#B91C1C' : (v === 'a' ? '#0D9488' : '#E2E8F0'), ring: v === 'a' ? '2px solid #0D9488' : 'none',
+    loading: v === 'b', idle: v !== 'b', found: v === 'c', none: v === 'd', dup: v === 'e', fmt: v === 'g' };
+  const t = auto;
+  return { stir,
+    fCompany: [fld('Yuridik nomi', { v: auto ? NAME : '', ph: 'Masalan, «Kompaniya» MChJ', tag: t, wide: true }), fld('Yuridik manzil', { v: auto ? 'Namangan viloyati, Uychi tumani, Bog‘bon ko‘chasi, 14-uy' : '', ph: 'Viloyat, tuman, ko‘cha, uy', tag: t, wide: true }),
+      fld('Direktor', { v: auto ? 'Abdulla Mamajonov' : '', ph: 'F.I.Sh.', tag: t }), fld('QQS to‘lovchisi', { v: auto ? 'Ha' : '', ph: 'Tanlang', tag: t, chev: true })],
+    fBank: [fld('Bank', { v: full ? '«Barqaror» ATB, Namangan filiali' : '', ph: 'Bank nomi va filiali', wide: true, chev: true }),
+      fld('Hisob raqami', { mono: true, ph: '20 ta raqam', err: full ? 'Hisob raqamini kiriting — 20 ta raqam' : '', ring: full }), fld('MFO', { v: full ? '01087' : '', ph: '5 ta raqam', mono: true })],
+    fContact: [fld('F.I.Sh.', { v: full ? 'Sardor Yusupov' : '', ph: 'Mas’ul shaxs' }), fld('Lavozim', { v: full ? 'Tijorat direktori' : '', ph: 'Masalan, direktor' }),
+      fld('Telefon', { mono: true, ph: '+998 __ ___ __ __', err: full ? 'Telefon raqamini kiriting: +998 va 9 ta raqam' : '' }), fld('Email', { opt: true, ph: 'name@kompaniya.uz' })] };
+}
+const sumFor = (s, v, pharma) => {
+  const r1 = s > 1 || v === 'c' || v === 'f';
+  return [
+    { title: '1 · Rekvizitlar', rows: r1 ? [sp(NAME), sp('STIR 307915264 · Namangan viloyati')] : [] },
+    { title: '2 · Soha va tarif', rows: s > 2 || (s === 4) ? [sp(pharma ? 'Farmatsevtika · Start' : 'Agro · Start'), sp('14 kunlik sinov, 09.12.2026 gacha')] : (s === 2 ? [sp('Agro · Start'), sp('14 kunlik sinov, 09.12.2026 gacha')] : []) },
+    { title: '3 · Administrator', rows: s > 3 || (s === 3) ? [sp('Sardor Yusupov'), sp('+998 90 412 37 58 · SMS')] : [] },
+    { title: '4 · Modullar', rows: s >= 4 ? [sp('7 ta tarif moduli'), sp('+ 1C integratsiyasi')] : [] }
+  ].map(x => ({ ...x, empty: x.rows.length === 0 }));
+};
+class Component extends DCLogic {
+  componentDidMount() { const run = () => { if (window.lucide && document.querySelector('i[data-lucide]')) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }); }; run(); this._t = setInterval(run, 400); }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const frames = FR.map(fr => {
+      const s = fr.s, wizard = s <= 5;
+      const steps = STEPS.map((label, i) => { const n = i + 1; return { label, n: String(n), done: n < s, cur: n === s, next: n > s, line: n < 5, lineC: n < s ? '#0D9488' : '#E2E8F0', flex: n < 5 ? '1' : '0 0 auto' }; });
+      const s1 = s === 1 ? step1(fr.v) : {};
+      const blocked = fr.v === 'e' || fr.v === 'b';
+      const price = s >= 4 ? '1.150.000,00' : (s >= 2 ? '750.000,00' : '—');
+      let err = false, errT = '', errH = '';
+      if (fr.v === 'f') { err = true; errT = '2 ta maydon to‘ldirilmagan'; errH = 'Qizil bilan belgilangan maydonlarni to‘ldiring, so‘ng davom eting.'; }
+      if (fr.fail) { err = true; errT = 'Kompaniya yaratilmadi: serverga ulanib bo‘lmadi.'; errH = 'Ma’lumotlar saqlangan — qayta urinib ko‘ring.'; }
+      return { ...fr, wizard, done: s === 6, exit: !!fr.exit, steps, ...s1,
+        s1: s === 1, s2: s === 2, s3: s === 3, s4: s === 4, s5: s === 5,
+        err, errT, errH, back: s > 1, stepOf: wizard ? s + ' / 5 qadam' : '',
+        nextT: s === 5 ? 'Kompaniyani yaratish' : 'Davom etish', arrow: s < 5,
+        nextOn: !blocked && !fr.loading, nextOff: blocked, nextLoad: !!fr.loading,
+        sum: sumFor(s, fr.v, fr.pharma), price, priceNote: s >= 2 ? 'Sinovdan keyin · birinchi to‘lov 09.12.2026' : 'Tarif tanlangach hisoblanadi',
+        phoneWarn: !!fr.warn, rec: !!fr.pharma,
+        fAdmin: [fld('F.I.Sh.', { v: 'Sardor Yusupov', wide: true }), fld('Telefon', { v: fr.warn ? '+998 97 225 61 40' : '+998 90 412 37 58', mono: true, help: 'Telefon raqami tizimga kirish uchun login sifatida ishlatiladi' }), fld('Email', { opt: true, ph: 'name@kompaniya.uz' })],
+        sohas: [['pill', 'Farmatsevtika'], ['stethoscope', 'Tibbiy buyumlar'], ['apple', 'Oziq-ovqat'], ['sparkles', 'Kosmetika'], ['brick-wall', 'Qurilish mollari'], ['car', 'Avtoehtiyot'], ['sprout', 'Agro'], ['shapes', 'Boshqa']]
+          .map(([icon, t]) => { const on = t === 'Agro'; return { icon, t, bg: on ? '#DDF5EE' : '#FFFFFF', bd: on ? '#0D9488' : '#E2E8F0', ic: on ? '#0D9488' : '#5B6B6A' }; }),
+        editable: !fr.loading, formFg: fr.loading ? '#94A3A1' : '#172B2A', ofer: true, oferNot: false
+      };
+    });
+    const mod = (icon, name, inc) => ({ icon, name, bg: inc ? '#FFFFFF' : '#F8FAFA', fg: inc ? '#172B2A' : '#94A3A1', ic: inc ? '#0D9488' : '#94A3A1', b: inc ? B('success', 'circle-check', 'Yoqilgan') : B('neutral', 'lock', 'Biznes tarifida') });
+    return {
+      frames, nav: navG,
+      plans: [['Start', '750.000,00', '1 filial · 10 foydalanuvchi · 1 ombor', true], ['Biznes', '1.200.000,00', '3 filial · 25 foydalanuvchi · 3 ombor'], ['Korporativ', '2.500.000,00', '10 filial · 100 foydalanuvchi · 10 ombor']]
+        .map(([name, price, limits, on]) => ({ name, price, limits, sel: !!on, selNot: !on, bg: on ? '#DDF5EE' : '#FFFFFF', bd: on ? '#0D9488' : '#E2E8F0' })),
+      trialOpts: [['14 kunlik sinov bilan boshlash', 'Sinov 09.12.2026 gacha, to‘lov olinmaydi', true], ['Sinovsiz — darhol obuna', 'Birinchi hisob-faktura bugun, 25.11.2026']]
+        .map(([t, sub, on]) => ({ t, sub: sp(sub), sel: !!on, selNot: !on, bg: on ? '#DDF5EE' : '#FFFFFF', bd: on ? '#0D9488' : '#E2E8F0' })),
+      invite: [{ t: 'SMS', on: true, onNot: false }, { t: 'Telegram', on: false, onNot: true }],
+      modules: [mod('book-open', 'Katalog va narxlar', 1), mod('warehouse', 'Ombor', 1), mod('package-plus', 'Kirim', 1), mod('shopping-cart', 'Buyurtmalar', 1), mod('banknote', 'Kassa', 1), mod('hand-coins', 'Qarzlar', 1), mod('chart-column', 'Hisobotlar', 1), mod('clipboard-list', 'Yig‘ish', 0), mod('truck', 'Yetkazib berish', 0), mod('scan-barcode', 'Markirovka', 0)],
+      addons: [{ name: '1C integratsiyasi', desc: 'Buxgalteriya bilan hujjat almashinuvi', price: '400.000,00', on: true }, { name: 'API kirish', desc: 'Tashqi tizimlar uchun dasturiy kirish', price: '300.000,00', on: false }]
+        .map(a => ({ ...a, onNot: !a.on, bg: a.on ? '#DDF5EE' : '#FFFFFF', bd: a.on ? '#0D9488' : '#E2E8F0' })),
+      review: [
+        { title: 'Rekvizitlar', rows: [['Yuridik nomi', NAME], ['STIR', '307915264'], ['Yuridik manzil', 'Namangan viloyati, Uychi tumani, Bog‘bon ko‘chasi, 14-uy'], ['Direktor', 'Abdulla Mamajonov'], ['Bank', '«Barqaror» ATB, Namangan filiali · MFO 01087'], ['Hisob raqami', '20208000907915264001'], ['Mas’ul shaxs', 'Sardor Yusupov · Tijorat direktori · +998 90 412 37 58']] },
+        { title: 'Soha va tarif', rows: [['Soha', 'Agro'], ['Tarif', 'Start · 1 filial, 10 foydalanuvchi, 1 ombor'], ['Sinov', '14 kun · 25.11.2026 – 09.12.2026']] },
+        { title: 'Administrator', rows: [['F.I.Sh.', 'Sardor Yusupov'], ['Telefon (login)', '+998 90 412 37 58'], ['Taklif', 'SMS']] },
+        { title: 'Modullar', rows: [['Tarif modullari', '7 ta: Katalog, Ombor, Kirim, Buyurtmalar, Kassa, Qarzlar, Hisobotlar'], ['Qo‘shimcha', '1C integratsiyasi']] }
+      ].map(r => ({ ...r, rows: r.rows.map(([k, v]) => ({ k, v: sp(v) })) })),
+      priceRows: [['Tarif · Start', '750.000,00 so‘m/oy', 400], ['1C integratsiyasi', '400.000,00 so‘m/oy · sinov davrida bepul', 400], ['Sinov davrida (25.11.2026 – 09.12.2026)', '0,00 so‘m', 600]].map(([k, v, w]) => ({ k, v: sp(v), w: String(w) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

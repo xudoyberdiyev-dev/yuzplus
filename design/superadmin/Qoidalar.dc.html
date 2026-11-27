@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F7F8;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+</style>
+</helmet>
+<div style="max-width:1040px;margin:0 auto;padding:48px 32px;display:flex;flex-direction:column;gap:24px">
+<header style="display:flex;flex-direction:column;gap:8px"><a href="Mundarija.dc.html" style="font-size:13px;font-weight:600">← Mundarija</a><h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Biznes qoidalari</h1><p style="margin:0;font-size:14px;line-height:20px;color:#5B6B6A">Barcha ekranlarda qabul qilingan qoidalar. Har qoida — bir qator. Ekranlar shu ro‘yxatga zid bo‘lmasligi kerak.</p></header>
+<sc-for list="{{ groups }}" as="g"><section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden"><h2 style="margin:0;padding:14px 20px;font-size:15px;line-height:22px;font-weight:600;border-bottom:1px solid #E2E8F0"><span style="font-family:'JetBrains Mono',monospace;color:#5B6B6A">{{ g.n }}</span> · {{ g.t }}</h2>
+<sc-for list="{{ g.rows }}" as="r"><div style="display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;padding:8px 20px;border-bottom:1px solid #E2E8F0;font-size:14px;line-height:20px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:20px;color:#5B6B6A">{{ r.n }}</span><span style="text-wrap:pretty">{{ r.t }}</span></div></sc-for></section></sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const G = [
+  ['Obuna va narx modeli', [
+    'Kompaniya oylik obuna to‘laydi: tarif narxi + limitdan oshish to‘lovi + qo‘shimcha modullar.',
+    'To‘lov davri — kompaniya birinchi to‘lov qilgan kun bo‘yicha har oy (masalan, har oyning 13-sanasi).',
+    'To‘lov usullari: Click, Payme, Uzum, bank o‘tkazmasi; qo‘lda kiritish — Egasi va Buxgalter.',
+    'Summalar «1.200.000,00 so‘m» shaklida: nuqta — minglik, vergul — tiyin, «so‘m» Inter’da.']],
+  ['Tariflar va limitlar', [
+    'Start — 750.000,00 so‘m/oy: 1 filial, 10 foydalanuvchi, 1 ombor, 7 ta modul.',
+    'Biznes — 1.200.000,00 so‘m/oy: 3 filial, 25 foydalanuvchi, 3 ombor, 10 ta modul.',
+    'Korporativ — 2.500.000,00 so‘m/oy: 10 filial, 100 foydalanuvchi, 10 ombor, barcha modullar.',
+    'Limitdan oshish: har qo‘shimcha filial +250.000,00, har qo‘shimcha foydalanuvchi +150.000,00 so‘m/oy; omborlar limitidan oshib bo‘lmaydi.',
+    'Qo‘shimcha modullar (Start va Biznes): 1C integratsiyasi +400.000,00, API kirish +300.000,00 so‘m/oy; Korporativda kiritilgan.',
+    'Asl belgisi (markirovka) — farmatsevtika va tibbiy buyumlar sohasi, Biznes yoki Korporativ tarif.']],
+  ['To‘lov kechikishi va to‘xtatish', [
+    'Muddat o‘tgan kundan boshlab holat «To‘lov kutilmoqda».',
+    'Muddatdan 14 kun o‘tsa — kompaniya avtomatik to‘xtatiladi (audit yozuvi bilan).',
+    'To‘xtatishdan 2 kun oldin administratorga SMS va Telegram orqali ogohlantirish.',
+    'To‘xtatilgan kompaniya foydalanuvchilari tizimga kira olmaydi; ma’lumotlar saqlanadi.',
+    'Qayta faollashtirish — Egasi va Buxgalter, qarz to‘langandan keyin.']],
+  ['Hisob-faktura', [
+    'Hisob-faktura to‘lov muddatidan 5 kun oldin yaratiladi va kompaniyaga Email va Telegram orqali yuboriladi.',
+    'Raqam formati: HF-2026-0412 (mono).',
+    'E-faktura operatoriga avtomatik yuboriladi; rad etilsa — «Rad etilgan» holati va qayta yuborish.',
+    'Bekor qilish — Egasi va Buxgalter, sabab majburiy.']],
+  ['Qisman va ortiqcha to‘lov', [
+    'Qisman to‘lov: hisob-faktura «Qisman to‘langan» (warning) + «Qoldiq: … so‘m».',
+    'Kompaniya to‘liq to‘lamaguncha «To‘lov kutilmoqda»da qoladi; 14 kunlik muddat o‘zgarmaydi.',
+    'Ortiqcha to‘lov — kompaniya balansiga «Avans», keyingi hisob-fakturadan ayriladi.',
+    'Aniqlanmagan bank to‘lovi biriktirilmaguncha «Tushgan» summaga kirmaydi (buxgalter vazifasi, xato emas).']],
+  ['Narx va limit o‘zgarishi', [
+    'Narx oshirilishi yoki limit kamaytirilishi kamida 30 kun oldin e’lon qilinadi; xabar (SMS, Telegram, Email) majburiy.',
+    'Narx kamaytirilishi — keyingi to‘lov davridan kuchga kiradi; xabar ixtiyoriy.',
+    'Yangi kompaniyalar uchun yangi narx darhol amal qiladi.']],
+  ['Sinov', [
+    'Sinov muddati — 14 kun; uzaytirish mumkin, jami ko‘pi bilan 30 kun.',
+    'Sinovni uzaytirish — Egasi va Sotuv.',
+    'Sinov tugashidan 3 kun oldin Telegram va Email orqali eslatma.',
+    '«Shu oy yangi» — shu oyda birinchi marta to‘lovchi bo‘lgan kompaniyalar.']],
+  ['Kompaniya nomidan kirish', [
+    'Rejimlar: «Faqat ko‘rish» (barcha rollar) va «Tahrirlash» (Egasi; boshqalar — Egasi ruxsati bilan).',
+    'Sabab va bog‘liq murojaat majburiy; muddat tanlanadi (30 daqiqagacha).',
+    'Seans davomida ERP ustida doimiy chiziq; boshlanish, yakun va harakatlar auditga yoziladi.',
+    'Platforma seansi tugasa, nomidan kirish seansi ham darhol tugaydi (audit yozuvi bilan).']],
+  ['Ruxsatlar matritsasi', [
+    '4 ta qat’iy rol: Egasi, Qo‘llab-quvvatlash, Sotuv, Buxgalter; 1-versiyada ruxsatlar tahrirlanmaydi.',
+    'Kompaniya qo‘shish, tarif, modul, sinovni uzaytirish — Egasi va Sotuv.',
+    'To‘xtatish va qayta faollashtirish, qo‘lda to‘lov, qaytarish, biriktirish, bekor qilish — Egasi va Buxgalter.',
+    'Moliya ko‘rsatkichlari, To‘lovlar va Tariflarni ko‘rish — Egasi, Sotuv, Buxgalter; Qo‘llab-quvvatlash rolida summalar ko‘rinmaydi.',
+    'Platforma holati — Egasi to‘liq, Qo‘llab-quvvatlash faqat ko‘rish (+ xato panelidan murojaat yaratish).',
+    'Audit jurnali, Xodimlar va rollar, Sozlamalar — faqat Egasi.',
+    'Ruxsati yo‘q tugma va menyu bandlari yashiriladi; havola orqali kirilsa — «Ruxsat yo‘q» sahifasi.',
+    'Platformada kamida bitta faol Egasi bo‘lishi shart; Egasi o‘zini bloklay va o‘z rolini o‘zgartira olmaydi.',
+    'Matritsa sarlavhasidagi son — faqat faol xodimlar; taklif kutilayotganlar «+1 taklif» izohida, bloklanganlar sanalmaydi.']],
+  ['Murojaatlar va SLA', [
+    'Holatlar: Yangi · Jarayonda · Mijoz javobi kutilmoqda · Hal qilindi · Yopilgan; «Ochiq» = birinchi uchtasi.',
+    'Birinchi javob muddati: Yuqori — 1 soat, O‘rta — 4 soat, Past — 1 ish kuni (09:00–18:00, du–ju).',
+    '30 daqiqadan kam qolsa — warning, o‘tib ketsa — danger (ikonka + so‘z).',
+    '«Mijoz javobi kutilmoqda»: 3 kundan keyin avtomatik eslatma, 7 kundan keyin avtomatik «Hal qilindi».',
+    'Hal qilingandan keyin mijoz yozsa — murojaat avtomatik «Jarayonda»ga qaytadi (tizim hodisasi bilan).',
+    'Mas’ul tayinlash va yopish — Egasi va Qo‘llab-quvvatlash; javob, ichki eslatma va murojaat yaratish — barcha rollar.',
+    'Ro‘yxatdagi son belgilari faqat ochiq murojaatlarni sanaydi.']],
+  ['Xabarlar jadvali', [
+    'Hisob-faktura yaratildi — muddatdan 5 kun oldin — Email, Telegram.',
+    'To‘lov eslatmasi — muddatdan 1 kun oldin — SMS, Telegram.',
+    'To‘lov kechikdi — muddatdan keyingi kun — SMS, Telegram, Email.',
+    'Avtomatik to‘xtatishdan oldin — 2 kun oldin, 00:05 da — SMS, Telegram.',
+    'Kompaniya to‘xtatildi — darhol — SMS, Telegram, Email.',
+    'Sinov tugashidan oldin — 3 kun oldin — Telegram, Email.',
+    'Kompaniya administratori taklifi — kompaniya yaratilganda — SMS, Telegram; havola 72 soat.',
+    'Platforma xodimi taklifi — Email; havola 48 soat.',
+    'Murojaatga javob, eslatma (3 kun), avtomatik hal qilish (7 kun) — murojaat kanali orqali; Telefon kanalida — SMS.',
+    'Tarif narxi yoki limiti o‘zgarishi — kamida 30 kun oldin — SMS, Telegram, Email.',
+    'Texnik ishlar — 24 soat oldin — ERP banneri, Telegram.',
+    'Hujjat yangi versiyasi — e’lon qilinganda — Email, Telegram.',
+    'SMS: bitta xabar 70 belgi, ko‘p qismlida har qism 67 belgi (o‘, g‘, ’ sababli).']],
+  ['E’lonlar va texnik ishlar', [
+    'E’lon qabul qiluvchilari — faqat ishlayotgan kompaniyalar: Faol 39 + To‘lov kutilmoqda 3 + Sinov 7 = 49.',
+    'E’lon matni: o‘zbekcha majburiy, ruscha ixtiyoriy (bo‘sh bo‘lsa — o‘zbekcha ko‘rsatiladi).',
+    'Rejalashtirilgan texnik ishlar: 24 soat oldin 49 kompaniyaga avtomatik banner (o‘chirib bo‘lmaydi).',
+    'Texnik ishlar davomida kompaniyalar ERP’ga va haydovchi ilovasiga kira olmaydi; platforma paneli ishlayveradi.',
+    'Favqulodda rejim: ERP banneri va Telegram avtomatik, SMS — ixtiyoriy checkbox (belgilanmagan); tasdiqlash uchun «Texnik ishlar» so‘zi yoziladi.']],
+  ['Hujjat versiyalari', [
+    'Yangi versiya kuchga kirishidan kamida 30 kun oldin e’lon qilinadi.',
+    'Kuchga kirgunicha administrator «Keyinroq» bosishi mumkin; kuchga kirgandan keyin qabul qilmaguncha ERP’da ishlay olmaydi (boshqa foydalanuvchilar ishlayveradi).',
+    'Kuchga kirgandan keyin qabul qilmaganlarga eslatma har 3 kunda, ko‘pi bilan 5 marta (Email, Telegram) + har kirishda qabul oynasi.',
+    'Yangi kompaniyalar ustada amaldagi versiyani qabul qiladi.',
+    'E’lon qilingan versiyani o‘zgartirib bo‘lmaydi; e’lon audit jurnaliga yoziladi («Sozlamalar» guruhi).']],
+  ['Shablonlar', [
+    'Hodisa va yuborish vaqti tizimda belgilangan; matn va kanallarni o‘zgartirish mumkin.',
+    'Noto‘g‘ri o‘zgaruvchi — maydon xatosi, saqlash disabled; to‘lov shablonida {tolov_havolasi} bo‘lmasa — warning.',
+    '«Namuna» paneli ochiq holati boshqa shablonga o‘tganda saqlanadi.']],
+  ['Xavfsizlik', [
+    '2FA — autentifikator ilova (6 xonali kod, 30 soniya); barcha xodimlar uchun majburiy; SMS kod ishlatilmaydi; qurilma eslab qolinmaydi.',
+    'Parol: kamida 12 belgi, kamida bitta harf va bitta raqam, oxirgi 3 ta paroldan farqli.',
+    'Ketma-ket 5 ta noto‘g‘ri parol yoki kod — kirish 15 daqiqaga bloklanadi (audit yozuvi bilan).',
+    'Zaxira kodlar: 10 ta, «XXXX-XXXX», har biri bir marta; xodim o‘zi profilida qayta yaratadi (eskilari bekor bo‘ladi).',
+    'Egasi 2FA’ni qayta o‘rnatsa — keyingi kirishda qayta sozlanadi, yangi zaxira kodlar beriladi, barcha seanslar tugatiladi.',
+    'Seans 30 daqiqa faolsizlikdan keyin tugaydi; 1 daqiqa qolganda ogohlantirish (ERP ichida nomidan kirishda ham).',
+    'Parolni tiklash havolasi 1 soat amal qiladi; tiklangach barcha seanslar tugatiladi, 2FA o‘zgarmaydi.',
+    'Xabarlar email ro‘yxatda bor-yo‘qligini oshkor qilmaydi.',
+    'Bloklangan xodimning seanslari darhol tugatiladi, unga biriktirilgan ochiq murojaatlar mas’ulsiz qoladi.']],
+  ['Audit jurnali', [
+    'Yozuvlarni o‘zgartirib ham, o‘chirib ham bo‘lmaydi; kamida 3 yil saqlanadi.',
+    'Har yozuvda yaxlitlik belgisi «O‘zgartirilmagan · tekshirildi»; buzilgan bo‘lsa — danger blok.',
+    'Natija turlari: Bajarildi (success) · Rad etildi (danger) · Muvaffaqiyatsiz (warning — tizim nosozligi).',
+    'Har eksport ham auditga yoziladi; bir eksportda ko‘pi bilan 10.000 yozuv.',
+    'Hajm 25.11.2026 holatiga: oxirgi 30 kun — 1.488, 01.03.2026 dan — 13.242 yozuv.']],
+  ['Zaxira nusxa va monitoring', [
+    'Zaxira nusxa har kuni 03:00 da, 30 kun saqlanadi; muvaffaqiyatsiz bo‘lsa — avtomatik qayta urinish.',
+    'Tiklash sinovi oyiga 2 marta, alohida sinov serverida — kompaniyalar ishiga ta’sir qilmaydi.',
+    'Monitoring har 30 soniyada yangilanadi; holat — ikonka + so‘z + rang, grafiklar o‘rniga raqamlar.']]
+];
+class Component extends DCLogic {
+  renderVals() {
+    return { groups: G.map(([t, rows], i) => ({ n: String(i + 1).padStart(2, '0'), t, rows: rows.map((x, j) => ({ n: (i + 1) + '.' + (j + 1), t: x })) })) };
+  }
+}
+</script>
+</body>
+</html>

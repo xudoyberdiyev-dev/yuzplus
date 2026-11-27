@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+body{margin:0;background:#E2E8F0;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+button{font-family:inherit}
+:focus-visible{outline:2px solid #0D9488;outline-offset:2px}
+svg.lucide{display:block;flex:none}
+</style>
+</helmet>
+<div style="padding:64px;display:flex;flex-direction:column;gap:48px;width:max-content">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:24px;line-height:32px;font-weight:600">100+ · Super admin paneli — 10-bosqich: Xodimlar va rollar</div>
+<div style="font-size:14px;line-height:20px;color:#5B6B6A">Desktop 1440 × 960px · faqat Egasi · 25.11.2026, 16:40 holatiga · xodimlar audit jurnali bilan mos</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;max-width:2944px;font-size:14px;line-height:20px"><sc-for list="{{ frames }}" as="f"><a href="#frame-{{ f.id }}">{{ f.id }} · {{ f.title }}</a></sc-for></div>
+</div>
+<div style="display:grid;grid-template-columns:1440px 1440px;gap:64px;align-items:start">
+<sc-for list="{{ frames }}" as="f" hint-placeholder-count="2">
+<div id="frame-{{ f.id }}" data-screen-label="{{ f.id }} {{ f.title }}" style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px"><span style="padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600">{{ f.id }}</span><span style="font-size:15px;line-height:22px;font-weight:600">{{ f.title }}</span><span style="font-size:14px;line-height:20px;color:#5B6B6A">{{ f.note }}</span></div>
+<sc-if value="{{ f.doc }}"><div style="width:1440px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:32px;display:flex;flex-direction:column;gap:16px">
+<h2 style="margin:0;font-size:18px;line-height:26px;font-weight:600">1-qism tuzatishlari</h2>
+<div style="display:flex;flex-direction:column"><sc-for list="{{ fixes }}" as="x"><div style="display:grid;grid-template-columns:32px 280px minmax(0,1fr) 240px;gap:16px;align-items:start;padding:12px 0;border-top:1px solid #E2E8F0;font-size:14px;line-height:20px"><span style="font-family:'JetBrains Mono',monospace;color:#5B6B6A">{{ x.n }}</span><span style="font-weight:600">{{ x.t }}</span><span style="text-wrap:pretty">{{ x.d }}</span><a href="{{ x.href }}" style="display:flex;align-items:center;gap:4px;font-weight:600">{{ x.link }}<span style="display:flex"><i data-lucide="arrow-up-right" width="16" height="16"></i></span></a></div></sc-for></div>
+</div></sc-if>
+<sc-if value="{{ f.app }}"><div style="position:relative;width:1440px;height:{{ f.h }};display:flex;background:#F5F7F8;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<aside style="width:240px;flex:none;background:#123C3A;display:flex;flex-direction:column">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="font-size:15px;line-height:22px;font-weight:600;color:#FFFFFF">100+</span><span style="font-size:14px;line-height:20px;color:#A9C7C3">· Platforma</span></div>
+<nav style="flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:4px"><sc-for list="{{ nav }}" as="g"><div style="display:flex;flex-direction:column;gap:4px">
+<sc-if value="{{ g.hasTitle }}"><div style="padding:12px 12px 4px;font-size:12px;line-height:16px;color:#A9C7C3">{{ g.title }}</div></sc-if>
+<sc-for list="{{ g.items }}" as="it">
+<sc-if value="{{ it.active }}"><a href="#" style="position:relative;min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,0.08);color:#FFFFFF;font-size:14px;line-height:20px;text-decoration:none"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2DD4BF"></span><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span></a></sc-if>
+<sc-if value="{{ it.idle }}"><a href="#" style="min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;color:#A9C7C3;font-size:14px;line-height:20px;text-decoration:none" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF;text-decoration:none"><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span><sc-if value="{{ it.hasBadge }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;background:#DDF5EE;color:#123C3A">{{ it.badge }}</span></sc-if></a></sc-if>
+</sc-for></div></sc-for></nav>
+<div style="padding:12px 8px;border-top:1px solid rgba(255,255,255,0.08)"><div style="display:flex;align-items:center;gap:12px;padding:8px 12px"><span style="width:32px;height:32px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">DK</span><div style="display:flex;flex-direction:column"><span style="font-size:14px;line-height:20px;color:#FFFFFF">Dilshod Karimov</span><span style="display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#A9C7C3">Egasi<span style="display:flex;align-items:center;gap:4px"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>2FA yoqilgan</span></span></div></div></div>
+</aside>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="height:56px;flex:none;box-sizing:border-box;background:#FFFFFF;border-bottom:1px solid #E2E8F0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,400px) minmax(0,1fr);align-items:center;gap:24px;padding:0 24px">
+<div style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;white-space:nowrap"><a href="#" style="color:#5B6B6A">Platforma</a><span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span><a href="#" style="color:#5B6B6A">Boshqaruv</a><span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span><span>Xodimlar va rollar</span></div>
+<label style="height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;font-size:14px;line-height:20px;padding:0 8px 0 12px"><span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span><span style="flex:1;color:#94A3A1;white-space:nowrap;overflow:hidden">Kompaniya, STIR yoki tiket raqami</span><span style="padding:0 4px;border:1px solid #E2E8F0;border-radius:6px;color:#5B6B6A;font-size:12px;line-height:16px">Ctrl K</span></label>
+<div style="justify-self:end;display:flex;align-items:center;gap:12px"><span style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>Platforma boshqaruvi</span><span style="width:32px;height:32px;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">DK</span></div>
+</header>
+<main style="position:relative;flex:1;min-height:0;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:24px"><h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Xodimlar va rollar</h1><sc-if value="{{ f.hdrPri }}"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF" style-hover="background:#115E59"><span style="display:flex"><i data-lucide="user-plus" width="16" height="16"></i></span>Xodim taklif qilish</button></sc-if></div>
+<div role="tablist" style="display:flex;gap:24px;border-bottom:1px solid #E2E8F0"><sc-for list="{{ f.tabs }}" as="t"><sc-if value="{{ t.on }}"><span role="tab" aria-selected="true" style="height:40px;display:flex;align-items:center;gap:8px;border-bottom:2px solid #0D9488;font-size:14px;line-height:20px;font-weight:600">{{ t.t }}<span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;background:#DDF5EE;color:#0F766E">{{ t.n }}</span></span></sc-if><sc-if value="{{ t.off }}"><span role="tab" style="height:40px;display:flex;align-items:center;gap:8px;border-bottom:2px solid transparent;font-size:14px;line-height:20px;color:#5B6B6A">{{ t.t }}<span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;background:#F5F7F8;color:#5B6B6A">{{ t.n }}</span></span></sc-if></sc-for></div>
+<sc-if value="{{ f.usersOn }}"><section style="position:relative;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px">
+<table style="width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px;line-height:18px">
+<colgroup><col style="width:220px"><col style="width:180px"><col><col style="width:160px"><col style="width:130px"><col style="width:150px"><col style="width:210px"><col style="width:48px"></colgroup>
+<thead><tr><sc-for list="{{ head }}" as="h"><th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;white-space:nowrap">{{ h }}</th></sc-for></tr></thead>
+<tbody><sc-for list="{{ f.users }}" as="u" hint-placeholder-count="6"><tr style="background:{{ u.bg }};cursor:pointer" style-hover="background:#F8FAFA">
+<td style="height:40px;padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:flex;align-items:center;gap:8px;min-width:0"><span style="width:32px;height:32px;flex:none;border-radius:6px;background:{{ u.avBg }};color:{{ u.avFg }};display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ u.av }}</span><span style="display:flex;flex-direction:column;min-width:0"><span style="font-weight:600;white-space:nowrap">{{ u.name }}</span><sc-if value="{{ u.me }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">Siz</span></sc-if></span></span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:#F5F7F8;color:#172B2A;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex;color:#5B6B6A"><i data-lucide="{{ u.roleI }}" width="16" height="16"></i></span>{{ u.role }}</span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.email }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap">{{ u.tel }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:flex;align-items:center;gap:4px;color:{{ u.faFg }};white-space:nowrap"><span style="display:flex"><i data-lucide="{{ u.faI }}" width="16" height="16"></i></span>{{ u.fa }}</span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap">{{ u.last }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span title="{{ u.tip }}" tabindex="{{ u.tipIdx }}" style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:{{ u.st.bg }};color:{{ u.st.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ u.st.icon }}" width="16" height="16"></i></span>{{ u.st.text }}<sc-if value="{{ u.hasSub }}"><span style="display:flex;opacity:0.8"><i data-lucide="info" width="16" height="16"></i></span></sc-if></span></td>
+<td style="padding:0 8px;border-bottom:1px solid #E2E8F0"><button title="Harakatlar" aria-haspopup="menu" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:{{ u.dotsBg }};color:#5B6B6A;cursor:pointer"><i data-lucide="ellipsis" width="16" height="16"></i></button></td>
+</tr></sc-for></tbody></table>
+<sc-if value="{{ f.menuOwn }}"><div role="menu" style="position:absolute;top:80px;right:16px;width:260px;z-index:20;padding:4px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<button role="menuitem" disabled="{{ true }}" aria-disabled="true" aria-describedby="ownTip" style="min-height:36px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:6px;background:#F5F7F8;color:#94A3A1;font-size:14px;line-height:20px;text-align:left;cursor:not-allowed"><span style="display:flex"><i data-lucide="user-cog" width="16" height="16"></i></span><span style="flex:1">Rolni o‘zgartirish</span><span style="display:flex"><i data-lucide="lock" width="16" height="16"></i></span></button>
+<button role="menuitem" style="min-height:36px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:6px;background:transparent;color:#172B2A;font-size:14px;line-height:20px;text-align:left;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="key-round" width="16" height="16"></i></span>2FA’ni qayta o‘rnatish</button>
+<button role="menuitem" style="min-height:36px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:6px;background:transparent;color:#172B2A;font-size:14px;line-height:20px;text-align:left;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="log-out" width="16" height="16"></i></span>Boshqa seanslarni tugatish</button>
+<div style="height:1px;margin:4px 0;background:#E2E8F0"></div>
+<button role="menuitem" disabled="{{ true }}" aria-disabled="true" aria-describedby="ownTip" style="min-height:36px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:6px;background:transparent;color:#94A3A1;font-size:14px;line-height:20px;text-align:left;cursor:not-allowed"><span style="display:flex"><i data-lucide="ban" width="16" height="16"></i></span><span style="flex:1">Bloklash</span><span style="display:flex"><i data-lucide="lock" width="16" height="16"></i></span></button>
+<div id="ownTip" role="tooltip" style="position:absolute;top:0;right:268px;width:280px;padding:8px 12px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:13px;line-height:18px;text-wrap:pretty">Platformada kamida bitta Egasi bo‘lishi kerak. O‘zingizni bloklay olmaysiz va o‘z rolingizni o‘zgartira olmaysiz.</div>
+</div></sc-if>
+<sc-if value="{{ f.menuInv }}"><div role="menu" style="position:absolute;top:240px;right:16px;width:260px;z-index:20;padding:4px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column"><button role="menuitem" style="min-height:36px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:6px;background:#F5F7F8;color:#172B2A;font-size:14px;line-height:20px;text-align:left;cursor:pointer"><span style="display:flex"><i data-lucide="send" width="16" height="16"></i></span>Taklifni qayta yuborish</button><div style="height:1px;margin:4px 0;background:#E2E8F0"></div><button role="menuitem" style="min-height:36px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:6px;background:transparent;color:#B91C1C;font-size:14px;line-height:20px;text-align:left;cursor:pointer" style-hover="background:#FEF2F2"><span style="display:flex"><i data-lucide="x-circle" width="16" height="16"></i></span>Taklifni bekor qilish</button></div></sc-if>
+</section>
+<sc-if value="{{ f.solo }}"><section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:48px 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center"><span style="width:40px;height:40px;border-radius:8px;background:#F5F7F8;color:#5B6B6A;display:flex;align-items:center;justify-content:center"><i data-lucide="users" width="20" height="20"></i></span><span style="font-size:18px;line-height:26px;font-weight:600">Hozircha jamoada faqat siz bor</span><span style="max-width:520px;font-size:14px;line-height:20px;color:#5B6B6A;text-wrap:pretty">Qo‘llab-quvvatlash, sotuv va buxgalteriya xodimlarini taklif qiling. Har biri faqat o‘z roliga tegishli bo‘limlarni ko‘radi.</span><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF"><span style="display:flex"><i data-lucide="user-plus" width="16" height="16"></i></span>Xodim taklif qilish</button></section></sc-if>
+</sc-if>
+<sc-if value="{{ f.roles }}">
+<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;background:#EFF6FF;font-size:13px;line-height:18px"><span style="display:flex;color:#1D4ED8"><i data-lucide="info" width="16" height="16"></i></span>Rollar ruxsatlari tizimda belgilangan. O‘zgartirish kerak bo‘lsa, platforma ishlab chiquvchilariga murojaat qiling.</div>
+<section style="flex:1;min-height:0;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<table style="width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px;line-height:18px">
+<colgroup><col><col style="width:176px"><col style="width:176px"><col style="width:176px"><col style="width:176px"></colgroup>
+<thead><tr><th style="height:44px;padding:0 12px;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">Ruxsat</th><sc-for list="{{ roleCols }}" as="c"><th style="padding:4px 12px;border-bottom:1px solid #E2E8F0;text-align:left"><span style="display:flex;align-items:center;gap:4px;font-size:13px;line-height:18px;font-weight:600"><span style="display:flex;color:#5B6B6A"><i data-lucide="{{ c.icon }}" width="16" height="16"></i></span>{{ c.t }}</span><span style="font-size:12px;line-height:16px;font-weight:400;color:#5B6B6A">{{ c.n }}</span></th></sc-for></tr></thead>
+<tbody><sc-for list="{{ matrix }}" as="g"><tr><td colspan="5" style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">{{ g.t }}</td></tr>
+<sc-for list="{{ g.rows }}" as="r"><tr><td style="height:36px;padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.t }}">{{ r.t }}</td><sc-for list="{{ r.c }}" as="c"><td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:flex;align-items:center;gap:4px;color:{{ c.fg }};font-size:12px;line-height:16px;font-weight:{{ c.w }};white-space:nowrap"><span style="display:flex"><i data-lucide="{{ c.icon }}" width="16" height="16"></i></span>{{ c.text }}</span></td></sc-for></tr></sc-for>
+</sc-for>
+<tr><td style="height:36px;padding:0 12px;background:#F0FDF4;font-weight:600">Ikki bosqichli tasdiqlash — barcha rollar uchun majburiy</td><sc-for list="{{ roleCols }}" as="c"><td style="padding:0 12px;background:#F0FDF4"><span style="display:flex;align-items:center;gap:4px;color:#15803D;font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="shield-check" width="16" height="16"></i></span>Majburiy</span></td></sc-for></tr>
+</tbody></table></section>
+</sc-if>
+<sc-if value="{{ f.loading }}"><section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden"><div style="height:36px;background:#F8FAFA;border-bottom:1px solid #E2E8F0"></div><sc-for list="{{ sk6 }}" as="s"><div style="display:grid;grid-template-columns:196px 156px minmax(0,1fr) 136px 106px 126px 186px;gap:24px;align-items:center;height:52px;padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="height:12px;border-radius:6px;background:#E2E8F0"></span><span style="width:80%;height:20px;border-radius:6px;background:#F5F7F8"></span><span style="width:70%;height:12px;border-radius:6px;background:#F5F7F8"></span><span style="height:12px;border-radius:6px;background:#F5F7F8"></span><span style="height:12px;border-radius:6px;background:#F5F7F8"></span><span style="height:12px;border-radius:6px;background:#F5F7F8"></span><span style="width:60%;height:20px;border-radius:6px;background:#F5F7F8"></span></div></sc-for></section></sc-if>
+<sc-if value="{{ f.error }}"><section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:48px 24px;display:flex;justify-content:center"><div style="max-width:560px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:16px;border-radius:6px;background:#FEF2F2"><span style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:600;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>Xodimlar ro‘yxati yuklanmadi</span><span style="font-size:13px;line-height:18px">Server javob bermadi. Bir daqiqadan so‘ng qayta urinib ko‘ring; xato takrorlansa, «Platforma holati» sahifasini tekshiring.</span><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="rotate-cw" width="16" height="16"></i></span>Qayta urinish</button></div></section></sc-if>
+</main>
+</div>
+<sc-if value="{{ f.panel }}"><div style="position:absolute;inset:0;z-index:30;background:rgba(18,60,58,0.4)"></div>
+<aside role="dialog" aria-modal="true" aria-labelledby="pT" style="position:absolute;top:0;right:0;bottom:0;width:560px;z-index:31;background:#FFFFFF;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:12px;padding:24px 24px 16px;border-bottom:1px solid #E2E8F0"><span style="width:40px;height:40px;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600">ME</span><div style="flex:1;display:flex;flex-direction:column;gap:4px"><h2 id="pT" style="margin:0;font-size:18px;line-height:26px;font-weight:600">Madina Ergasheva</h2><span style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:#F0FDF4;color:#15803D;font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="circle-check" width="16" height="16"></i></span>Faol</span>Qo‘llab-quvvatlash</span></div><button title="Yopish (Esc)" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><i data-lucide="x" width="16" height="16"></i></button></div>
+<div style="flex:1;min-height:0;overflow:hidden;padding:16px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column"><sc-for list="{{ pInfo }}" as="x"><div style="display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:6px 0;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px"><span style="color:#5B6B6A">{{ x.k }}</span><span style="font-family:{{ x.ff }}">{{ x.v }}</span></div></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;line-height:18px;font-weight:600">Rol ruxsatlari</span><sc-for list="{{ pPerm }}" as="x"><span style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:{{ x.fg }}"><span style="display:flex"><i data-lucide="{{ x.icon }}" width="16" height="16"></i></span>{{ x.t }}</span></sc-for><a href="#" style="font-size:13px;line-height:18px;font-weight:600">Barcha ruxsatlar</a></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Faol seanslar · 2</span><sc-for list="{{ pSess }}" as="s"><div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 12px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;line-height:18px"><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-weight:600">{{ s.dev }}</span><span style="color:#5B6B6A"><span style="font-family:'JetBrains Mono',monospace;font-size:12px">{{ s.ip }}</span> · oxirgi faollik <span style="font-family:'JetBrains Mono',monospace;font-size:12px">{{ s.last }}</span></span></span><button style="height:32px;display:flex;align-items:center;gap:4px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#B91C1C;font-size:13px;line-height:18px;font-weight:600;cursor:pointer;white-space:nowrap"><span style="display:flex"><i data-lucide="log-out" width="16" height="16"></i></span>Seansni tugatish</button></div></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:4px"><span style="display:flex;justify-content:space-between;font-size:13px;line-height:18px;font-weight:600">Oxirgi 5 ta harakat<a href="#">Audit jurnalida ochish</a></span><sc-for list="{{ pAct }}" as="a"><div style="display:grid;grid-template-columns:136px minmax(0,1fr);gap:8px;padding:4px 0;font-size:13px;line-height:18px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#5B6B6A">{{ a.t }}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.a }}</span></div></sc-for></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:36px;display:flex;align-items:center;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A">Ortga</button><span style="flex:1"></span><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer"><span style="display:flex"><i data-lucide="user-cog" width="16" height="16"></i></span>Rolni o‘zgartirish</button></div>
+</aside></sc-if>
+<sc-if value="{{ f.mInv }}"><div style="position:absolute;inset:0;z-index:40;background:rgba(18,60,58,0.4);display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box"><div role="dialog" aria-modal="true" aria-labelledby="mI{{ f.id }}" style="width:640px;background:#FFFFFF;border-radius:12px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:flex-start;gap:12px;padding:24px 24px 16px"><h2 id="mI{{ f.id }}" style="flex:1;margin:0;font-size:18px;line-height:26px;font-weight:600">Xodim taklif qilish</h2><button title="Yopish (Esc)" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><i data-lucide="x" width="16" height="16"></i></button></div>
+<div style="padding:0 24px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">F.I.Sh.</span><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px;line-height:20px">Sherzod Mavlonov</label></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Email</span>
+<sc-if value="{{ f.noDup }}"><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px;line-height:20px">s.mavlonov@100plus.uz</label></sc-if>
+<sc-if value="{{ f.dup }}"><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #B91C1C;border-radius:6px;font-size:14px;line-height:20px">m.ergasheva@100plus.uz</label><span style="display:flex;align-items:flex-start;gap:4px;font-size:12px;line-height:16px;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>Bu email bilan xodim mavjud: Madina Ergasheva (Qo‘llab-quvvatlash). Boshqa email kiriting.</span></sc-if></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Telefon</span><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px">+998 95 144 82 06</label></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Rol</span><div role="radiogroup" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><sc-for list="{{ roleCards }}" as="r"><div role="radio" aria-checked="{{ r.on }}" style="display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid {{ r.bd }};border-radius:8px;background:{{ r.bg }};cursor:pointer"><span style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:600"><span style="display:flex;color:#5B6B6A"><i data-lucide="{{ r.icon }}" width="16" height="16"></i></span>{{ r.t }}</span><span style="font-size:12px;line-height:16px;color:#5B6B6A;text-wrap:pretty">{{ r.d }}</span></div></sc-for></div></div>
+<div style="display:flex;align-items:flex-start;gap:8px;padding:12px;border-radius:6px;background:#EFF6FF;font-size:13px;line-height:18px"><span style="display:flex;color:#1D4ED8"><i data-lucide="info" width="16" height="16"></i></span>Taklif havolasi 48 soat amal qiladi. Birinchi kirishda parol va ikki bosqichli tasdiqlash sozlanadi.</div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:36px;display:flex;align-items:center;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A">Ortga</button><sc-if value="{{ f.noDup }}"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF"><span style="display:flex"><i data-lucide="send" width="16" height="16"></i></span>Taklif yuborish</button></sc-if><sc-if value="{{ f.dup }}"><button disabled="{{ true }}" style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;border:0;background:#E2E8F0;color:#5B6B6A;cursor:not-allowed"><span style="display:flex"><i data-lucide="send" width="16" height="16"></i></span>Taklif yuborish</button></sc-if></div>
+</div></div></sc-if>
+<sc-if value="{{ f.mSmall }}"><div style="position:absolute;inset:0;z-index:40;background:rgba(18,60,58,0.4);display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box"><div role="dialog" aria-modal="true" aria-labelledby="mS{{ f.id }}" style="width:480px;background:#FFFFFF;border-radius:12px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:flex-start;gap:12px;padding:24px 24px 16px"><div style="flex:1;display:flex;flex-direction:column;gap:4px"><h2 id="mS{{ f.id }}" style="margin:0;font-size:18px;line-height:26px;font-weight:600">{{ f.ms.title }}</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">{{ f.ms.sub }}</span></div><button title="Yopish (Esc)" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><i data-lucide="x" width="16" height="16"></i></button></div>
+<div style="padding:0 24px 24px;display:flex;flex-direction:column;gap:16px">
+<sc-for list="{{ f.ms.lists }}" as="l"><div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">{{ l.t }}</span><sc-for list="{{ l.items }}" as="x"><span style="display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:20px"><span style="display:flex;padding-top:2px;color:{{ l.fg }}"><i data-lucide="{{ l.icon }}" width="16" height="16"></i></span><span>{{ x }}</span></span></sc-for></div></sc-for>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Sabab<span style="font-weight:400;color:#5B6B6A"> · majburiy</span></span><div style="min-height:64px;box-sizing:border-box;padding:8px 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px;line-height:20px">{{ f.ms.reason }}</div></div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:36px;display:flex;align-items:center;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A">Ortga</button><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:0;background:{{ f.ms.btnBg }};color:#FFFFFF">{{ f.ms.btn }}</button></div>
+</div></div></sc-if>
+</div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const T = { danger: { bg: '#FEF2F2', fg: '#B91C1C' }, warning: { bg: '#FFFBEB', fg: '#B45309' }, success: { bg: '#F0FDF4', fg: '#15803D' }, info: { bg: '#EFF6FF', fg: '#1D4ED8' }, neutral: { bg: '#F5F7F8', fg: '#5B6B6A' } };
+const B = (tone, icon, text) => ({ ...T[tone], icon, text });
+const ROLE_I = { 'Egasi': 'crown', 'Qo‘llab-quvvatlash': 'life-buoy', 'Sotuv': 'briefcase', 'Buxgalter': 'calculator' };
+const ST = { on: B('success', 'circle-check', 'Faol'), inv: B('info', 'mail', 'Taklif kutilmoqda'), exp: B('warning', 'clock', 'Taklif muddati o‘tgan'), blk: B('danger', 'ban', 'Bloklangan') };
+const USERS = [
+  ['DK', 'Dilshod Karimov', 'Egasi', 'd.karimov@100plus.uz', '+998 90 111 22 33', true, '25.11.2026, 08:52', 'on', '', true],
+  ['ME', 'Madina Ergasheva', 'Qo‘llab-quvvatlash', 'm.ergasheva@100plus.uz', '+998 93 405 18 62', true, '25.11.2026, 08:47', 'on', ''],
+  ['NR', 'Nilufar Rahimova', 'Sotuv', 'n.rahimova@100plus.uz', '+998 90 562 71 08', true, '25.11.2026, 09:14', 'on', ''],
+  ['GQ', 'Gulnora Qodirova', 'Buxgalter', 'g.qodirova@100plus.uz', '+998 94 718 30 25', true, '25.11.2026, 08:58', 'on', ''],
+  ['JA', 'Javohir Aliyev', 'Qo‘llab-quvvatlash', 'j.aliyev@100plus.uz', '+998 97 260 44 19', false, '—', 'inv', '26.11.2026, 18:20 gacha'],
+  ['BT', 'Bekzod Tursunov', 'Sotuv', 'b.tursunov@100plus.uz', '+998 99 803 57 21', true, '29.09.2026, 17:40', 'blk', '30.09.2026 · ishdan ketgan']
+];
+const nav = [
+  { title: null, items: [{ label: 'Bosh sahifa', icon: 'house' }] },
+  { title: 'Mijozlar', items: [{ label: 'Kompaniyalar', icon: 'building-2' }, { label: 'Qo‘llab-quvvatlash', icon: 'life-buoy', badge: '5' }] },
+  { title: 'Moliya', items: [{ label: 'Tariflar va modullar', icon: 'layers' }, { label: 'To‘lovlar va hisob-fakturalar', icon: 'receipt' }] },
+  { title: 'Tizim', items: [{ label: 'Platforma holati', icon: 'activity' }, { label: 'Audit jurnali', icon: 'scroll-text' }] },
+  { title: 'Boshqaruv', items: [{ label: 'Xodimlar va rollar', icon: 'user-cog', active: true }, { label: 'Sozlamalar', icon: 'settings' }] }
+].map(x => ({ ...x, hasTitle: !!x.title, items: x.items.map(i => ({ ...i, active: !!i.active, idle: !i.active, hasBadge: !!i.badge })) }));
+const CELL = { y: { icon: 'check', text: 'Ruxsat', fg: '#15803D', w: 600 }, v: { icon: 'eye', text: 'Faqat ko‘rish', fg: '#1D4ED8', w: 600 }, n: { icon: 'minus', text: 'Yo‘q', fg: '#5B6B6A', w: 400 }, k: { icon: 'key-round', text: 'Egasi ruxsati bilan', fg: '#B45309', w: 600 } };
+// ustunlar: Egasi, Qo‘llab-quvvatlash, Sotuv, Buxgalter
+const MATRIX = [
+  ['Bosh sahifa', [['Ko‘rish', 'yyyy'], ['Moliya ko‘rsatkichlari', 'ynyy']]],
+  ['Kompaniyalar', [['Ko‘rish', 'yyyy'], ['Excelga eksport', 'ynyy'], ['Kompaniya qo‘shish', 'ynyn'], ['Tarifni o‘zgartirish', 'ynyn'], ['Sinov muddatini uzaytirish', 'ynyn'], ['To‘xtatish va qayta faollashtirish', 'ynny'], ['Modulni ulash', 'ynyn'], ['Kompaniya nomidan kirish · faqat ko‘rish', 'yyyy'], ['Kompaniya nomidan kirish · tahrirlash', 'ykkk']]],
+  ['Tariflar va modullar', [['Ko‘rish', 'ynyy'], ['Tahrirlash', 'ynnn']]],
+  ['To‘lovlar va hisob-fakturalar', [['Ko‘rish', 'ynyy'], ['Qo‘lda kiritish, qaytarish, biriktirish, bekor qilish', 'ynny']]],
+  ['Qo‘llab-quvvatlash', [['Ko‘rish, javob, ichki eslatma, murojaat yaratish', 'yyyy'], ['Mas’ul tayinlash va yopish', 'yynn']]],
+  ['Tizim', [['Platforma holati (xato panelidan murojaat yaratish bilan)', 'yvnn'], ['Audit jurnali', 'ynnn']]],
+  ['Boshqaruv', [['Xodimlar va rollar', 'ynnn'], ['Sozlamalar', 'ynnn']]]
+].map(([t, rows]) => ({ t, rows: rows.map(([rt, c]) => ({ t: rt, c: c.split('').map(x => CELL[x]) })) }));
+const L = (t, icon, fg, items) => ({ t, icon, fg, items });
+const MS = {
+  role: { title: 'Rolni o‘zgartirish', sub: 'Nilufar Rahimova · Sotuv → Buxgalter', btn: 'Rolni o‘zgartirish', btnBg: '#0F766E', reason: 'Sotuv bo‘limidan buxgalteriyaga o‘tdi, 01.12.2026 dan.',
+    lists: [L('Qo‘shiladi', 'plus', '#15803D', ['To‘lovlarni qo‘lda kiritish va biriktirish', 'To‘lovni qaytarish va hisob-fakturani bekor qilish', 'Kompaniyani to‘xtatish va qayta faollashtirish']), L('Olib tashlanadi', 'minus', '#B91C1C', ['Kompaniya qo‘shish', 'Tarifni o‘zgartirish va modul ulash', 'Sinov muddatini uzaytirish'])] },
+  block: { title: 'Xodimni bloklash', sub: 'Madina Ergasheva · Qo‘llab-quvvatlash', btn: 'Xodimni bloklash', btnBg: '#B91C1C', reason: 'Ta’tilga chiqdi, 01.12.2026 gacha kirish kerak emas.',
+    lists: [L('Bloklansa:', 'triangle-alert', '#B91C1C', ['2 ta faol seans darhol tugatiladi', '1 ta ochiq murojaat (#1051) mas’ulsiz qoladi', 'Tizimga kira olmaydi; audit yozuvlari saqlanadi'])] },
+  fa: { title: '2FA’ni qayta o‘rnatish', sub: 'Gulnora Qodirova · Buxgalter', btn: '2FA’ni qayta o‘rnatish', btnBg: '#B91C1C', reason: 'Telefonini yo‘qotgan, 25.11.2026 da qo‘ng‘iroq qilib xabar berdi.',
+    lists: [L('Qayta o‘rnatilsa:', 'triangle-alert', '#B91C1C', ['Keyingi kirishda 2FA qayta sozlanadi.', 'Barcha faol seanslar tugatiladi: 1 ta seans.'])] }
+};
+const FR = [
+  { id: 'A', title: 'Xodimlar tabi', note: '6 ta xodim' },
+  { id: 'B', title: 'Xodim paneli', note: 'Madina Ergasheva · 2 ta faol seans', dr: 'ME' },
+  { id: 'C', title: 'Xodim taklif qilish', note: 'Oyna 640px', m: 'inv' },
+  { id: 'C2', title: 'Taklif · email mavjud', note: 'Maydon xatosi · tugma disabled', m: 'inv', dup: true },
+  { id: 'D', title: 'Rolni o‘zgartirish', note: 'Nilufar Rahimova · Sotuv → Buxgalter', m: 'role' },
+  { id: 'E', title: 'Bloklash', note: 'Madina Ergasheva · danger', m: 'block' },
+  { id: 'F', title: '2FA’ni qayta o‘rnatish', note: 'Gulnora Qodirova · telefon yo‘qolgan', m: 'fa' },
+  { id: 'G', title: 'Egasi o‘z qatorida «⋯»', note: 'Disabled bandlar + tooltip', menu: 'own' },
+  { id: 'H', title: 'Taklif muddati o‘tgan (variant)', note: 'Javohir Aliyev · 27.11.2026 holati · «⋯» menyusida qayta yuborish', exp: true, menu: 'inv' },
+  { id: 'I', title: 'Rollar va ruxsatlar', note: 'Matritsa · 21 qator · freym 1360px', tab: 'roles' },
+  { id: 'J', title: 'Bo‘sh holat', note: 'Faqat Egasi', solo: true },
+  { id: 'K', title: 'Yuklanmoqda', note: 'Skeleton', loading: true },
+  { id: 'L', title: 'Xato', note: 'Ro‘yxat yuklanmadi', error: true },
+  { id: 'M', title: '1-qism tuzatishlari', note: 'Audit, murojaatlar', doc: true }
+];
+class Component extends DCLogic {
+  componentDidMount() { const run = () => { if (window.lucide && document.querySelector('i[data-lucide]')) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }); }; run(); let n = 0; this._t = setInterval(() => { run(); if (++n > 12) clearInterval(this._t); }, 500); }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const frames = FR.map(fr => {
+      if (fr.doc) return { ...fr, doc: true, app: false };
+      const busy = fr.loading || fr.error, roles = fr.tab === 'roles';
+      const list = fr.solo ? USERS.slice(0, 1) : USERS;
+      const users = list.map(([av, name, role, email, tel, fa, last, st, sub, me]) => {
+        const s = fr.exp && st === 'inv' ? 'exp' : st;
+        return { av, name, role, roleI: ROLE_I[role], email, tel, fa: fa ? 'Yoqilgan' : 'Sozlanmagan', faI: fa ? 'shield-check' : 'shield-off', faFg: fa ? '#15803D' : '#B45309', last, st: ST[s],
+          hasSub: !!sub, tip: s === 'exp' ? 'Taklif muddati 26.11.2026, 18:20 da tugagan' : st === 'inv' ? 'Taklif 26.11.2026, 18:20 gacha amal qiladi' : st === 'blk' ? 'Bloklangan 30.09.2026 · sabab: ishdan ketgan' : '', tipIdx: sub ? 0 : -1, me: !!me,
+          avBg: st === 'blk' ? '#F5F7F8' : '#DDF5EE', avFg: st === 'blk' ? '#5B6B6A' : '#0F766E',
+          bg: fr.dr === av ? '#DDF5EE' : '#FFFFFF', dotsBg: ((fr.menu === 'own' && me) || (fr.menu === 'inv' && st === 'inv')) ? '#E2E8F0' : 'transparent' };
+      });
+      return { ...fr, doc: false, app: true, h: roles ? '1360px' : '960px', hdrPri: !fr.solo,
+        tabs: [['Xodimlar', fr.solo ? '1' : '6', !roles], ['Rollar va ruxsatlar', '4', roles]].map(([t, n, on]) => ({ t, n, on, off: !on })),
+        usersOn: !roles && !busy, menuOwn: fr.menu === 'own', menuInv: fr.menu === 'inv', panel: fr.dr === 'ME', hasM: !!fr.m, mSmall: !!MS[fr.m], ms: MS[fr.m] || { lists: [] }, mInv: fr.m === 'inv', mRole: fr.m === 'role', mBlock: fr.m === 'block', mFa: fr.m === 'fa', dup: !!fr.dup, noDup: !fr.dup, roles, solo: !!fr.solo, loading: !!fr.loading, error: !!fr.error, users };
+    });
+    const M = 'JetBrains Mono,monospace', I = 'Inter,sans-serif';
+    const roleCards = [['Egasi', 'crown', 'Barcha bo‘limlar, xodimlar, audit va sozlamalar.'], ['Qo‘llab-quvvatlash', 'life-buoy', 'Murojaatlar va nomidan kirish (faqat ko‘rish). Moliya ko‘rinmaydi.'], ['Sotuv', 'briefcase', 'Kompaniya qo‘shish, tarif va sinov muddati. Moliya — faqat ko‘rish.'], ['Buxgalter', 'calculator', 'To‘lovlar, qaytarish, hisob-fakturalar, to‘xtatish.']].map(([t, icon, d], i) => ({ t, icon, d, on: i === 1, bd: i === 1 ? '#0D9488' : '#E2E8F0', bg: i === 1 ? '#DDF5EE' : '#FFFFFF' }));
+    const A = 'Audit%20jurnali.dc.html', Q = 'Qo%27llab-quvvatlash.dc.html';
+    const fixes = [
+      ['1', 'Shirin Oziq-ovqat Savdo', '«To‘xtatilgan», 04.11.2026, kompaniya so‘rovi bilan. Audit yozuvi «Kompaniya to‘xtatildi» o‘zgarishsiz.', 'Audit · A', A + '#frame-A'],
+      ['2', '16:40 dan keyingi yozuvlar olib tashlandi', 'Kompaniya kartasi 3c jurnalidagi 16:43 qatori o‘chirildi. Qo‘llab-quvvatlash G2: hal qilish 16:21, mijoz xabari 16:33.', 'Qo‘llab-quvvatlash · G2', Q + '#frame-G2'],
+      ['3', 'Audit hajmi', 'Oxirgi 30 kun — 1.488 yozuv («1–50 / 1.488»), 01.03.2026 dan — 13.242 (Dilshod Karimovning 08:52 kirishi qo‘shilgan). Harakat turi guruhlari jami 1.488.', 'Audit · A', A + '#frame-A'],
+      ['4', 'Eksport chegarasi 10.000', 'G: 26.10–25.11.2026, 1.488 yozuv. G2: 01.03.2026–25.11.2026, 13.242 yozuv → warning, tugma disabled.', 'Audit · G2', A + '#frame-G2'],
+      ['5', 'Natija turlari', 'Bajarildi (success) · Rad etildi (danger) · Muvaffaqiyatsiz (warning). 21.11, 03:00 zaxira nusxa — «Muvaffaqiyatsiz». «Natija» filtrida uch variant.', 'Audit · A', A + '#frame-A'],
+      ['6', 'Ustun kengliklari', 'Minimal kengliklar: 152 · 176 · 184 · 180 · qolgan · 120 · 140. «Harakat» va «Tafsilot» bir qatorda qisqartiriladi, to‘liq matn tooltip’da.', 'Audit · A', A + '#frame-A'],
+      ['7', '#1054 avtomatik yopish', 'Holat 25.11, 10:02 da «Mijoz javobi kutilmoqda». O‘ng ustunda: 28.11.2026 eslatma · 02.12.2026 avtomatik hal qilinadi.', 'Qo‘llab-quvvatlash · L', Q + '#frame-L'],
+      ['8', 'Sotuv murojaat yaratadi', 'O‘zgarishsiz; matritsada «Murojaat yaratish» — barcha rollar.', 'Rollar · I', '#frame-I']
+    ].map(([n, t, d, link, href]) => ({ n, t, d, link, href }));
+    return { frames, nav, roleCards, fixes, matrix: MATRIX,
+      pInfo: [['Email', 'm.ergasheva@100plus.uz', I], ['Telefon', '+998 93 405 18 62', M], ['Qo‘shilgan', '02.03.2026 · taklif qilgan Dilshod Karimov', I], ['2FA', 'Yoqilgan · autentifikator ilovasi', I], ['Oxirgi kirish', '25.11.2026, 08:47', M], ['Ochiq murojaatlar', '#1051 · Shifo-Nur Farm Distribyutsiya', I]].map(([k, v, ff]) => ({ k, v, ff })),
+      pPerm: [['check', 'Murojaatlar: javob, mas’ul tayinlash, yopish', '#15803D'], ['eye', 'Platforma holati: faqat ko‘rish', '#1D4ED8'], ['minus', 'Moliya bo‘limlari va summalar ko‘rinmaydi', '#5B6B6A']].map(([icon, t, fg]) => ({ icon, t, fg })),
+      pSess: [['Chrome · macOS · Toshkent', '213.230.82.27', '16:39'], ['Safari · iOS · Toshkent', '188.113.204.9', '12:05']].map(([dev, ip, last]) => ({ dev, ip, last })),
+      pAct: [['25.11.2026, 16:32', '#1048 mas’uli o‘zgartirildi → Dilshod Karimov'], ['25.11.2026, 14:02', '#1051 mas’ul etib tayinlandi'], ['25.11.2026, 12:10', '#1052 hal qilindi · Barakali Oziq-ovqat Savdo'], ['25.11.2026, 08:47', 'Tizimga kirdi'], ['24.11.2026, 17:55', '#1050 yopildi · Najot Farm Ombor']].map(([t, a]) => ({ t, a })), roleCols: [['Egasi', 'crown', '1 faol'], ['Qo‘llab-quvvatlash', 'life-buoy', '1 faol · +1 taklif'], ['Sotuv', 'briefcase', '1 faol'], ['Buxgalter', 'calculator', '1 faol']].map(([t, icon, n]) => ({ t, icon, n })), sk6: [0, 1, 2, 3, 4, 5], head: ['F.I.Sh.', 'Rol', 'Email', 'Telefon', '2FA', 'Oxirgi kirish', 'Holat', ''] };
+  }
+}
+</script>
+</body>
+</html>

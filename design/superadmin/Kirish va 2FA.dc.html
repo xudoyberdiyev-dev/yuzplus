@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+body{margin:0;background:#E2E8F0;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+button{font-family:inherit}
+:focus-visible{outline:2px solid #0D9488;outline-offset:2px}
+svg.lucide{display:block;flex:none}
+</style>
+</helmet>
+<div style="padding:64px;display:flex;flex-direction:column;gap:48px;width:max-content">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:24px;line-height:32px;font-weight:600">100+ · Super admin paneli — 13-bosqich: Kirish va ikki bosqichli tasdiqlash</div>
+<div style="font-size:14px;line-height:20px;color:#5B6B6A">Desktop 1440 × 860px · platforma xodimlari uchun · 25.11.2026, 16:40 holatiga · maydon va tugmalar 44px</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;max-width:2944px;font-size:14px;line-height:20px"><sc-for list="{{ frames }}" as="f"><a href="#frame-{{ f.id }}">{{ f.id }} · {{ f.title }}</a></sc-for></div>
+</div>
+<div style="display:grid;grid-template-columns:1440px 1440px;gap:64px;align-items:start">
+<sc-for list="{{ frames }}" as="f" hint-placeholder-count="2">
+<div id="frame-{{ f.id }}" data-screen-label="{{ f.id }} {{ f.title }}" style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px"><span style="padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600">{{ f.id }}</span><span style="font-size:15px;line-height:22px;font-weight:600">{{ f.title }}</span><span style="font-size:14px;line-height:20px;color:#5B6B6A">{{ f.note }}</span></div>
+<sc-if value="{{ f.vHome }}"><div style="width:1440px;height:300px;box-sizing:border-box;display:flex;background:#F5F7F8;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden"><div style="width:240px;flex:none;background:#123C3A;display:flex;flex-direction:column"><div style="height:56px;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="font-size:15px;line-height:22px;font-weight:600;color:#FFFFFF">100+</span><span style="font-size:14px;line-height:20px;color:#A9C7C3">· Platforma</span></div></div><div style="flex:1;display:flex;flex-direction:column"><div style="height:56px;box-sizing:border-box;background:#FFFFFF;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;padding:0 24px;font-size:14px;line-height:20px">Bosh sahifa</div><div style="padding:24px;display:flex;flex-direction:column;gap:16px"><h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Bosh sahifa</h1><div role="alert" style="display:flex;align-items:flex-start;gap:8px;padding:12px 16px;border-radius:8px;background:#FFFBEB;font-size:14px;line-height:20px"><span style="display:flex;color:#B45309;padding-top:2px"><i data-lucide="key-round" width="16" height="16"></i></span><span style="flex:1"><span style="font-weight:600;color:#B45309">Siz zaxira kod bilan kirdingiz. <span style="font-family:'JetBrains Mono',monospace">9</span> ta kod qoldi.</span> Autentifikator ilovangizni tekshiring.</span><button title="Yopish" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><i data-lucide="x" width="16" height="16"></i></button></div></div></div></div></sc-if>
+<sc-if value="{{ f.vTimeout }}"><div style="position:relative;width:1440px;height:860px;box-sizing:border-box;display:flex;background:#F5F7F8;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden"><div style="width:240px;flex:none;background:#123C3A"></div><div style="flex:1;display:flex;flex-direction:column"><div style="height:56px;background:#FFFFFF;border-bottom:1px solid #E2E8F0"></div><div style="padding:24px"><span style="font-size:24px;line-height:32px;font-weight:600">To‘lovlar va hisob-fakturalar</span></div></div>
+<div style="position:absolute;inset:0;background:rgba(18,60,58,0.4);display:flex;align-items:center;justify-content:center"><div role="alertdialog" aria-modal="true" aria-labelledby="gT" style="width:480px;background:#FFFFFF;border-radius:12px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="padding:24px 24px 16px;display:flex;flex-direction:column;gap:12px;align-items:flex-start"><h2 id="gT" style="margin:0;font-size:18px;line-height:26px;font-weight:600">Seans 1 daqiqadan keyin tugaydi</h2><span role="timer" aria-live="polite" style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:32px;line-height:40px;font-weight:600;color:#B45309">0:58</span><span style="font-size:14px;line-height:20px;color:#5B6B6A">30 daqiqa davomida harakat bo‘lmadi. Davom ettirmasangiz, xavfsizlik uchun tizimdan chiqasiz; saqlanmagan o‘zgarishlar yo‘qolishi mumkin.</span></div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:44px;display:flex;align-items:center;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A">Chiqish</button><button style="height:44px;display:flex;align-items:center;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">Ishni davom ettirish</button></div>
+</div></div></div></sc-if>
+<sc-if value="{{ f.vDoc }}"><div style="width:1440px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:32px;display:flex;flex-direction:column;gap:16px"><h2 style="margin:0;font-size:18px;line-height:26px;font-weight:600">12b tuzatishlari (1–4)</h2><div style="display:flex;flex-direction:column"><sc-for list="{{ fixes }}" as="x"><div style="display:grid;grid-template-columns:32px 280px minmax(0,1fr) 220px;gap:16px;align-items:start;padding:12px 0;border-top:1px solid #E2E8F0;font-size:14px;line-height:20px"><span style="font-family:'JetBrains Mono',monospace;color:#5B6B6A">{{ x.n }}</span><span style="font-weight:600">{{ x.t }}</span><span style="text-wrap:pretty">{{ x.d }}</span><a href="{{ x.href }}" style="display:flex;align-items:center;gap:4px;font-weight:600">{{ x.link }}<span style="display:flex"><i data-lucide="arrow-up-right" width="16" height="16"></i></span></a></div></sc-for></div></div></sc-if>
+<sc-if value="{{ f.page }}"><div style="position:relative;width:1440px;height:860px;box-sizing:border-box;background:#F5F7F8;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px">
+<div role="group" aria-label="Til" style="position:absolute;top:24px;right:24px;display:flex;gap:2px;padding:2px;border-radius:6px;background:#FFFFFF;box-shadow:inset 0 0 0 1px #E2E8F0"><sc-for list="{{ f.langs }}" as="l"><sc-if value="{{ l.on }}"><span style="height:32px;display:flex;align-items:center;padding:0 12px;border-radius:6px;background:#DDF5EE;color:#0F766E;font-size:13px;line-height:18px;font-weight:600">{{ l.t }}</span></sc-if><sc-if value="{{ l.off }}"><span style="height:32px;display:flex;align-items:center;padding:0 12px;font-size:13px;line-height:18px;color:#5B6B6A;cursor:pointer">{{ l.t }}</span></sc-if></sc-for></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="font-size:20px;line-height:28px;font-weight:600;color:#123C3A">100+ · {{ f.s.platform }}</span><span style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>{{ f.s.badge }}</span></div>
+<main style="width:400px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:32px;display:flex;flex-direction:column;gap:20px">
+<sc-if value="{{ f.hasStep }}"><div aria-label="Qadamlar" style="display:flex;align-items:center;gap:8px"><sc-for list="{{ f.steps }}" as="s"><span style="display:flex;align-items:center;gap:6px;font-size:12px;line-height:16px;font-weight:600;color:{{ s.fg }}"><span style="width:24px;height:24px;box-sizing:border-box;border-radius:6px;background:{{ s.bg }};border:1px solid {{ s.bd }};color:{{ s.numFg }};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace">{{ s.n }}</span>{{ s.t }}</span><sc-if value="{{ s.line }}"><span style="flex:1;height:1px;min-width:12px;background:#E2E8F0"></span></sc-if></sc-for></div></sc-if>
+<div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:20px;line-height:28px;font-weight:600">{{ f.c.title }}</h1><sc-if value="{{ f.c.hasSub }}"><span style="font-size:14px;line-height:20px;color:#5B6B6A;text-wrap:pretty">{{ f.c.sub }}</span></sc-if></div>
+<sc-if value="{{ f.c.hasAlert }}"><div role="alert" style="display:flex;align-items:flex-start;gap:8px;padding:12px;border-radius:6px;background:{{ f.c.al.bg }};font-size:13px;line-height:18px;color:#172B2A"><span style="display:flex;color:{{ f.c.al.fg }}"><i data-lucide="{{ f.c.al.icon }}" width="16" height="16"></i></span><span style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:600;color:{{ f.c.al.fg }};text-wrap:pretty">{{ f.c.al.text }}</span><sc-if value="{{ f.c.hasAl2 }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ f.c.al2 }}</span></sc-if></span></div></sc-if>
+<sc-if value="{{ f.vLogin }}"><div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Email</span><label style="height:44px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid {{ f.lg.emBd }};outline:{{ f.lg.emRing }};outline-offset:2px;border-radius:6px;background:{{ f.lg.fBg }};font-size:14px;line-height:20px;color:{{ f.lg.emFg }}">{{ f.lg.em }}</label></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="display:flex;justify-content:space-between;gap:8px;font-size:13px;line-height:18px"><span style="font-weight:600">{{ f.lg.pw }}</span><a href="#" style="font-weight:600">{{ f.lg.forgot }}</a></span><label style="height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px 0 12px;border:1px solid #E2E8F0;border-radius:6px;background:{{ f.lg.fBg }};font-size:14px;line-height:20px;color:#94A3A1"><span>{{ f.lg.pwPh }}</span><button title="{{ f.lg.show }}" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><i data-lucide="eye" width="16" height="16"></i></button></label></div>
+<sc-if value="{{ f.lg.btnOn }}"><button style="height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF" style-hover="background:#115E59">{{ f.lg.btn }}</button></sc-if>
+<sc-if value="{{ f.lg.btnOff }}"><button disabled="{{ true }}" style="height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;border:0;background:#E2E8F0;color:#5B6B6A;cursor:not-allowed"><span style="display:flex"><i data-lucide="lock" width="16" height="16"></i></span>{{ f.lg.btn }}</button></sc-if>
+</div></sc-if>
+<sc-if value="{{ f.vOtp }}"><div style="display:flex;flex-direction:column;gap:16px">
+<div role="group" aria-label="6 xonali kod" style="display:grid;grid-template-columns:repeat(6,44px);justify-content:space-between"><sc-for list="{{ f.cells }}" as="x"><span style="width:44px;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid {{ x.bd }};outline:{{ x.ring }};outline-offset:2px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600">{{ x.d }}</span></sc-for></div>
+<span style="font-size:12px;line-height:16px;color:#5B6B6A">Kod har 30 soniyada yangilanadi. Kodni joylashtirsangiz (paste), kataklar o‘zi to‘ladi.</span>
+<sc-if value="{{ f.otpOn }}"><button style="height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">Tasdiqlash</button></sc-if>
+<sc-if value="{{ f.otpOff }}"><button disabled="{{ true }}" style="height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;border:0;background:#E2E8F0;color:#5B6B6A;cursor:not-allowed">Tasdiqlash</button></sc-if>
+<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;line-height:18px"><a href="#" style="font-weight:600">Zaxira kod bilan kirish</a><a href="#" style="font-weight:600">Boshqa hisob bilan kirish</a></div>
+</div></sc-if>
+<sc-if value="{{ f.vBackup }}"><div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Zaxira kod</span><label style="height:44px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #0D9488;outline:2px solid #0D9488;outline-offset:2px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:15px;letter-spacing:1px">7K2M-9QXD</label><span style="font-size:12px;line-height:16px;color:#5B6B6A">Format: XXXX-XXXX</span></div>
+<button style="height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">Tasdiqlash</button>
+<a href="#" style="font-size:13px;line-height:18px;font-weight:600">Autentifikator kodi bilan kirish</a>
+</div></sc-if>
+<sc-if value="{{ f.vPass }}"><div style="display:flex;flex-direction:column;gap:16px">
+<sc-if value="{{ f.isInv }}"><span style="align-self:flex-start;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:#F5F7F8;font-size:12px;line-height:16px;font-weight:600"><span style="display:flex;color:#5B6B6A"><i data-lucide="life-buoy" width="16" height="16"></i></span>Qo‘llab-quvvatlash</span></sc-if>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Yangi parol</span><label style="height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;padding:0 4px 0 12px;border:1px solid #0D9488;outline:2px solid #0D9488;outline-offset:2px;border-radius:6px;font-size:15px;letter-spacing:2px">{{ f.pwDots }}<button title="Parolni ko‘rsatish" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><i data-lucide="eye" width="16" height="16"></i></button></label></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Parolni takrorlang</span><label style="height:44px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:15px;letter-spacing:2px">{{ f.pwDots2 }}</label></div>
+<ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px"><sc-for list="{{ f.reqs }}" as="r"><li style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:{{ r.fg }}"><span style="display:flex"><i data-lucide="{{ r.icon }}" width="16" height="16"></i></span>{{ r.t }}<span style="font-weight:600">· {{ r.st }}</span></li></sc-for></ul>
+<sc-if value="{{ f.pwOk }}"><button style="height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">{{ f.pwBtn }}</button></sc-if>
+<sc-if value="{{ f.pwNo }}"><button disabled="{{ true }}" style="height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;border:0;background:#E2E8F0;color:#5B6B6A;cursor:not-allowed">{{ f.pwBtn }}</button></sc-if>
+</div></sc-if>
+<sc-if value="{{ f.vSetup }}"><ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:16px">
+<li style="display:flex;gap:12px;font-size:14px;line-height:20px"><span style="width:24px;height:24px;flex:none;border-radius:6px;background:#F5F7F8;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">1</span><span>Telefoningizga istalgan autentifikator ilovani o‘rnating.</span></li>
+<li style="display:flex;gap:12px;font-size:14px;line-height:20px"><span style="width:24px;height:24px;flex:none;border-radius:6px;background:#F5F7F8;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">2</span><div style="flex:1;display:flex;flex-direction:column;gap:8px"><span>Ilovada QR kodni skanerlang.</span><span role="img" aria-label="QR kod namunasi" style="width:132px;height:132px;box-sizing:border-box;border:1px solid #E2E8F0;border-radius:8px;background:#F5F7F8;display:flex;align-items:center;justify-content:center;color:#5B6B6A;font-size:12px;line-height:16px;font-weight:600">QR kod</span><span style="font-size:13px;line-height:18px;color:#5B6B6A">QR kodni skanerlay olmasangiz, kalitni qo‘lda kiriting:</span><span style="display:flex;align-items:center;gap:8px"><span style="flex:1;height:36px;box-sizing:border-box;display:flex;align-items:center;padding:0 8px;border-radius:6px;background:#F8FAFA;border:1px solid #E2E8F0;font-family:'JetBrains Mono',monospace;font-size:13px">{{ f.key }}</span><button style="height:36px;display:flex;align-items:center;gap:4px;padding:0 10px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="copy" width="16" height="16"></i></span>Nusxa olish</button></span></div></li>
+<li style="display:flex;gap:12px;font-size:14px;line-height:20px"><span style="width:24px;height:24px;flex:none;border-radius:6px;background:#F5F7F8;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">3</span><div style="flex:1;display:flex;flex-direction:column;gap:8px"><span>Ilovadagi 6 xonali kodni kiriting.</span><div style="display:grid;grid-template-columns:repeat(6,40px);gap:6px"><sc-for list="{{ f.setCells }}" as="x"><span style="width:40px;height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid {{ x.bd }};border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600">{{ x.d }}</span></sc-for></div></div></li>
+<li style="display:flex"><sc-if value="{{ f.setOn }}"><button style="flex:1;height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">Tasdiqlash</button></sc-if><sc-if value="{{ f.setOff }}"><button disabled="{{ true }}" style="flex:1;height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;border:0;background:#E2E8F0;color:#5B6B6A;cursor:not-allowed">Tasdiqlash</button></sc-if></li>
+</ol></sc-if>
+<sc-if value="{{ f.vCodes }}"><div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px;border-radius:8px;background:#F8FAFA;border:1px solid #E2E8F0"><sc-for list="{{ codes }}" as="k"><span style="font-family:'JetBrains Mono',monospace;font-size:14px;line-height:20px;letter-spacing:1px;text-align:center">{{ k }}</span></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><button style="height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="download" width="16" height="16"></i></span>Yuklab olish</button><button style="height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="copy" width="16" height="16"></i></span>Nusxa olish</button></div>
+<label style="display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:20px;cursor:pointer"><span style="margin-top:2px;width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:4px;background:#0F766E;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i data-lucide="check" width="16" height="16"></i></span><span>Kodlarni xavfsiz joyga saqladim<span style="color:#5B6B6A"> · majburiy</span></span></label>
+<button style="height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">Platformaga kirish</button>
+</div></sc-if>
+<sc-if value="{{ f.vReset }}"><div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Email</span><label style="height:44px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #0D9488;outline:2px solid #0D9488;outline-offset:2px;border-radius:6px;font-size:14px;line-height:20px">d.karimov@100plus.uz</label></div>
+<button style="height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">Havola yuborish</button>
+<a href="#" style="display:flex;align-items:center;gap:4px;font-size:13px;line-height:18px;font-weight:600"><span style="display:flex"><i data-lucide="arrow-left" width="16" height="16"></i></span>Kirishga qaytish</a>
+</div></sc-if>
+<sc-if value="{{ f.vMsg }}"><div style="display:flex;flex-direction:column;gap:12px">
+<sc-if value="{{ f.msgBtn }}"><button style="height:44px;border-radius:6px;font-size:15px;line-height:22px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">{{ f.msgBtnT }}</button></sc-if>
+<a href="#" style="display:flex;align-items:center;gap:4px;font-size:13px;line-height:18px;font-weight:600"><span style="display:flex"><i data-lucide="arrow-left" width="16" height="16"></i></span>Kirish sahifasiga qaytish</a>
+</div></sc-if>
+</main>
+<p style="margin:0;max-width:400px;font-size:13px;line-height:18px;color:#5B6B6A;text-align:center;text-wrap:pretty">{{ f.s.foot }}</p>
+</div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const UZ = { platform: 'Platforma', badge: 'Platforma boshqaruvi', foot: 'Bu sahifa faqat 100+ platforma xodimlari uchun. Kompaniya xodimi bo‘lsangiz, kompaniyangiz ERP’siga kiring.' };
+const RU = { platform: 'Платформа', badge: 'Управление платформой', foot: 'Эта страница только для сотрудников платформы 100+. Если вы сотрудник компании, войдите в ERP вашей компании.' };
+const A = (tone, icon, text) => ({ ...{ danger: { bg: '#FEF2F2', fg: '#B91C1C' }, warning: { bg: '#FFFBEB', fg: '#B45309' }, info: { bg: '#EFF6FF', fg: '#1D4ED8' }, success: { bg: '#F0FDF4', fg: '#15803D' } }[tone], icon, text });
+const ERR = {
+  cred: A('danger', 'circle-alert', 'Email yoki parol noto‘g‘ri. Qayta urinib ko‘ring yoki parolni tiklang.'),
+  credRu: A('danger', 'circle-alert', 'Неверный email или пароль. Попробуйте ещё раз или восстановите пароль.'),
+  lock: A('danger', 'lock', 'Juda ko‘p noto‘g‘ri urinish. 15 daqiqadan keyin qayta urinib ko‘ring.'),
+  blocked: A('danger', 'ban', 'Hisobingiz bloklangan. Batafsil ma’lumot uchun platforma egasiga murojaat qiling.'),
+  idle: A('info', 'clock', 'Faolsizlik tufayli seans tugadi. Qayta kiring.'),
+  code: A('danger', 'circle-alert', 'Kod noto‘g‘ri yoki muddati o‘tgan. Ilovadagi yangi kodni kiriting.'),
+  inv: A('danger', 'mail-x', 'Taklif havolasining muddati tugagan (48 soat). Platforma egasidan yangi taklif so‘rang.'),
+  sent: A('success', 'mail-check', 'Agar bu email ro‘yxatda bo‘lsa, unga parolni tiklash havolasi yuborildi. Havola 1 soat amal qiladi.'),
+  done: A('success', 'circle-check', 'Parol o‘zgartirildi. Barcha qurilmalarda tizimdan chiqildi.'),
+  expired: A('danger', 'link-2-off', 'Havola muddati tugagan (1 soat). Parolni tiklashni qaytadan boshlang.'),
+  r2fa: A('info', 'shield-alert', 'Platforma egasi ikki bosqichli tasdiqlashni qayta o‘rnatdi. Davom etish uchun uni qaytadan sozlang.')
+};
+const FR = [
+  { id: 'A', title: 'Kirish', note: 'Bo‘sh · email maydonida fokus', v: 'login', focus: 'email' },
+  { id: 'A2', title: 'Noto‘g‘ri email yoki parol', note: 'Variant · email saqlanadi, parol tozalanadi', v: 'login', err: 'cred', email: 'm.ergasheva@100plus.uz' },
+  { id: 'A3', title: '15 daqiqaga bloklangan', note: 'Variant · 5 ta noto‘g‘ri urinish · «Kirish» disabled', v: 'login', err: 'lock', email: 'g.qodirova@100plus.uz' },
+  { id: 'A4', title: 'Bloklangan xodim', note: 'Bekzod Tursunov · 30.09.2026 dan', v: 'login', err: 'blocked', email: 'b.tursunov@100plus.uz' },
+  { id: 'B', title: '2FA kodi', note: '3 ta raqam kiritilgan · Nilufar Rahimova', v: 'otp', digits: '482', who: 'n.rahimova@100plus.uz' },
+  { id: 'B2', title: 'Noto‘g‘ri kod', note: 'Qolgan urinishlar: 2', v: 'otp', digits: '482917', bad: true, who: 'n.rahimova@100plus.uz' },
+  { id: 'C', title: 'Zaxira kod', note: 'XXXX-XXXX', v: 'backup', who: 'd.karimov@100plus.uz' },
+  { id: 'C2', title: 'Zaxira kod bilan kirgandan keyin', note: 'Bosh sahifa · sarlavha qismi', v: 'home' },
+  { id: 'D1', title: 'Birinchi kirish · parol', note: 'Javohir Aliyev · 1/3', v: 'pass', step: 1, ok: true },
+  { id: 'D2', title: 'Birinchi kirish · 2FA sozlash', note: '2/3 · QR va qo‘lda kalit', v: 'setup', step: 2 },
+  { id: 'D3', title: 'Birinchi kirish · zaxira kodlar', note: '3/3 · 10 ta kod', v: 'codes', step: 3 },
+  { id: 'D4', title: 'Taklif muddati o‘tgan', note: '48 soat', v: 'msg', msg: 'inv' },
+  { id: 'E1', title: 'Parolni tiklash · email', note: 'Havola so‘rash', v: 'reset' },
+  { id: 'E2', title: 'Havola yuborildi', note: 'Email mavjudligi oshkor qilinmaydi', v: 'msg', msg: 'sent' },
+  { id: 'E3', title: 'Yangi parol', note: 'Talablar · 1 tasi bajarilmagan · tugma disabled', v: 'pass', reset: true },
+  { id: 'E4', title: 'Parol o‘zgartirildi', note: 'Barcha seanslar tugatildi', v: 'msg', msg: 'done' },
+  { id: 'E5', title: 'Havola muddati o‘tgan', note: '1 soat', v: 'msg', msg: 'expired' },
+  { id: 'F', title: '2FA qayta o‘rnatilgan xodim', note: 'Variant · Gulnora Qodirova («Xodimlar» F oynasi tasdiqlangandan keyin)', v: 'setup', step: 1, reset2fa: true },
+  { id: 'G', title: 'Seans tugashi oldidan', note: 'Oyna 480px · 0:58', v: 'timeout' },
+  { id: 'G2', title: 'Seans tugagandan keyin', note: 'Info xabar', v: 'login', err: 'idle', email: 'd.karimov@100plus.uz' },
+  { id: 'H', title: 'Ruscha kirish sahifasi', note: 'Matn uzunligi tekshiruvi · xato bloki bilan', v: 'login', ru: true, err: 'cred', email: 'm.ergasheva@100plus.uz' },
+  { id: 'I', title: '12b tuzatishlari', note: '1–4', v: 'doc' }
+];
+class Component extends DCLogic {
+  componentDidMount() { const run = () => { if (window.lucide && document.querySelector('i[data-lucide]')) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }); }; run(); let n = 0; this._t = setInterval(() => { run(); if (++n > 12) clearInterval(this._t); }, 500); }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const frames = FR.map(fr => {
+      const page = !['home', 'timeout', 'doc'].includes(fr.v);
+      const TT = {
+        login: fr.ru ? ['Вход в платформу', ''] : ['Platformaga kirish', ''],
+        otp: ['Ikki bosqichli tasdiqlash', 'Autentifikator ilovadagi 6 xonali kodni kiriting · ' + (fr.who || '')],
+        backup: ['Zaxira kod bilan kirish', 'Saqlab qo‘ygan 10 ta koddan birini kiriting. Har kod bir marta ishlaydi.'],
+        pass: fr.reset ? ['Yangi parol', 'd.karimov@100plus.uz uchun yangi parol o‘rnating.'] : ['Xush kelibsiz, Javohir Aliyev', 'Rol: Qo‘llab-quvvatlash · j.aliyev@100plus.uz. Avval parol o‘rnating.'],
+        setup: [fr.reset2fa ? 'Ikki bosqichli tasdiqlashni sozlang' : 'Ikki bosqichli tasdiqlash', fr.reset2fa ? 'Gulnora Qodirova · g.qodirova@100plus.uz' : 'Har kirishda autentifikator ilovadagi kod so‘raladi.'],
+        codes: ['Zaxira kodlar', 'Telefon yo‘qolsa, shu kodlar bilan kirasiz. Har kod bir marta ishlaydi.'],
+        reset: ['Parolni tiklash', 'Platformadagi email manzilingizni kiriting.'],
+        msg: [{ inv: 'Taklif havolasi ishlamaydi', sent: 'Emailingizni tekshiring', done: 'Parol o‘zgartirildi', expired: 'Havola ishlamaydi' }[fr.msg] || '', '']
+      }[fr.v] || ['', ''];
+      let al = null, al2 = '';
+      if (fr.err === 'cred') al = fr.ru ? ERR.credRu : ERR.cred;
+      if (fr.err === 'lock') { al = ERR.lock; al2 = 'Qayta urinish: 14:32'; }
+      if (fr.err === 'blocked') al = ERR.blocked;
+      if (fr.err === 'idle') al = ERR.idle;
+      if (fr.bad) { al = ERR.code; al2 = 'Qolgan urinishlar: 2'; }
+      if (fr.v === 'msg') al = ERR[fr.msg];
+      if (fr.reset2fa) al = ERR.r2fa;
+      const c = { title: TT[0], sub: TT[1], hasSub: !!TT[1], hasAlert: !!al, al: al || {}, al2, hasAl2: !!al2 };
+      const stepNames = fr.reset2fa ? ['2FA', 'Zaxira kodlar'] : ['Parol', '2FA', 'Zaxira kodlar'];
+      const cur = fr.reset2fa ? 1 : fr.step;
+      const steps = stepNames.map((t, i) => { const n = i + 1, done = n < cur, on = n === cur; return { t, n: done ? '✓' : String(n), line: i < stepNames.length - 1, fg: on || done ? '#0F766E' : '#5B6B6A', bg: done ? '#DDF5EE' : on ? '#0F766E' : '#FFFFFF', bd: done || on ? '#0F766E' : '#E2E8F0' }; });
+      steps.forEach(s => { s.numFg = s.bg === '#0F766E' ? '#FFFFFF' : s.fg; });
+      const ru = !!fr.ru, focus = fr.focus === 'email';
+      const lg = { em: fr.email || (ru ? 'name@100plus.uz' : 'ism@100plus.uz'), emFg: fr.email ? '#172B2A' : '#94A3A1', emBd: focus ? '#0D9488' : '#E2E8F0', emRing: focus ? '2px solid #0D9488' : 'none', fBg: '#FFFFFF',
+        pw: ru ? 'Пароль' : 'Parol', forgot: ru ? 'Забыли пароль?' : 'Parolni unutdingizmi?', pwPh: ru ? 'Введите пароль' : 'Parolni kiriting', show: ru ? 'Показать пароль' : 'Parolni ko‘rsatish',
+        btn: ru ? 'Войти' : 'Kirish', btnOn: fr.err !== 'lock', btnOff: fr.err === 'lock' };
+      const dg = (fr.digits || '').split('');
+      const cells = Array.from({ length: 6 }, (_, i) => ({ d: dg[i] || '', bd: fr.bad ? '#B91C1C' : i === dg.length ? '#0D9488' : '#E2E8F0', ring: !fr.bad && i === dg.length ? '2px solid #0D9488' : 'none' }));
+      const okAll = !fr.reset;
+      const R = (t, ok) => ({ t, icon: ok ? 'circle-check' : 'circle-x', fg: ok ? '#15803D' : '#B91C1C', st: ok ? 'bajarildi' : 'bajarilmagan' });
+      const reqs = [R('Kamida 12 belgi', okAll), R('Kamida bitta harf', true), R('Kamida bitta raqam', true), ...(fr.reset ? [R('Oxirgi 3 ta paroldan farqli', true)] : []), R('Ikkala maydon bir xil', true)];
+      const setDg = fr.reset2fa ? [] : ['7', '1', '0', '3', '5', '8'];
+      const setCells = Array.from({ length: 6 }, (_, i) => ({ d: setDg[i] || '', bd: setDg.length === 6 ? '#0D9488' : '#E2E8F0' }));
+      const pass = { isInv: !fr.reset, pwDots: fr.reset ? '•••••••••' : '••••••••••••••', pwDots2: fr.reset ? '•••••••••' : '••••••••••••••', reqs, pwOk: okAll, pwNo: !okAll, pwBtn: fr.reset ? 'Parolni saqlash' : 'Davom etish',
+        key: fr.reset2fa ? 'MFRG GZDF MZTW Q2LK' : 'JBSW Y3DP EHPK 3PXP', setCells, setOn: setDg.length === 6, setOff: setDg.length < 6 };
+      pass.msgBtn = fr.msg === 'done' || fr.msg === 'expired'; pass.msgBtnT = fr.msg === 'done' ? 'Kirish' : 'Yangi havola so‘rash';
+      return { ...fr, ...pass, page, c, lg, cells, otpOn: dg.length === 6 && !fr.bad, otpOff: dg.length < 6 || !!fr.bad, hasStep: !!fr.step || !!fr.reset2fa, steps, s: fr.ru ? RU : UZ, langs: [['O‘zbekcha', !fr.ru], ['Русский', !!fr.ru]].map(([t, on]) => ({ t, on, off: !on })),
+        vLogin: fr.v === 'login', vOtp: fr.v === 'otp', vBackup: fr.v === 'backup', vPass: fr.v === 'pass', vSetup: fr.v === 'setup', vCodes: fr.v === 'codes', vMsg: fr.v === 'msg', vReset: fr.v === 'reset',
+        vHome: fr.v === 'home', vTimeout: fr.v === 'timeout', vDoc: fr.v === 'doc' };
+    });
+    const S = 'Sozlamalar%2012b.dc.html';
+    const fixes = [
+      ['1', 'Shablonlar ro‘yxati', 'Qator 40px, «Hodisa» ustunida faqat nomi bir qatorda; tavsif tooltip’da va muharrir tepasidagi izohda.', '12b · A', S + '#frame-A'],
+      ['2', 'Ko‘rinish namunasi', 'Qurilma ramkasi, soya va gradient olib tashlandi: 8px radiusli karta, border #E2E8F0, ichida xabar.', '12b · B', S + '#frame-B'],
+      ['3', 'Qabul qilmaganlarga eslatma', 'Har 3 kunda, ko‘pi bilan 5 marta (Email, Telegram) + har kirishda oyna. Kartochkalarda «Eslatmalar: 2 / 5 · keyingisi 28.11.2026».', '12b · G', S + '#frame-G'],
+      ['4', 'Versiya e’loni auditda', '«Sozlamalar» guruhi: 1.3 — 20.10.2026, 2.1 — 31.07.2026. 30 kunlik davrdan tashqarida: 1.488 o‘zgarmaydi, jami 13.242 (bu yozuvlar jami songa avvaldan kirgan).', 'Audit jurnali', 'Audit%20jurnali.dc.html#frame-A']
+    ].map(([n, t, d, link, href]) => ({ n, t, d, link, href }));
+    return { frames, fixes, codes: ['W3KD-8PLA', 'H4TR-2WLN', 'P8ZC-5MVA', 'Q3XE-7JKB', 'N6DG-1RTY', 'B9WS-4HPC', 'F2LM-8QZE', 'R5VK-3NDU', 'T1YH-6GAX', 'M7CP-0SWJ'] };
+  }
+}
+</script>
+</body>
+</html>

@@ -35,6 +35,17 @@ Egasi: «kodni umuman koʻrmagan agent» loyihani xolis tekshirsin (arxitektura 
 - [ ] HQ5 Railway: `YUZPLUS_API_DOCS=false`; zaxira (repo private / Railway PITR) qarori.
 - ⚠️ 27.11 13:40: Railway hisobi (25.11, 30,93 $) toʻlanmagan — kartada mablagʻ yetmagan; egasi toʻlaydi. TZ2 (frontend → Railway) toʻlovdan keyin.
 
+## ⏸ SA — SUPER ADMIN PANELI (dizayn 27.11.2026: `design/superadmin/`, ~250 freym, 16 ekran + planshet) — TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
+Biznes qoidalari: `design/superadmin/Qoidalar.dc.html` (tariflar Start/Biznes/Korporativ, 14 kun → avto-toʻxtatish, sinov 14–30 kun, 4 rol, 2FA, SLA, audit 3 yil).
+- [ ] SA0 Koʻp kompaniyali poydevor (eng katta xavf): hozir `company` — bitta qator (`company_single_row`), filial → company. Barcha filialsiz jadvallar (katalog, mijoz, taʼminotchi, narx turlari, sozlamalar…) ga `company_id`, server filtri, hujjat raqamlari kompaniya boʻyicha, izolyatsiya testlari; mavjud maʼlumot → 1-kompaniya.
+- [ ] SA1 Platforma xodimlari: alohida login, 4 rol (Egasi/Qoʻllab-quvvatlash/Sotuv/Buxgalter), TOTP 2FA + zaxira kodlar, bloklash, parol tiklash.
+- [ ] SA2 Kompaniyalar roʻyxati + kartasi + «Yangi kompaniya» ustasi (STIR qidiruvi — tashqi manba kerak), tarif/modul/limitlarni ERP’da majburlash.
+- [ ] SA3 Billing: hisob-faktura HF-YYYY-NNNN, qoʻlda toʻlov, qarzdorlar, avans, 14 kunda avto-toʻxtatish. Click/Payme/Uzum va e-faktura operatori — **shartnoma va pul (egasi)**.
+- [ ] SA4 Xabarlar: SMS (pullik provayder — egasi), Telegram, Email + shablonlar.
+- [ ] SA5 Qoʻllab-quvvatlash (murojaatlar, SLA) + kompaniya nomidan kirish (audit bilan).
+- [ ] SA6 Platforma holati, audit jurnali (yaxlitlik zanjiri), xodimlar va rollar, sozlamalar (eʼlonlar, texnik ishlar, hujjat versiyalari).
+- [ ] SA7 Planshet moslashuvi; manzil `admin.100plus.uz` (domendan keyin).
+
 ## ⏸ V2 — MIJOZ TALABLARI (25.11.2026, egasi orqali) — TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
 Manba: `docs/notes/v2/mijoz-talablari-25-11.docx`. Egasi qarorlari: 25.11 23:50 soʻrovnoma. Egasi 25.11 23:56: M1–M6 tasdiq kutayotgan rejalarga qoʻshildi; **qaysi versiyada va qachon qilinishi keyin egasi bilan aniqlanadi**. M7 va M5 dagi «5 ta izoh» — mijozdan soʻraladi (javob kelguncha rejaga kiritilmaydi).
 - [ ] **V2-M1 Inventar (korxona mol-mulki)** — oddiy roʻyxat (egasi qarori): nomi, inventar raqami, toifa, qiymati, sotib olingan sana, joyi (filial/xona), mas'ul xodim, holati (ishlayapti/taʼmirda/hisobdan chiqarilgan); xodimga topshirish/qaytarish tarixi (jurnal), xodim ishdan ketsa — undagi buyumlar roʻyxati. Amortizatsiya yoʻq.

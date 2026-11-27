@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+body{margin:0;background:#E2E8F0;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+button{font-family:inherit}
+:focus-visible{outline:2px solid #0D9488;outline-offset:2px}
+svg.lucide{display:block;flex:none}
+</style>
+</helmet>
+<div style="padding:64px;display:flex;flex-direction:column;gap:48px;width:max-content">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:24px;line-height:32px;font-weight:600">100+ · Super admin paneli — 1-bosqich</div>
+<div style="font-size:14px;line-height:20px;color:#5B6B6A">Umumiy karkas va «Bosh sahifa» · desktop 1440px · namuna ma’lumotlar to‘qima</div>
+<div style="display:flex;gap:16px;font-size:14px;line-height:20px">
+<sc-for list="{{ frames }}" as="f" hint-placeholder-count="7"><a href="#frame-{{ f.id }}">{{ f.code }} · {{ f.title }}</a></sc-for>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1440px 1440px;gap:64px;align-items:start">
+<sc-for list="{{ frames }}" as="f" hint-placeholder-count="2">
+<div id="frame-{{ f.id }}" data-screen-label="{{ f.code }} {{ f.title }}" style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px">
+<span style="padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600">{{ f.code }}</span>
+<span style="font-size:15px;line-height:22px;font-weight:600">{{ f.title }}</span>
+<span style="font-size:14px;line-height:20px;color:#5B6B6A">{{ f.note }}</span>
+</div>
+<div style="width:1440px;min-height:960px;display:flex;background:#F5F7F8;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+
+<sc-if value="{{ f.expanded }}" hint-placeholder-val="{{ true }}">
+<aside style="width:240px;flex:none;background:#123C3A;display:flex;flex-direction:column">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,0.08)">
+<span style="font-size:15px;line-height:22px;font-weight:600;color:#FFFFFF">100+</span>
+<span style="font-size:14px;line-height:20px;color:#A9C7C3">· Platforma</span>
+</div>
+<nav style="flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:4px">
+<sc-for list="{{ f.nav }}" as="g">
+<div style="display:flex;flex-direction:column;gap:4px">
+<sc-if value="{{ g.hasTitle }}"><div style="padding:12px 12px 4px;font-size:12px;line-height:16px;color:#A9C7C3">{{ g.title }}</div></sc-if>
+<sc-for list="{{ g.items }}" as="it">
+<sc-if value="{{ it.active }}"><a href="#" style="position:relative;min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,0.08);color:#FFFFFF;font-size:14px;line-height:20px;text-decoration:none"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2DD4BF"></span><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span></a></sc-if>
+<sc-if value="{{ it.idle }}"><a href="#" style="outline:{{ it.ring }};outline-offset:2px;min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;color:#A9C7C3;font-size:14px;line-height:20px;text-decoration:none" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF;text-decoration:none"><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span><sc-if value="{{ it.hasBadge }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#DDF5EE;color:#123C3A">{{ it.badge }}</span></sc-if></a></sc-if>
+</sc-for>
+</div>
+</sc-for>
+</nav>
+<div style="padding:12px 8px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;gap:12px;padding:8px 12px">
+<span style="width:32px;height:32px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span>
+<div style="display:flex;flex-direction:column;min-width:0">
+<span style="font-size:14px;line-height:20px;color:#FFFFFF">{{ f.user.name }}</span>
+<div style="display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#A9C7C3;flex-wrap:wrap">
+<span>{{ f.user.role }}</span>
+<span style="display:flex;align-items:center;gap:4px" title="Ikki bosqichli tasdiqlash yoqilgan"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>2FA yoqilgan</span>
+</div>
+</div>
+</div>
+<button onClick="{{ f.toggle }}" style="min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;border:0;border-radius:6px;background:transparent;color:#A9C7C3;font-size:14px;line-height:20px;cursor:pointer;text-align:left" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF"><span style="display:flex"><i data-lucide="panel-left-close" width="20" height="20"></i></span>Menyuni yig‘ish</button>
+</div>
+</aside>
+</sc-if>
+
+<sc-if value="{{ f.collapsed }}" hint-placeholder-val="{{ false }}">
+<aside style="width:64px;flex:none;background:#123C3A;display:flex;flex-direction:column">
+<div style="height:56px;flex:none;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,0.08);font-size:15px;line-height:22px;font-weight:600;color:#FFFFFF">100+</div>
+<nav style="flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:4px">
+<sc-for list="{{ f.nav }}" as="g">
+<div style="display:flex;flex-direction:column;gap:4px">
+<sc-if value="{{ g.hasTitle }}"><div style="height:1px;margin:8px 8px;background:rgba(255,255,255,0.08)"></div></sc-if>
+<sc-for list="{{ g.items }}" as="it">
+<sc-if value="{{ it.active }}"><a href="#" title="{{ it.label }}" style="position:relative;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,0.08);color:#FFFFFF"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2DD4BF"></span><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span></a></sc-if>
+<sc-if value="{{ it.idle }}"><a href="#" title="{{ it.label }}" style="position:relative;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:#A9C7C3" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF"><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><sc-if value="{{ it.hasBadge }}"><span style="position:absolute;top:-4px;right:0;min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#DDF5EE;color:#123C3A">{{ it.badge }}</span></sc-if></a></sc-if>
+</sc-for>
+</div>
+</sc-for>
+</nav>
+<div style="padding:12px 8px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;align-items:center;gap:8px">
+<span title="{{ f.user.name }} · {{ f.user.role }} · 2FA yoqilgan" style="position:relative;width:32px;height:32px;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span>
+<button onClick="{{ f.toggle }}" title="Menyuni yoyish" style="width:48px;height:36px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#A9C7C3;cursor:pointer" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF"><span style="display:flex"><i data-lucide="panel-left-open" width="20" height="20"></i></span></button>
+</div>
+</aside>
+</sc-if>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="height:56px;flex:none;box-sizing:border-box;background:#FFFFFF;border-bottom:1px solid #E2E8F0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,400px) minmax(0,1fr);align-items:center;gap:24px;padding:0 24px">
+<div style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;min-width:0">
+<a href="#" style="color:#5B6B6A">Platforma</a>
+<span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span>
+<span style="color:#172B2A">{{ f.crumb }}</span>
+</div>
+<label style="outline:{{ f.ring }};outline-offset:2px;height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;cursor:text">
+<span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span>
+<input placeholder="Kompaniya, STIR yoki tiket raqami" style="flex:1;min-width:0;border:0;outline:none;font:14px/20px Inter,sans-serif;color:#172B2A;background:transparent">
+<span style="flex:none;padding:0 4px;border:1px solid #E2E8F0;border-radius:6px;color:#5B6B6A;font-size:12px;line-height:16px;font-variant-numeric:tabular-nums">Ctrl K</span>
+</label>
+<div style="justify-self:end;display:flex;align-items:center;gap:12px">
+<span style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>Platforma boshqaruvi</span>
+<div style="position:relative">
+<button title="Bildirishnomalar" style="position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:{{ f.bellBg }};color:#5B6B6A;cursor:pointer" style-hover="background:#F5F7F8;color:#172B2A"><span style="display:flex"><i data-lucide="bell" width="16" height="16"></i></span><sc-if value="{{ f.bell }}"><span style="position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#FEF2F2;color:#B91C1C">3</span></sc-if></button>
+<sc-if value="{{ f.notifOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;top:40px;right:0;width:380px;z-index:10;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:8px;padding:12px 16px"><span style="font-size:15px;line-height:22px;font-weight:600">Bildirishnomalar</span><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#F5F7F8;color:#5B6B6A">3</span></div>
+<sc-for list="{{ notifs }}" as="n">
+<div style="display:flex;gap:12px;padding:12px 16px;border-top:1px solid #E2E8F0" style-hover="background:#F8FAFA">
+<span style="width:32px;height:32px;flex:none;border-radius:6px;background:{{ n.b.bg }};color:{{ n.b.fg }};display:flex;align-items:center;justify-content:center"><i data-lucide="{{ n.b.icon }}" width="16" height="16"></i></span>
+<div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+<div style="font-size:13px;line-height:18px;color:#172B2A"><sc-for list="{{ n.text }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></div>
+<span style="font-size:12px;line-height:16px;color:#5B6B6A;font-variant-numeric:tabular-nums">{{ n.time }}</span>
+</div>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:flex-end;padding:8px 16px;border-top:1px solid #E2E8F0"><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8;color:#115E59"><span style="display:flex"><i data-lucide="check-check" width="16" height="16"></i></span>Hammasini o‘qilgan deb belgilash</button></div>
+</div>
+</sc-if>
+</div>
+<button title="Profil" style="height:32px;display:flex;align-items:center;gap:4px;padding:0 4px 0 0;border:0;border-radius:6px;background:transparent;color:#5B6B6A;cursor:pointer" style-hover="background:#F5F7F8"><span style="width:32px;height:32px;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span><span style="display:flex"><i data-lucide="chevron-down" width="16" height="16"></i></span></button>
+</div>
+</header>
+
+<main style="padding:24px;display:flex;flex-direction:column;gap:24px">
+<sc-if value="{{ f.deniedPage }}" hint-placeholder-val="{{ false }}">
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:64px 24px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center">
+<span style="width:40px;height:40px;border-radius:8px;background:#F5F7F8;color:#5B6B6A;display:flex;align-items:center;justify-content:center"><i data-lucide="lock" width="20" height="20"></i></span>
+<div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+<h1 style="margin:0;font-size:18px;line-height:26px;font-weight:600">Bu bo‘lim sizning rolingiz uchun ochiq emas</h1>
+<p style="margin:0;max-width:560px;font-size:14px;line-height:20px;color:#5B6B6A;text-wrap:pretty">«To‘lovlar va hisob-fakturalar» bo‘limi Egasi, Buxgalter va Sotuv rollari uchun. Sizning rolingiz: Qo‘llab-quvvatlash. Kirish kerak bo‘lsa, platforma egasiga murojaat qiling.</p>
+</div>
+<button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:0;border-radius:6px;background:#0F766E;color:#FFFFFF;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#115E59"><span style="display:flex"><i data-lucide="arrow-left" width="16" height="16"></i></span>Bosh sahifaga qaytish</button>
+</section>
+</sc-if>
+<sc-if value="{{ f.home }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
+<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+<h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Bosh sahifa</h1>
+<span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ f.caption }}</span>
+</div>
+<sc-if value="{{ f.headerBtn }}" hint-placeholder-val="{{ true }}"><button style="outline:{{ f.ring }};outline-offset:2px;height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:0;border-radius:6px;background:#0F766E;color:#FFFFFF;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#115E59"><span style="display:flex"><i data-lucide="plus" width="16" height="16"></i></span>Kompaniya qo‘shish</button></sc-if>
+</div>
+
+<sc-if value="{{ f.showMoney }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="font-size:12px;line-height:16px;color:#5B6B6A">Moliya</span>
+<sc-if value="{{ f.moneyCards }}">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+<sc-for list="{{ f.money }}" as="c" hint-placeholder-count="3">
+<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<span style="font-size:14px;line-height:20px;color:#5B6B6A">{{ c.label }}</span>
+<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:28px;line-height:36px;font-weight:600;font-variant-numeric:tabular-nums">{{ c.value }}</span><sc-if value="{{ c.unit }}"><span style="font-size:15px;line-height:22px;font-weight:600;color:#5B6B6A">{{ c.unit }}</span></sc-if></div>
+<sc-if value="{{ c.hasDetail }}"><div style="font-size:13px;line-height:18px;color:#172B2A"><sc-for list="{{ c.detail }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></div></sc-if>
+<sc-if value="{{ c.hasDetail2 }}"><div style="font-size:13px;line-height:18px;color:#5B6B6A"><sc-for list="{{ c.detail2 }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:#172B2A">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></div></sc-if>
+<div style="margin-top:auto;padding-top:8px;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px;color:#5B6B6A"><sc-for list="{{ c.compare }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ f.kpiLoading }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+<sc-for list="{{ sk3 }}" as="s"><div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px"><span style="height:12px;width:55%;border-radius:6px;background:#E2E8F0"></span><span style="height:28px;width:70%;border-radius:6px;background:#E2E8F0"></span><span style="height:12px;width:45%;border-radius:6px;background:#F5F7F8"></span><span style="height:12px;width:60%;border-radius:6px;background:#F5F7F8"></span></div></sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="font-size:12px;line-height:16px;color:#5B6B6A">Mijozlar</span>
+<sc-if value="{{ f.clientCards }}">
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px">
+<sc-for list="{{ f.clients }}" as="c" hint-placeholder-count="4">
+<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px">
+<span style="font-size:14px;line-height:20px;color:#5B6B6A">{{ c.label }}</span>
+<span style="font-size:28px;line-height:36px;font-weight:600;font-variant-numeric:tabular-nums">{{ c.value }}</span>
+<sc-if value="{{ c.hasDetail }}"><div style="font-size:13px;line-height:18px;color:#172B2A"><sc-for list="{{ c.detail }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></div></sc-if>
+<div style="margin-top:auto;padding-top:8px;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px;color:#5B6B6A"><sc-for list="{{ c.compare }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ f.kpiLoading }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px">
+<sc-for list="{{ sk4 }}" as="s"><div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px"><span style="height:12px;width:60%;border-radius:6px;background:#E2E8F0"></span><span style="height:28px;width:30%;border-radius:6px;background:#E2E8F0"></span><span style="height:12px;width:50%;border-radius:6px;background:#F5F7F8"></span></div></sc-for>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{ f.platformEmpty }}" hint-placeholder-val="{{ false }}">
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:64px 24px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center">
+<span style="width:40px;height:40px;border-radius:8px;border:1px solid #E2E8F0;color:#0D9488;display:flex;align-items:center;justify-content:center"><i data-lucide="building-2" width="20" height="20"></i></span>
+<div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+<h2 style="margin:0;font-size:18px;line-height:26px;font-weight:600">Platformada hali kompaniya yo‘q</h2>
+<p style="margin:0;max-width:560px;font-size:14px;line-height:20px;color:#5B6B6A;text-wrap:pretty">Birinchi kompaniyani qo‘shing. Uning obunasi, to‘lovlari va murojaatlari shu sahifada paydo bo‘ladi. Avval tariflarni sozlab olishingiz ham mumkin.</p>
+</div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+<button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:0;border-radius:6px;background:#0F766E;color:#FFFFFF;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#115E59"><span style="display:flex"><i data-lucide="plus" width="16" height="16"></i></span>Kompaniya qo‘shish</button>
+<button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8">Tariflarni sozlash</button>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ f.showMain }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start">
+
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:center;gap:8px;padding:16px 20px">
+<h2 style="margin:0;font-size:18px;line-height:26px;font-weight:600">Diqqat talab qiladi</h2>
+<sc-if value="{{ f.attData }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#F5F7F8;color:#5B6B6A">7</span></sc-if>
+</div>
+<sc-if value="{{ f.attData }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:minmax(0,1.2fr) 168px minmax(0,1.4fr) 152px;gap:16px;align-items:center;height:36px;padding:0 20px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;font-size:12px;line-height:16px;color:#5B6B6A;font-weight:600">
+<span>Kompaniya</span><span>Muammo</span><span>Tafsilot</span><span style="text-align:right">Harakat</span>
+</div>
+<sc-for list="{{ f.groups }}" as="g">
+<div>
+<div style="display:flex;align-items:center;gap:8px;height:36px;padding:0 20px;font-size:13px;line-height:18px;border-bottom:1px solid #E2E8F0">
+<span style="font-weight:600">{{ g.title }}</span>
+<span style="color:#5B6B6A"><sc-for list="{{ g.meta }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span>
+</div>
+<sc-for list="{{ g.rows }}" as="r">
+<div style="display:grid;grid-template-columns:minmax(0,1.2fr) 168px minmax(0,1.4fr) 152px;gap:16px;align-items:center;height:40px;padding:0 20px;box-sizing:border-box;border-bottom:1px solid #E2E8F0;font-size:13px;line-height:18px" style-hover="background:#F8FAFA">
+<span style="white-space:nowrap">{{ r.company }}</span>
+<span style="justify-self:start;display:flex;align-items:center;gap:4px;padding:2px 6px;white-space:nowrap;border-radius:6px;background:{{ r.b.bg }};color:{{ r.b.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ r.b.icon }}" width="16" height="16"></i></span>{{ r.b.text }}</span>
+<div style="white-space:nowrap"><sc-for list="{{ r.detail }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre">{{ p.t }}</span></sc-if></sc-for></div>
+<a href="#" style="justify-self:end;font-weight:600;white-space:nowrap">{{ r.action }}</a>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{ f.attOk }}" hint-placeholder-val="{{ false }}">
+<div style="border-top:1px solid #E2E8F0;padding:48px 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+<span style="width:40px;height:40px;border-radius:8px;background:#F0FDF4;color:#15803D;display:flex;align-items:center;justify-content:center"><i data-lucide="circle-check" width="20" height="20"></i></span>
+<span style="font-size:15px;line-height:22px;font-weight:600;color:#15803D">Hammasi joyida</span>
+<span style="max-width:480px;font-size:14px;line-height:20px;color:#5B6B6A;text-wrap:pretty">Muddati o‘tgan to‘lov, limitdan oshish va integratsiya xatosi yo‘q. Oxirgi tekshiruv 25.11.2026, 16:40.</span>
+</div>
+</sc-if>
+<sc-if value="{{ f.attLoading }}" hint-placeholder-val="{{ false }}">
+<div style="height:36px;background:#F8FAFA;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0"></div>
+<sc-for list="{{ sk7 }}" as="s"><div style="display:grid;grid-template-columns:minmax(0,1.2fr) 168px minmax(0,1.4fr) 152px;gap:16px;align-items:center;height:40px;padding:0 20px;border-bottom:1px solid #E2E8F0"><span style="height:12px;width:70%;border-radius:6px;background:#E2E8F0"></span><span style="height:24px;width:120px;border-radius:6px;background:#F5F7F8"></span><span style="height:12px;width:80%;border-radius:6px;background:#E2E8F0"></span><span style="justify-self:end;height:12px;width:96px;border-radius:6px;background:#F5F7F8"></span></div></sc-for>
+</sc-if>
+</section>
+
+<div style="display:flex;flex-direction:column;gap:16px">
+<sc-if value="{{ f.sideLoading }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ sideTitles }}" as="t">
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:15px;line-height:22px;font-weight:600">{{ t }}</span>
+<sc-for list="{{ sk3 }}" as="s"><div style="display:flex;justify-content:space-between;gap:16px"><span style="height:12px;width:55%;border-radius:6px;background:#E2E8F0"></span><span style="height:12px;width:25%;border-radius:6px;background:#F5F7F8"></span></div></sc-for>
+</section>
+</sc-for>
+</sc-if>
+
+<sc-if value="{{ f.sideData }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ f.showPay }}" hint-placeholder-val="{{ true }}">
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<span style="font-size:15px;line-height:22px;font-weight:600">7 kun ichidagi to‘lovlar</span>
+<sc-if value="{{ f.payData }}"><span style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:18px;color:#5B6B6A">3 ta</span></sc-if>
+</div>
+<sc-if value="{{ f.payData }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ payments }}" as="r">
+<div style="display:flex;flex-direction:column;gap:4px;padding:8px 0;border-top:1px solid #E2E8F0">
+<div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;line-height:18px"><span>{{ r.company }}</span><span style="flex:none;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;text-align:right">{{ r.sum }}</span></div>
+<span style="font-size:12px;line-height:16px;color:#5B6B6A"><span style="font-family:'JetBrains Mono',monospace">{{ r.date }}</span> · {{ r.when }}</span>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;gap:12px;padding-top:8px;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px"><span style="color:#5B6B6A">Jami, so‘m</span><span style="font-family:'JetBrains Mono',monospace;font-weight:600;font-variant-numeric:tabular-nums">3.400.000,00</span></div>
+</div>
+</sc-if>
+<sc-if value="{{ f.payError }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:12px;border-radius:6px;background:#FEF2F2">
+<span style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:18px;font-weight:600;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>To‘lov ma’lumotlari yuklanmadi</span>
+<span style="font-size:13px;line-height:18px;color:#172B2A">To‘lovlar xizmatidan javob kelmadi. Bir daqiqadan so‘ng qayta urinib ko‘ring. Xato takrorlansa, «Platforma holati» sahifasini tekshiring.</span>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="rotate-cw" width="16" height="16"></i></span>Qayta urinish</button>
+</div>
+</sc-if>
+</section>
+</sc-if>
+
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<span style="font-size:15px;line-height:22px;font-weight:600">Sinov muddati tugayotganlar</span>
+<span style="font-size:13px;line-height:18px;color:#5B6B6A"><span style="font-family:'JetBrains Mono',monospace">7</span> tadan <span style="font-family:'JetBrains Mono',monospace">3</span> tasi</span>
+</div>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ trials }}" as="r">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #E2E8F0">
+<div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-size:13px;line-height:18px">{{ r.company }}</span><span style="font-size:12px;line-height:16px;color:#5B6B6A">Tugaydi: <span style="font-family:'JetBrains Mono',monospace">{{ r.date }}</span></span></div>
+<span style="flex:none;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ r.b.bg }};color:{{ r.b.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ r.b.icon }}" width="16" height="16"></i></span>{{ r.b.text }}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<span style="font-size:15px;line-height:22px;font-weight:600">Ochiq murojaatlar</span>
+<a href="#" style="font-size:13px;line-height:18px;font-weight:600">Murojaatlarni ochish</a>
+</div>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ tickets }}" as="r">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px;border-top:1px solid #E2E8F0">
+<span style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ r.b.bg }};color:{{ r.b.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ r.b.icon }}" width="16" height="16"></i></span>{{ r.b.text }}</span>
+<span style="font-size:13px;line-height:18px;color:#5B6B6A"><span style="font-family:'JetBrains Mono',monospace;color:#172B2A;font-variant-numeric:tabular-nums">{{ r.n }}</span> ta</span>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;gap:12px;padding-top:8px;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px"><span style="color:#5B6B6A">Jami</span><span style="font-family:'JetBrains Mono',monospace;font-weight:600">5</span></div>
+</div>
+</section>
+
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<span style="font-size:15px;line-height:22px;font-weight:600">Platforma holati</span>
+<span style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ f.status.b.bg }};color:{{ f.status.b.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ f.status.b.icon }}" width="16" height="16"></i></span>{{ f.status.b.text }}</span>
+</div>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ f.status.rows }}" as="r">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px">
+<span>{{ r.name }}</span>
+<span style="display:flex;align-items:center;gap:4px;color:{{ r.b.fg }};font-weight:600;font-size:12px;line-height:16px"><span style="display:flex"><i data-lucide="{{ r.b.icon }}" width="16" height="16"></i></span>{{ r.b.text }}</span>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;gap:12px;padding-top:8px;border-top:1px solid #E2E8F0;font-size:12px;line-height:16px;color:#5B6B6A"><span>Oxirgi tekshiruv <span style="font-family:'JetBrains Mono',monospace">16:40</span></span><a href="#" style="font-size:13px;line-height:18px;font-weight:600">Batafsil</a></div>
+</div>
+</section>
+</sc-if>
+</div>
+
+</div>
+</sc-if>
+</sc-if>
+</main>
+</div>
+</div>
+<sc-if value="{{ f.notifEmptySample }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="font-size:14px;line-height:20px;color:#5B6B6A">Panelning bo‘sh holati</span>
+<div style="width:380px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="padding:12px 16px;font-size:15px;line-height:22px;font-weight:600">Bildirishnomalar</div>
+<div style="border-top:1px solid #E2E8F0;padding:32px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+<span style="width:40px;height:40px;border-radius:8px;background:#F5F7F8;color:#5B6B6A;display:flex;align-items:center;justify-content:center"><i data-lucide="bell-off" width="20" height="20"></i></span>
+<span style="font-size:13px;line-height:18px;font-weight:600">Yangi bildirishnoma yo‘q</span>
+<span style="font-size:13px;line-height:18px;color:#5B6B6A;text-wrap:pretty">Sizga murojaat biriktirilsa, to‘lov yoki integratsiyada xato bo‘lsa, shu yerda ko‘rinadi.</span>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const T = {
+  danger: { bg: '#FEF2F2', fg: '#B91C1C' }, warning: { bg: '#FFFBEB', fg: '#B45309' },
+  success: { bg: '#F0FDF4', fg: '#15803D' }, info: { bg: '#EFF6FF', fg: '#1D4ED8' },
+  neutral: { bg: '#F5F7F8', fg: '#5B6B6A' }
+};
+const B = (tone, icon, text) => ({ ...T[tone], icon, text });
+const sp = s => String(s).split(/(\d[\d.,/:]*\d|\d)/).filter(x => x !== '').map(t => { const m = /^\d/.test(t); return { t: m ? t : t.replace(/^ (so‘m|сум)/, '\u00A0$1').replace(/ (so‘m|сум)/g, '\u00A0$1'), m, n: !m }; });
+const card = (label, value, unit, detail, compare, detail2) => ({ label, value, unit, hasDetail: !!detail, detail: detail ? sp(detail) : [], compare: sp(compare), hasDetail2: !!detail2, detail2: detail2 ? sp(detail2) : [] });
+const SOON = 'Yana 3.400.000,00 so‘m 7 kun ichida to‘lanishi kerak';
+
+const MONEY = {
+  A: [card('Oylik takrorlanuvchi daromad (MRR)', '48.600.000,00', 'so‘m', '42 ta obuna · shundan limitdan oshish 550.000,00 so‘m', 'O‘tgan oyda 45.900.000,00 so‘m'),
+      card('Shu oydagi to‘lovlar', '42.050.000,00', 'so‘m', '36 ta to‘lov · 36 kompaniya', 'O‘tgan oyda 43.100.000,00 so‘m'),
+      card('To‘lanmagan', '3.150.000,00', 'so‘m', '3 kompaniya · to‘lov muddati o‘tgan', 'O‘tgan oyda 2.600.000,00 so‘m', SOON)],
+  D: [card('Oylik takrorlanuvchi daromad (MRR)', '48.600.000,00', 'so‘m', '42 ta obuna · shundan limitdan oshish 550.000,00 so‘m', 'O‘tgan oyda 45.900.000,00 so‘m'),
+      card('Shu oydagi to‘lovlar', '45.200.000,00', 'so‘m', '39 ta to‘lov · 39 kompaniya', 'O‘tgan oyda 43.100.000,00 so‘m'),
+      card('To‘lanmagan', '0,00', 'so‘m', 'Muddati o‘tgan to‘lov yo‘q', 'O‘tgan oyda 2.600.000,00 so‘m', SOON)],
+  B: [card('Oylik takrorlanuvchi daromad (MRR)', '0,00', 'so‘m', null, 'O‘tgan oyda —'),
+      card('Shu oydagi to‘lovlar', '0,00', 'so‘m', null, 'O‘tgan oyda —'),
+      card('To‘lanmagan', '0,00', 'so‘m', null, 'O‘tgan oyda —')]
+};
+const CLIENTS = {
+  A: [card('Faol kompaniyalar', '42', null, null, 'O‘tgan oyda 40'),
+      card('Sinov muddatida', '7', null, '3 tasi 7 kun ichida tugaydi', 'O‘tgan oyda 4'),
+      card('Shu oy yangi', '4', null, 'Shu oyda birinchi marta to‘lovchi bo‘lganlar', 'O‘tgan oyda 2'),
+      card('Shu oy chiqib ketgan', '2', null, null, 'O‘tgan oyda 0')],
+  B: [card('Faol kompaniyalar', '0', null, null, 'O‘tgan oyda —'),
+      card('Sinov muddatida', '0', null, null, 'O‘tgan oyda —'),
+      card('Shu oy yangi', '0', null, 'Shu oyda birinchi marta to‘lovchi bo‘lganlar', 'O‘tgan oyda —'),
+      card('Shu oy chiqib ketgan', '0', null, null, 'O‘tgan oyda —')]
+};
+
+const groups = (hideMoney) => [
+  { title: 'To‘lov muddati o‘tgan', meta: sp(hideMoney ? '· 3 ta' : '· 3 ta · 3.150.000,00 so‘m'), rows: [
+    ['Shifo-Nur Farm Distribyutsiya', '12 kun', '1.200.000,00'],
+    ['Mustahkam Qurilish Savdo', '8 kun', '1.200.000,00'],
+    ['Tezkor Avtodetal', '3 kun', '750.000,00']
+  ].map(([company, d, sum]) => ({ company, b: B('danger', 'circle-alert', 'Muddati o‘tgan'), detail: sp(hideMoney ? `${d} kechikdi` : `${d} · ${sum} so‘m`), action: 'Kompaniyani ochish' })) },
+  { title: 'Limitdan oshgan', meta: sp('· 2 ta'), rows: [
+    { company: 'Barakali Oziq-ovqat Savdo', b: B('warning', 'triangle-alert', 'Limitdan oshgan'), detail: sp(hideMoney ? 'Foydalanuvchilar 27/25' : '27/25 · +300.000,00 so‘m/oy'), action: 'Tarifni ko‘rish' },
+    { company: 'Sog‘lom Medtexnika Ta’minot', b: B('warning', 'triangle-alert', 'Limitdan oshgan'), detail: sp(hideMoney ? 'Filiallar 4/3' : '4/3 · +250.000,00 so‘m/oy'), action: 'Tarifni ko‘rish' }
+  ] },
+  { title: 'Integratsiya xatosi', meta: sp('· 2 ta'), rows: [
+    { company: 'Malham Farm Logistika', b: B('danger', 'unplug', 'Ulanish xatosi'), detail: sp('Asl belgisi · 13:40 dan beri'), action: 'Jurnalni ochish' },
+    { company: 'Motor Ehtiyot Markazi', b: B('danger', 'unplug', 'Ulanish xatosi'), detail: sp('E-faktura · 11:15 dan beri'), action: 'Jurnalni ochish' }
+  ] }
+];
+
+const statusFor = (ok) => ({
+  b: ok ? B('success', 'circle-check', 'Hammasi ishlayapti') : B('warning', 'triangle-alert', 'Ogohlantirish'),
+  rows: [
+    { name: 'API va veb-ilova', b: B('success', 'circle-check', 'Ishlayapti') },
+    { name: 'Ma’lumotlar bazasi', b: B('success', 'circle-check', 'Ishlayapti') },
+    { name: 'Fon vazifalari', b: B('success', 'circle-check', 'Ishlayapti') },
+    ok ? { name: 'Tashqi integratsiyalar', b: B('success', 'circle-check', 'Ishlayapti') }
+       : { name: 'Tashqi integratsiyalar', b: B('warning', 'triangle-alert', '2 kompaniyada xato') }
+  ]
+});
+
+const nav = (finance, badge, home = true, ringOn = false) => {
+  const g = [
+    { title: null, items: [{ label: 'Bosh sahifa', icon: 'house', active: home }] },
+    { title: 'Mijozlar', items: [{ label: 'Kompaniyalar', icon: 'building-2' }, { label: 'Qo‘llab-quvvatlash', icon: 'life-buoy', badge }] },
+    finance && { title: 'Moliya', items: [{ label: 'Tariflar va modullar', icon: 'layers' }, { label: 'To‘lovlar va hisob-fakturalar', icon: 'receipt' }] },
+    { title: 'Tizim', items: [{ label: 'Platforma holati', icon: 'activity' }, ...(finance ? [{ label: 'Audit jurnali', icon: 'scroll-text' }] : [])] },
+    finance && { title: 'Boshqaruv', items: [{ label: 'Xodimlar va rollar', icon: 'user-cog' }, { label: 'Sozlamalar', icon: 'settings' }] }
+  ].filter(Boolean);
+  return g.map(x => ({ ...x, hasTitle: !!x.title, items: x.items.map(i => ({ ...i, active: !!i.active, idle: !i.active, hasBadge: !!i.badge, ring: ringOn && i.label === 'Kompaniyalar' ? '2px solid #0D9488' : 'none' })) }));
+};
+
+const OWNER = { name: 'Dilshod Karimov', role: 'Egasi', initials: 'DK' };
+const SUPPORT = { name: 'Madina Ergasheva', role: 'Qo‘llab-quvvatlash', initials: 'ME' };
+const CAP = 'Ma’lumotlar 25.11.2026, 16:40 holatiga';
+
+const FRAMES = [
+  { id: 'A', code: 'A', title: 'To‘ldirilgan holat', note: 'Asosiy ko‘rinish · Egasi roli' },
+  { id: 'K', code: 'K', title: 'Karkas · yig‘ilgan menyu', note: 'Sidebar 64px, nomlar ikonka ustida tooltip’da', collapsed: true },
+  { id: 'B', code: 'B', title: 'Bo‘sh holat', note: 'Platforma yangi, kompaniya yo‘q', mode: 'empty' },
+  { id: 'C', code: 'C', title: 'Yuklanmoqda', note: 'Skeleton, animatsiyasiz', mode: 'loading' },
+  { id: 'D', code: 'D', title: '«Diqqat talab qiladi» bo‘sh', note: 'Muammo yo‘q — «Hammasi joyida»', mode: 'ok' },
+  { id: 'E', code: 'E', title: 'Bitta blok xatosi', note: '«7 kun ichidagi to‘lovlar» yuklanmadi', mode: 'error' },
+  { id: 'F1', code: 'F1', title: 'Qo‘llab-quvvatlash roli', note: 'Moliya bloklari va summalar yo‘q, «Kompaniya qo‘shish» yo‘q', mode: 'support' },
+  { id: 'F2', code: 'F2', title: 'Ruxsat yo‘q sahifasi', note: 'Shu rol «To‘lovlar va hisob-fakturalar»ni havola orqali ochdi', mode: 'deniedPage' },
+  { id: 'G', code: 'G', title: 'Bildirishnomalar ochiq', note: 'Xodimning shaxsiy bildirishnomalari (3) · pastda bo‘sh holati', mode: 'notif' },
+  { id: 'H', code: 'H', title: 'Klaviatura fokusi', note: 'Qidiruv, menyu bandi va asosiy tugma; amalda bir vaqtda bittasi', mode: 'focus' }
+];
+
+class Component extends DCLogic {
+  state = { col: {} };
+  componentDidMount() {
+    const run = () => {
+      if (window.lucide && document.querySelector('i[data-lucide]')) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+    };
+    run();
+    this._t = setInterval(run, 400);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const frames = FRAMES.map(fr => {
+      const m = fr.mode || 'data';
+      const collapsed = this.state.col[fr.id] ?? !!fr.collapsed;
+      const support = m === 'support' || m === 'deniedPage', dPage = m === 'deniedPage', empty = m === 'empty', loading = m === 'loading', focus = m === 'focus';
+      return {
+        ...fr,
+        expanded: !collapsed, collapsed,
+        toggle: () => this.setState(s => ({ col: { ...s.col, [fr.id]: !collapsed } })),
+        nav: nav(!support, empty ? null : '5', !dPage, focus),
+        user: support ? SUPPORT : OWNER,
+        crumb: dPage ? 'To‘lovlar va hisob-fakturalar' : 'Bosh sahifa',
+        home: !dPage, deniedPage: dPage,
+        ring: focus ? '2px solid #0D9488' : 'none',
+        notifOpen: m === 'notif', notifEmptySample: m === 'notif', bellBg: m === 'notif' ? '#F5F7F8' : 'transparent',
+        showMoney: !support, showPay: !support,
+        bell: !empty,
+        caption: loading ? 'Ma’lumotlar yuklanmoqda…' : CAP,
+        headerBtn: !empty && !support,
+        moneyCards: !loading, kpiLoading: loading,
+        money: MONEY[empty ? 'B' : m === 'ok' ? 'D' : 'A'],
+        clientCards: !loading, clients: CLIENTS[empty ? 'B' : 'A'],
+        platformEmpty: empty, showMain: !empty,
+        attData: !loading && m !== 'ok', attOk: m === 'ok', attLoading: loading,
+        groups: groups(support),
+        sideLoading: loading, sideData: !loading,
+        payData: m !== 'error', payError: m === 'error',
+        status: statusFor(m === 'ok')
+      };
+    });
+    return {
+      frames,
+      sk3: [0, 1, 2], sk4: [0, 1, 2, 3], sk7: [0, 1, 2, 3, 4, 5, 6],
+      sideTitles: ['7 kun ichidagi to‘lovlar', 'Sinov muddati tugayotganlar', 'Ochiq murojaatlar', 'Platforma holati'],
+      payments: [
+        { company: 'Dasturxon Ulgurji Savdo', sum: '1.200.000,00', date: '26.11.2026', when: 'ertaga' },
+        { company: 'Sog‘lom Medtexnika Ta’minot', sum: '1.450.000,00', date: '28.11.2026', when: '3 kundan so‘ng' },
+        { company: 'G‘ildirak Avtoehtiyot', sum: '750.000,00', date: '01.12.2026', when: '6 kundan so‘ng' }
+      ],
+      trials: [
+        { company: 'Poydevor Qurilish Mollari', date: '27.11.2026', b: B('warning', 'hourglass', '2 kun qoldi') },
+        { company: 'Shifobaxsh Medbuyum', date: '29.11.2026', b: B('info', 'clock', '4 kun qoldi') },
+        { company: 'Ziyo Farm', date: '01.12.2026', b: B('info', 'clock', '6 kun qoldi') }
+      ],
+      notifs: [
+        { b: B('info', 'life-buoy', ''), text: sp('Sizga #1048 murojaat biriktirildi · Dasturxon Ulgurji Savdo'), time: 'Bugun, 16:32' },
+        { b: B('danger', 'unplug', ''), text: sp('Malham Farm Logistika: Asl belgisi bilan 3 soatdan beri ulanish yo‘q'), time: 'Bugun, 13:40' },
+        { b: B('danger', 'circle-alert', ''), text: sp('Shifo-Nur Farm Distribyutsiya: to‘lov 12 kun kechikdi'), time: 'Bugun, 09:00' }
+      ],
+      tickets: [
+        { b: B('danger', 'arrow-up', 'Yuqori ustuvorlik'), n: '1' },
+        { b: B('warning', 'equal', 'O‘rta ustuvorlik'), n: '2' },
+        { b: B('neutral', 'arrow-down', 'Past ustuvorlik'), n: '2' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

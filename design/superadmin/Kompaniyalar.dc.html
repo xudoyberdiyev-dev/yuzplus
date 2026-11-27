@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+body{margin:0;background:#E2E8F0;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+button,input{font-family:inherit}
+:focus-visible{outline:2px solid #0D9488;outline-offset:2px}
+svg.lucide{display:block;flex:none}
+</style>
+</helmet>
+<div style="padding:64px;display:flex;flex-direction:column;gap:48px;width:max-content">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:24px;line-height:32px;font-weight:600">100+ · Super admin paneli — 2-bosqich: Kompaniyalar ro‘yxati</div>
+<div style="font-size:14px;line-height:20px;color:#5B6B6A">Desktop 1440px · saralash: «Keyingi to‘lov» bo‘yicha o‘sish tartibida · namuna ma’lumotlar to‘qima</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:14px;line-height:20px">
+<sc-for list="{{ frames }}" as="f" hint-placeholder-count="10"><a href="#frame-{{ f.id }}">{{ f.code }} · {{ f.title }}</a></sc-for>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1440px 1440px;gap:64px;align-items:start">
+<sc-for list="{{ frames }}" as="f" hint-placeholder-count="2">
+<div id="frame-{{ f.id }}" data-screen-label="{{ f.code }} {{ f.title }}" style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px">
+<span style="padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600">{{ f.code }}</span>
+<span style="font-size:15px;line-height:22px;font-weight:600">{{ f.title }}</span>
+<span style="font-size:14px;line-height:20px;color:#5B6B6A">{{ f.note }}</span>
+</div>
+<div style="width:1440px;min-height:960px;display:flex;background:#F5F7F8;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+
+<sc-if value="{{ f.expanded }}" hint-placeholder-val="{{ true }}">
+<aside style="width:240px;flex:none;background:#123C3A;display:flex;flex-direction:column">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,0.08)">
+<span style="font-size:15px;line-height:22px;font-weight:600;color:#FFFFFF">100+</span>
+<span style="font-size:14px;line-height:20px;color:#A9C7C3">· Platforma</span>
+</div>
+<nav style="flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:4px">
+<sc-for list="{{ f.nav }}" as="g">
+<div style="display:flex;flex-direction:column;gap:4px">
+<sc-if value="{{ g.hasTitle }}"><div style="padding:12px 12px 4px;font-size:12px;line-height:16px;color:#A9C7C3">{{ g.title }}</div></sc-if>
+<sc-for list="{{ g.items }}" as="it">
+<sc-if value="{{ it.active }}"><a href="#" style="position:relative;min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,0.08);color:#FFFFFF;font-size:14px;line-height:20px;text-decoration:none"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2DD4BF"></span><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span></a></sc-if>
+<sc-if value="{{ it.idle }}"><a href="#" style="min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;color:#A9C7C3;font-size:14px;line-height:20px;text-decoration:none" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF;text-decoration:none"><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span><sc-if value="{{ it.hasBadge }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#DDF5EE;color:#123C3A">{{ it.badge }}</span></sc-if></a></sc-if>
+</sc-for>
+</div>
+</sc-for>
+</nav>
+<div style="padding:12px 8px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;gap:12px;padding:8px 12px">
+<span style="width:32px;height:32px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span>
+<div style="display:flex;flex-direction:column;min-width:0">
+<span style="font-size:14px;line-height:20px;color:#FFFFFF">{{ f.user.name }}</span>
+<div style="display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#A9C7C3;flex-wrap:wrap">
+<span>{{ f.user.role }}</span>
+<span style="display:flex;align-items:center;gap:4px" title="Ikki bosqichli tasdiqlash yoqilgan"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>2FA yoqilgan</span>
+</div>
+</div>
+</div>
+<button onClick="{{ f.toggle }}" style="min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;border:0;border-radius:6px;background:transparent;color:#A9C7C3;font-size:14px;line-height:20px;cursor:pointer;text-align:left" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF"><span style="display:flex"><i data-lucide="panel-left-close" width="20" height="20"></i></span>Menyuni yig‘ish</button>
+</div>
+</aside>
+</sc-if>
+
+<sc-if value="{{ f.collapsed }}" hint-placeholder-val="{{ false }}">
+<aside style="width:64px;flex:none;background:#123C3A;display:flex;flex-direction:column">
+<div style="height:56px;flex:none;display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,0.08);font-size:15px;line-height:22px;font-weight:600;color:#FFFFFF">100+</div>
+<nav style="flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:4px">
+<sc-for list="{{ f.nav }}" as="g">
+<div style="display:flex;flex-direction:column;gap:4px">
+<sc-if value="{{ g.hasTitle }}"><div style="height:1px;margin:8px 8px;background:rgba(255,255,255,0.08)"></div></sc-if>
+<sc-for list="{{ g.items }}" as="it">
+<sc-if value="{{ it.active }}"><a href="#" title="{{ it.label }}" style="position:relative;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,0.08);color:#FFFFFF"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2DD4BF"></span><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span></a></sc-if>
+<sc-if value="{{ it.idle }}"><a href="#" title="{{ it.label }}" style="position:relative;height:36px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:#A9C7C3" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF"><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><sc-if value="{{ it.hasBadge }}"><span style="position:absolute;top:-4px;right:0;min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#DDF5EE;color:#123C3A">{{ it.badge }}</span></sc-if></a></sc-if>
+</sc-for>
+</div>
+</sc-for>
+</nav>
+<div style="padding:12px 8px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;align-items:center;gap:8px">
+<span title="{{ f.user.name }} · {{ f.user.role }} · 2FA yoqilgan" style="width:32px;height:32px;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span>
+<button onClick="{{ f.toggle }}" title="Menyuni yoyish" style="width:48px;height:36px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#A9C7C3;cursor:pointer" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF"><span style="display:flex"><i data-lucide="panel-left-open" width="20" height="20"></i></span></button>
+</div>
+</aside>
+</sc-if>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="height:56px;flex:none;box-sizing:border-box;background:#FFFFFF;border-bottom:1px solid #E2E8F0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,400px) minmax(0,1fr);align-items:center;gap:24px;padding:0 24px">
+<div style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;min-width:0">
+<a href="#" style="color:#5B6B6A">Platforma</a>
+<span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span>
+<span style="color:#172B2A">Kompaniyalar</span>
+</div>
+<label style="height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;cursor:text">
+<span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span>
+<input placeholder="Kompaniya, STIR yoki tiket raqami" style="flex:1;min-width:0;border:0;outline:none;font:14px/20px Inter,sans-serif;color:#172B2A;background:transparent">
+<span style="flex:none;padding:0 4px;border:1px solid #E2E8F0;border-radius:6px;color:#5B6B6A;font-size:12px;line-height:16px;font-variant-numeric:tabular-nums">Ctrl K</span>
+</label>
+<div style="justify-self:end;display:flex;align-items:center;gap:12px">
+<span style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>Platforma boshqaruvi</span>
+<button title="Bildirishnomalar" style="position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A;cursor:pointer" style-hover="background:#F5F7F8;color:#172B2A"><span style="display:flex"><i data-lucide="bell" width="16" height="16"></i></span><sc-if value="{{ f.bell }}"><span style="position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#FEF2F2;color:#B91C1C">3</span></sc-if></button>
+<button title="Profil" style="height:32px;display:flex;align-items:center;gap:4px;padding:0 4px 0 0;border:0;border-radius:6px;background:transparent;color:#5B6B6A;cursor:pointer" style-hover="background:#F5F7F8"><span style="width:32px;height:32px;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span><span style="display:flex"><i data-lucide="chevron-down" width="16" height="16"></i></span></button>
+</div>
+</header>
+
+<main style="padding:24px;display:flex;flex-direction:column;gap:20px;min-width:0">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
+<div style="display:flex;align-items:center;gap:8px">
+<h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Kompaniyalar</h1>
+<sc-if value="{{ f.hasTitleCount }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#F5F7F8;color:#5B6B6A">{{ f.titleCount }}</span></sc-if>
+</div>
+<div style="display:flex;align-items:center;gap:12px">
+<sc-if value="{{ f.canExport }}" hint-placeholder-val="{{ true }}">
+<div style="position:relative">
+<button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 12px 0 16px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="file-spreadsheet" width="16" height="16"></i></span>Excelga eksport<span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></button>
+<sc-if value="{{ f.exportOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;top:40px;right:0;width:260px;z-index:20;padding:4px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<sc-for list="{{ f.exportItems }}" as="e"><button style="min-height:36px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:6px;background:transparent;color:#172B2A;font-size:14px;line-height:20px;cursor:pointer;text-align:left" style-hover="background:#F5F7F8"><span style="display:flex;color:#5B6B6A"><i data-lucide="{{ e.icon }}" width="16" height="16"></i></span><span style="flex:1">{{ e.label }}</span><span style="font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;font-variant-numeric:tabular-nums">{{ e.n }}</span></button></sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ f.headerBtn }}" hint-placeholder-val="{{ true }}"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:0;border-radius:6px;background:#0F766E;color:#FFFFFF;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#115E59"><span style="display:flex"><i data-lucide="plus" width="16" height="16"></i></span>Kompaniya qo‘shish</button></sc-if>
+</div>
+</div>
+
+<sc-if value="{{ f.platformEmpty }}" hint-placeholder-val="{{ false }}">
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:64px 24px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center">
+<span style="width:40px;height:40px;border-radius:8px;border:1px solid #E2E8F0;color:#0D9488;display:flex;align-items:center;justify-content:center"><i data-lucide="building-2" width="20" height="20"></i></span>
+<div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+<h2 style="margin:0;font-size:18px;line-height:26px;font-weight:600">Platformada hali kompaniya yo‘q</h2>
+<p style="margin:0;max-width:560px;font-size:14px;line-height:20px;color:#5B6B6A;text-wrap:pretty">Birinchi kompaniyani qo‘shing. U shu ro‘yxatda holati, tarifi va keyingi to‘lov sanasi bilan ko‘rinadi. Avval tariflarni sozlab olishingiz ham mumkin.</p>
+</div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+<button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:0;border-radius:6px;background:#0F766E;color:#FFFFFF;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#115E59"><span style="display:flex"><i data-lucide="plus" width="16" height="16"></i></span>Kompaniya qo‘shish</button>
+<button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8">Tariflarni sozlash</button>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ f.showList }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:flex-end;gap:24px;border-bottom:1px solid #E2E8F0;overflow-x:auto">
+<sc-for list="{{ f.tabs }}" as="t" hint-placeholder-count="6">
+<sc-if value="{{ t.active }}"><button style="height:40px;display:flex;align-items:center;gap:8px;padding:0;border:0;border-bottom:2px solid #0D9488;background:transparent;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;white-space:nowrap">{{ t.label }}<sc-if value="{{ t.hasN }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#DDF5EE;color:#0F766E">{{ t.n }}</span></sc-if><sc-if value="{{ t.skel }}"><span style="width:20px;height:20px;border-radius:6px;background:#E2E8F0"></span></sc-if></button></sc-if>
+<sc-if value="{{ t.idle }}"><button style="height:40px;display:flex;align-items:center;gap:8px;padding:0;border:0;border-bottom:2px solid transparent;background:transparent;color:#5B6B6A;font-size:14px;line-height:20px;cursor:pointer;white-space:nowrap" style-hover="color:#172B2A">{{ t.label }}<sc-if value="{{ t.hasN }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;font-variant-numeric:tabular-nums;background:#F5F7F8;color:#5B6B6A">{{ t.n }}</span></sc-if><sc-if value="{{ t.skel }}"><span style="width:20px;height:20px;border-radius:6px;background:#E2E8F0"></span></sc-if></button></sc-if>
+</sc-for>
+</div>
+
+<sc-if value="{{ f.bulk }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:44px;box-sizing:border-box;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:4px 8px 4px 16px;border-radius:8px;background:#DDF5EE">
+<span style="font-size:14px;line-height:20px;font-weight:600;font-variant-numeric:tabular-nums">3 ta tanlandi</span>
+<span style="width:1px;height:20px;background:#94A3A1"></span>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="file-spreadsheet" width="16" height="16"></i></span>Excelga eksport</button>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="send" width="16" height="16"></i></span>To‘lov eslatmasini yuborish</button>
+<button style="margin-left:auto;height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#FFFFFF;color:#115E59"><span style="display:flex"><i data-lucide="x" width="16" height="16"></i></span>Tanlovni bekor qilish</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ f.toolbar }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<label style="flex:1 1 280px;max-width:360px;height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;cursor:text">
+<span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span>
+<input placeholder="Nomi, STIR yoki telefon raqami" defaultValue="{{ f.query }}" style="flex:1;min-width:0;border:0;outline:none;font:14px/20px Inter,sans-serif;color:#172B2A;background:transparent">
+</label>
+<div style="position:relative">
+<button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:{{ f.filterBtnBg }};color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="list-filter" width="16" height="16"></i></span>Filtr qo‘shish</button>
+<sc-if value="{{ f.filterOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;top:40px;left:0;width:300px;z-index:20;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:8px;padding:8px">
+<button title="Filtrlar ro‘yxatiga qaytish" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A;cursor:pointer" style-hover="background:#F5F7F8"><i data-lucide="arrow-left" width="16" height="16"></i></button>
+<span style="font-size:15px;line-height:22px;font-weight:600">Soha</span>
+</div>
+<div style="padding:0 12px 8px">
+<label style="height:32px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 8px;border:1px solid #E2E8F0;border-radius:6px"><span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span><input placeholder="Sohani qidirish" style="flex:1;min-width:0;border:0;outline:none;font:14px/20px Inter,sans-serif;background:transparent"></label>
+</div>
+<div style="border-top:1px solid #E2E8F0;padding:4px">
+<sc-for list="{{ sohaOpts }}" as="o">
+<label style="min-height:36px;display:flex;align-items:center;gap:8px;padding:0 8px;border-radius:6px;cursor:pointer;font-size:14px;line-height:20px" style-hover="background:#F5F7F8">
+<sc-if value="{{ o.on }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:4px;background:#0F766E;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i data-lucide="check" width="16" height="16"></i></span></sc-if>
+<sc-if value="{{ o.off }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border:1px solid #94A3A1;border-radius:4px;background:#FFFFFF"></span></sc-if>
+<span style="flex:1">{{ o.label }}</span>
+<span style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:18px;color:#5B6B6A;font-variant-numeric:tabular-nums">{{ o.n }}</span>
+</label>
+</sc-for>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:8px 12px;border-top:1px solid #E2E8F0">
+<button style="height:32px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8;color:#115E59">Bekor qilish</button>
+<button style="height:32px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8">Qo‘llash</button>
+</div>
+</div>
+</sc-if>
+</div>
+<sc-for list="{{ f.chips }}" as="c">
+<span style="height:32px;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;padding-left:12px;border-radius:6px;background:#DDF5EE;font-size:13px;line-height:18px;white-space:nowrap"><span style="color:#5B6B6A">{{ c.k }}</span><span style="font-weight:600">{{ c.v }}</span><button title="Filtrni olib tashlash" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A;cursor:pointer" style-hover="color:#172B2A"><i data-lucide="x" width="16" height="16"></i></button></span>
+</sc-for>
+<sc-if value="{{ f.hasChips }}"><button style="height:32px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#FFFFFF;color:#115E59">Tozalash</button></sc-if>
+<div style="position:relative;margin-left:auto"><button aria-expanded="{{ f.colsOpen }}" style="height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="columns-3" width="16" height="16"></i></span>Ustunlar</button>
+<sc-if value="{{ f.colsOpen }}"><div role="menu" style="position:absolute;top:40px;right:0;z-index:20;width:240px;padding:4px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column"><sc-for list="{{ colOpts }}" as="o"><label role="menuitemcheckbox" aria-checked="{{ o.on }}" style="min-height:36px;display:flex;align-items:center;gap:8px;padding:0 8px;border-radius:6px;font-size:14px;line-height:20px;color:{{ o.fg }};cursor:pointer" style-hover="background:#F5F7F8"><sc-if value="{{ o.on }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:4px;background:{{ o.boxBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i data-lucide="check" width="16" height="16"></i></span></sc-if><sc-if value="{{ o.off }}"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border:1px solid #94A3A1;border-radius:4px;background:#FFFFFF"></span></sc-if><span style="flex:1">{{ o.t }}</span><sc-if value="{{ o.fixed }}"><span style="font-size:12px;line-height:16px;color:#5B6B6A">doim</span></sc-if></label></sc-for><div style="height:1px;margin:4px 0;background:#E2E8F0"></div><span style="padding:4px 8px;font-size:12px;line-height:16px;color:#5B6B6A">Qo‘shimcha ustun yoqilsa, jadval gorizontal aylanadi.</span></div></sc-if></div>
+</div>
+</sc-if>
+
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<sc-if value="{{ f.showTable }}" hint-placeholder-val="{{ true }}">
+<div style="overflow-x:auto">
+<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13px;line-height:18px">
+<thead>
+<tr>
+<th style="position:sticky;left:0;z-index:3;width:40px;height:36px;padding:0 12px;box-sizing:border-box;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left">
+<sc-if value="{{ f.headSome }}"><span style="width:16px;height:16px;box-sizing:border-box;border-radius:4px;background:#0F766E;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i data-lucide="minus" width="16" height="16"></i></span></sc-if>
+<sc-if value="{{ f.headNone }}"><span style="display:block;width:16px;height:16px;box-sizing:border-box;border:1px solid #94A3A1;border-radius:4px;background:#FFFFFF"></span></sc-if>
+</th>
+<th style="position:sticky;left:40px;z-index:3;height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;border-right:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px">Nomi<span style="display:flex;color:#94A3A1"><i data-lucide="chevrons-up-down" width="16" height="16"></i></span></span></th>
+<th style="width:92px;height:36px;padding:0 8px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;white-space:nowrap">STIR</th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px">Tarif<span style="display:flex;color:#94A3A1"><i data-lucide="chevrons-up-down" width="16" height="16"></i></span></span></th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px">Holat<span style="display:flex;color:#94A3A1"><i data-lucide="chevrons-up-down" width="16" height="16"></i></span></span></th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px">Filiallar<span style="display:flex;color:#94A3A1"><i data-lucide="chevrons-up-down" width="16" height="16"></i></span></span></th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:right;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px">Foydalanuvchilar<span style="display:flex;color:#94A3A1"><i data-lucide="chevrons-up-down" width="16" height="16"></i></span></span></th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px">Oxirgi faollik<span style="display:flex;color:#94A3A1"><i data-lucide="chevrons-up-down" width="16" height="16"></i></span></span></th>
+<th style="height:36px;padding:0 12px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;text-align:left;font-size:12px;line-height:16px;font-weight:600;color:#172B2A;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px">Keyingi to‘lov<span style="display:flex;color:#0D9488"><i data-lucide="arrow-up" width="16" height="16"></i></span></span></th>
+<th style="position:sticky;right:0;z-index:3;width:48px;height:36px;padding:0 8px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;border-left:1px solid #E2E8F0"><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Harakatlar</span></th>
+</tr>
+</thead>
+<tbody>
+<sc-if value="{{ f.loading }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ sk12 }}" as="s"><tr>
+<td style="height:40px;padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:block;width:16px;height:16px;border-radius:4px;background:#F5F7F8"></span></td>
+<td style="height:40px;padding:0 12px;border-bottom:1px solid #E2E8F0;border-right:1px solid #E2E8F0"><span style="display:block;width:200px;height:12px;border-radius:6px;background:#E2E8F0"></span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:block;width:80px;height:12px;border-radius:6px;background:#F5F7F8"></span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:block;width:56px;height:12px;border-radius:6px;background:#F5F7F8"></span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:block;width:96px;height:24px;border-radius:6px;background:#F5F7F8"></span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:block;margin-left:auto;width:32px;height:12px;border-radius:6px;background:#E2E8F0"></span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:block;margin-left:auto;width:40px;height:12px;border-radius:6px;background:#E2E8F0"></span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:block;width:120px;height:12px;border-radius:6px;background:#F5F7F8"></span></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0"><span style="display:block;width:80px;height:12px;border-radius:6px;background:#E2E8F0"></span></td>
+<td style="padding:0 8px;border-bottom:1px solid #E2E8F0;border-left:1px solid #E2E8F0"></td>
+</tr></sc-for>
+</sc-if>
+<sc-for list="{{ f.rows }}" as="r">
+<tr style="background:{{ r.bg }};cursor:pointer" style-hover="background:#F8FAFA" title="Kompaniya kartasini ochish">
+<td style="position:sticky;left:0;z-index:1;width:40px;height:40px;padding:0 12px;box-sizing:border-box;background:inherit;border-bottom:1px solid #E2E8F0">
+<sc-if value="{{ r.sel }}"><span style="width:16px;height:16px;box-sizing:border-box;border-radius:4px;background:#0F766E;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i data-lucide="check" width="16" height="16"></i></span></sc-if>
+<sc-if value="{{ r.unsel }}"><span style="display:block;width:16px;height:16px;box-sizing:border-box;border:1px solid #94A3A1;border-radius:4px;background:#FFFFFF"></span></sc-if>
+</td>
+<td style="position:sticky;left:40px;z-index:1;height:40px;padding:0 12px;background:inherit;border-bottom:1px solid #E2E8F0;border-right:1px solid #E2E8F0;white-space:nowrap">
+<span style="display:flex;align-items:center;gap:8px"><span style="font-weight:600">{{ r.name }}</span><sc-if value="{{ r.integ }}"><span title="{{ r.integTip }}" tabindex="0" style="display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:#FEF2F2;color:#B91C1C;font-size:12px;line-height:16px;font-weight:600;cursor:help"><span style="display:flex"><i data-lucide="unplug" width="16" height="16"></i></span>Xato</span></sc-if></span>
+</td>
+<td style="padding:0 8px;border-bottom:1px solid #E2E8F0;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">{{ r.stir }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap">{{ r.tarif }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap"><div style="position:relative;display:inline-flex;align-items:center;gap:4px"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ r.st.bg }};color:{{ r.st.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ r.st.icon }}" width="16" height="16"></i></span>{{ r.st.text }}</span><sc-if value="{{ r.hasReason }}"><span title="{{ r.reason }}" style="display:flex;color:#5B6B6A;cursor:help"><i data-lucide="info" width="16" height="16"></i></span></sc-if><sc-if value="{{ r.showTip }}"><span style="position:absolute;top:32px;left:0;z-index:4;padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;white-space:nowrap;box-shadow:0 4px 16px rgba(18,60,58,0.08)">{{ r.reason }}</span></sc-if></div></td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap;text-align:right">
+<sc-if value="{{ r.filOver }}"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:#FFFBEB;color:#B45309;font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="triangle-alert" width="16" height="16"></i></span><span style="font-family:'JetBrains Mono',monospace;font-size:13px">{{ r.fil }}</span>oshgan</span></sc-if>
+<sc-if value="{{ r.filOk }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.fil }}</span></sc-if>
+</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap;text-align:right">
+<sc-if value="{{ r.usrOver }}"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:#FFFBEB;color:#B45309;font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="triangle-alert" width="16" height="16"></i></span><span style="font-family:'JetBrains Mono',monospace;font-size:13px">{{ r.usr }}</span>oshgan</span></sc-if>
+<sc-if value="{{ r.usrOk }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.usr }}</span></sc-if>
+</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:{{ r.actColor }}">{{ r.act }}</td>
+<td style="padding:0 12px;border-bottom:1px solid #E2E8F0;white-space:nowrap">
+<sc-if value="{{ r.late }}"><span style="display:inline-flex;align-items:center;gap:4px;color:#B91C1C;font-weight:600"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span><span style="font-family:'JetBrains Mono',monospace">{{ r.lateDays }}</span>kun kechikdi</span></sc-if>
+<sc-if value="{{ r.onTime }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.next }}</span><sc-if value="{{ r.trialEnd }}"><span style="color:#5B6B6A"> · sinov tugaydi</span></sc-if></sc-if>
+</td>
+<td style="position:sticky;right:0;z-index:{{ r.z }};width:48px;padding:0 8px;background:inherit;border-bottom:1px solid #E2E8F0;border-left:1px solid #E2E8F0">
+<div style="position:relative">
+<button title="Harakatlar" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:{{ r.dotsBg }};color:#5B6B6A;cursor:pointer" style-hover="background:#E2E8F0;color:#172B2A"><i data-lucide="ellipsis" width="16" height="16"></i></button>
+<sc-if value="{{ r.menuOpen }}">
+<div style="position:absolute;top:36px;right:0;width:260px;padding:4px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column;cursor:default">
+<sc-for list="{{ r.menu }}" as="m">
+<sc-if value="{{ m.sep }}"><div style="height:1px;margin:4px 0;background:#E2E8F0"></div></sc-if>
+<sc-if value="{{ m.plain }}"><button style="min-height:36px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:6px;background:transparent;color:#172B2A;font-size:14px;line-height:20px;cursor:pointer;text-align:left;white-space:nowrap" style-hover="background:#F5F7F8"><span style="display:flex;color:#5B6B6A"><i data-lucide="{{ m.icon }}" width="16" height="16"></i></span>{{ m.label }}</button></sc-if>
+<sc-if value="{{ m.danger }}"><button style="min-height:36px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:6px;background:transparent;color:#B91C1C;font-size:14px;line-height:20px;cursor:pointer;text-align:left;white-space:nowrap" style-hover="background:#FEF2F2"><span style="display:flex"><i data-lucide="{{ m.icon }}" width="16" height="16"></i></span>{{ m.label }}</button></sc-if>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px;color:#5B6B6A">
+<div style="display:flex;align-items:center;gap:8px">
+<span>Sahifada</span>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:18px;cursor:pointer" title="25 / 50 / 100">25<span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></button>
+</div>
+<div style="display:flex;align-items:center;gap:12px">
+<span style="font-family:'JetBrains Mono',monospace;color:#172B2A;font-variant-numeric:tabular-nums">{{ f.pageText }}</span>
+<div style="display:flex;gap:4px">
+<button title="Oldingi sahifa" disabled style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#94A3A1"><i data-lucide="chevron-left" width="16" height="16"></i></button>
+<button title="Keyingi sahifa" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:{{ f.nextColor }};cursor:pointer" style-hover="background:#F5F7F8"><i data-lucide="chevron-right" width="16" height="16"></i></button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ f.noResult }}" hint-placeholder-val="{{ false }}">
+<div style="padding:64px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center">
+<span style="width:40px;height:40px;border-radius:8px;background:#F5F7F8;color:#5B6B6A;display:flex;align-items:center;justify-content:center"><i data-lucide="search-x" width="20" height="20"></i></span>
+<div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+<h2 style="margin:0;font-size:18px;line-height:26px;font-weight:600">Hech narsa topilmadi</h2>
+<p style="margin:0;max-width:520px;font-size:14px;line-height:20px;color:#5B6B6A;text-wrap:pretty">«Ipak» so‘rovi va «Soha: Avtoehtiyot» filtri bo‘yicha kompaniya yo‘q. So‘rovni qisqartiring, STIR bilan qidiring yoki filtrlarni olib tashlang.</p>
+</div>
+<button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="filter-x" width="16" height="16"></i></span>Filtrlarni tozalash</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ f.error }}" hint-placeholder-val="{{ false }}">
+<div style="padding:48px 24px;display:flex;justify-content:center">
+<div style="max-width:560px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:16px;border-radius:6px;background:#FEF2F2">
+<span style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:600;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>Kompaniyalar ro‘yxati yuklanmadi</span>
+<span style="font-size:13px;line-height:18px;color:#172B2A">Server javob bermadi. Internet aloqasini tekshirib, qayta urinib ko‘ring. Xato takrorlansa, «Platforma holati» sahifasini oching.</span>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;color:#172B2A;font-size:14px;line-height:20px;font-weight:600;cursor:pointer" style-hover="background:#F5F7F8"><span style="display:flex"><i data-lucide="rotate-cw" width="16" height="16"></i></span>Qayta urinish</button>
+</div>
+</div>
+</sc-if>
+</section>
+</sc-if>
+</main>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const T = {
+  danger: { bg: '#FEF2F2', fg: '#B91C1C' }, warning: { bg: '#FFFBEB', fg: '#B45309' },
+  success: { bg: '#F0FDF4', fg: '#15803D' }, info: { bg: '#EFF6FF', fg: '#1D4ED8' },
+  neutral: { bg: '#F5F7F8', fg: '#5B6B6A' }
+};
+const B = (tone, icon, text) => ({ ...T[tone], icon, text });
+const ST = {
+  trial: B('info', 'timer', 'Sinov'), active: B('success', 'circle-check', 'Faol'),
+  pending: B('danger', 'circle-alert', 'To‘lov kutilmoqda'),
+  paused: B('neutral', 'circle-pause', 'To‘xtatilgan'), closed: B('neutral', 'circle-x', 'Yopilgan')
+};
+const LIM = { Start: [1, 10], Biznes: [3, 25], Korporativ: [10, 100] };
+
+// name, STIR, soha, tarif, holat, filiallar, foydalanuvchilar, oxirgi faollik, keyingi to‘lov (yoki kechikish kuni), integratsiya xatosi
+const DATA = [
+  ['Shifo-Nur Farm Distribyutsiya', '305482917', 'Farmatsevtika', 'Biznes', 'pending', 3, 18, '25.11.2026, 15:12', 12],
+  ['Mustahkam Qurilish Savdo', '307891245', 'Qurilish mollari', 'Biznes', 'pending', 3, 21, '25.11.2026, 11:20', 8],
+  ['Tezkor Avtodetal', '309456712', 'Avtoehtiyot', 'Start', 'pending', 1, 7, '24.11.2026, 18:05', 3],
+  ['Dasturxon Ulgurji Savdo', '302775164', 'Oziq-ovqat', 'Biznes', 'active', 2, 19, '25.11.2026, 16:31', '26.11.2026'],
+  ['Poydevor Qurilish Mollari', '311208459', 'Qurilish mollari', 'Biznes', 'trial', 1, 6, '25.11.2026, 14:02', '27.11.2026'],
+  ['Sog‘lom Medtexnika Ta’minot', '308325917', 'Tibbiy buyumlar', 'Biznes', 'active', 4, 20, '25.11.2026, 15:05', '28.11.2026'],
+  ['Shifobaxsh Medbuyum', '312047385', 'Tibbiy buyumlar', 'Start', 'trial', 1, 4, '23.11.2026, 10:44', '29.11.2026'],
+  ['G‘ildirak Avtoehtiyot', '306932518', 'Avtoehtiyot', 'Start', 'active', 1, 9, '25.11.2026, 12:37', '01.12.2026'],
+  ['Ziyo Farm', '312560194', 'Farmatsevtika', 'Biznes', 'trial', 2, 11, '25.11.2026, 09:15', '01.12.2026'],
+  ['Najot Farm Ombor', '304618927', 'Farmatsevtika', 'Biznes', 'active', 3, 22, '25.11.2026, 16:10', '03.12.2026'],
+  ['Barakali Oziq-ovqat Savdo', '303149826', 'Oziq-ovqat', 'Biznes', 'active', 3, 27, '25.11.2026, 16:22', '03.12.2026'],
+  ['Malham Farm Logistika', '301872643', 'Farmatsevtika', 'Korporativ', 'active', 6, 64, '25.11.2026, 13:38', '04.12.2026', 'Asl belgisi: 25.11.2026, 13:40 dan beri ulanish yo‘q'],
+  ['Motor Ehtiyot Markazi', '305507281', 'Avtoehtiyot', 'Biznes', 'active', 2, 15, '25.11.2026, 16:02', '04.12.2026', 'E-hisob-faktura: 25.11.2026, 11:15 dan beri 5 ta hujjat yuborilmadi'],
+  ['Oltin Don Oziq-ovqat', '307364052', 'Oziq-ovqat', 'Start', 'active', 1, 8, '24.11.2026, 17:50', '04.12.2026'],
+  ['Tayanch Qurilish Bozori', '304093718', 'Qurilish mollari', 'Biznes', 'active', 2, 14, '16.11.2026, 09:30', '05.12.2026'],
+  ['Nafas Farm Savdo', '309871430', 'Farmatsevtika', 'Biznes', 'active', 1, 12, '25.11.2026, 11:58', '05.12.2026'],
+  ['Qo‘rg‘on Qurilish Mollari', '312794603', 'Qurilish mollari', 'Start', 'trial', 1, 3, '22.11.2026, 15:12', '05.12.2026'],
+  ['Medlayn Ta’minot', '306248159', 'Tibbiy buyumlar', 'Biznes', 'active', 2, 17, '25.11.2026, 10:26', '06.12.2026'],
+  ['Rizq Ulgurji Savdo', '303682947', 'Oziq-ovqat', 'Biznes', 'active', 3, 18, '25.11.2026, 16:35', '06.12.2026'],
+  ['Avtomir Ehtiyot Qismlari', '308117362', 'Avtoehtiyot', 'Start', 'active', 1, 5, '14.11.2026, 12:00', '07.12.2026'],
+  ['Davo Plyus Distribyutsiya', '302459831', 'Farmatsevtika', 'Korporativ', 'active', 8, 87, '25.11.2026, 16:39', '08.12.2026'],
+  ['Saxovat Oziq-ovqat', '312931076', 'Oziq-ovqat', 'Biznes', 'trial', 1, 8, '25.11.2026, 08:47', '08.12.2026'],
+  ['Qurilish Markazi Ulgurji', '307045286', 'Qurilish mollari', 'Biznes', 'active', 2, 16, '25.11.2026, 14:51', '09.12.2026'],
+  ['Shifokor Medbuyum', '305983614', 'Tibbiy buyumlar', 'Start', 'active', 1, 6, '21.11.2026, 16:20', '09.12.2026'],
+  ['Yo‘ldosh Avtodetal', '309602753', 'Avtoehtiyot', 'Biznes', 'active', 2, 13, '25.11.2026, 13:14', '10.12.2026']
+];
+const PAUSED = [
+  ['Mezon Qurilish Mollari', '310457826', 'Qurilish mollari', 'Start', 'paused', 1, 9, '09.11.2026, 17:02', null, null, 'To‘lov qilinmagan (muddat 27.10.2026) · to‘xtatildi 10.11.2026'],
+  ['Shirin Oziq-ovqat Savdo', '306714295', 'Oziq-ovqat', 'Biznes', 'paused', 2, 14, '03.11.2026, 12:30', null, null, 'Kompaniya so‘rovi bilan · 04.11.2026']
+];
+const stale = a => { const [d, m] = a.split('.').map(Number); return m < 11 || (m === 11 && d < 18); };
+
+const row = (d, i, o) => {
+  const [name, stir, soha, tarif, st, fil, usr, act, next, integ, reason] = d;
+  const [fl, ul] = LIM[tarif];
+  const late = typeof next === 'number';
+  const sel = (o.sel || []).includes(i), menuOpen = o.menuAt === i;
+  let menu = [{ icon: 'panel-right-open', label: 'Kartani ochish' }, { icon: 'log-in', label: 'Kompaniya nomidan kirish' }];
+  const r = o.role || 'own';
+  if (st === 'trial' && (r === 'own' || r === 'sales')) menu.push({ icon: 'calendar-plus', label: 'Sinov muddatini uzaytirish' });
+  if (r === 'own' || r === 'acc') menu.push({ sep: true }, { icon: 'circle-pause', label: 'Kompaniyani to‘xtatish', danger: true });
+  menu = menu.map(m => ({ ...m, sep: !!m.sep, danger: !!m.danger, plain: !m.sep && !m.danger }));
+  return {
+    name, stir, soha, tarif, st: ST[st], integ: !!integ, integTip: integ || '', hasReason: !!reason, reason: reason || '', showTip: !!reason && i === 0 && o.tip,
+    fil: `${fil}/${fl}`, filOver: fil > fl, filOk: fil <= fl,
+    usr: `${usr}/${ul}`, usrOver: usr > ul, usrOk: usr <= ul,
+    act, actColor: stale(act) ? '#B45309' : '#172B2A',
+    late, lateDays: late ? String(next) : '', onTime: !late, next: late ? '' : (next || '—'), trialEnd: st === 'trial',
+    sel, unsel: !sel, bg: sel ? '#DDF5EE' : '#FFFFFF',
+    menuOpen, menu, z: menuOpen ? 5 : 1, dotsBg: menuOpen ? '#E2E8F0' : 'transparent'
+  };
+};
+
+const TABS = [['Barchasi', 55, 'all'], ['Sinov', 7, 'trial'], ['Faol', 39, 'active'], ['To‘lov kutilmoqda', 3, 'pending'], ['To‘xtatilgan', 2, 'paused'], ['Yopilgan', 4, 'closed']];
+const tabs = (active, counts, skel) => TABS.map(([label, n, key], i) => ({
+  label, active: key === active, idle: key !== active,
+  n: String(counts ? counts[i] : n), hasN: !skel, skel: !!skel
+}));
+
+const nav = (finance, badge, sys = true, adm = true) => {
+  const g = [
+    { title: null, items: [{ label: 'Bosh sahifa', icon: 'house' }] },
+    { title: 'Mijozlar', items: [{ label: 'Kompaniyalar', icon: 'building-2', active: true }, { label: 'Qo‘llab-quvvatlash', icon: 'life-buoy', badge }] },
+    finance && { title: 'Moliya', items: [{ label: 'Tariflar va modullar', icon: 'layers' }, { label: 'To‘lovlar va hisob-fakturalar', icon: 'receipt' }] },
+    sys && { title: 'Tizim', items: [{ label: 'Platforma holati', icon: 'activity' }, ...(adm ? [{ label: 'Audit jurnali', icon: 'scroll-text' }] : [])] },
+    adm && { title: 'Boshqaruv', items: [{ label: 'Xodimlar va rollar', icon: 'user-cog' }, { label: 'Sozlamalar', icon: 'settings' }] }
+  ].filter(Boolean);
+  return g.map(x => ({ ...x, hasTitle: !!x.title, items: x.items.map(i => ({ ...i, active: !!i.active, idle: !i.active, hasBadge: !!i.badge })) }));
+};
+
+const OWNER = { name: 'Dilshod Karimov', role: 'Egasi', initials: 'DK' };
+const SUPPORT = { name: 'Madina Ergasheva', role: 'Qo‘llab-quvvatlash', initials: 'ME' };
+const SALES = { name: 'Nilufar Rahimova', role: 'Sotuv', initials: 'NR' };
+const ACC = { name: 'Gulnora Qodirova', role: 'Buxgalter', initials: 'GQ' };
+
+const FRAMES = [
+  { id: 'A', title: 'To‘ldirilgan', note: '«Barchasi» tabi · Egasi roli · 1-sahifa (25 qator)', mode: 'data' },
+  { id: 'B', title: 'Bo‘sh', note: 'Platformada hali kompaniya yo‘q', mode: 'empty' },
+  { id: 'C', title: 'Qidiruv natijasi bo‘sh', note: '«Ipak» + «Soha: Avtoehtiyot» filtri', mode: 'noresult' },
+  { id: 'D', title: 'Yuklanmoqda', note: 'Jadval skeleton, animatsiyasiz', mode: 'loading' },
+  { id: 'E', title: 'Xato', note: 'Ro‘yxat yuklanmadi', mode: 'error' },
+  { id: 'F', title: 'Qo‘llab-quvvatlash roli', note: 'Qo‘shish va eksport yo‘q · «⋯» menyusida 2 ta band', mode: 'support' },
+  { id: 'G', title: 'Filtr ochiq', note: '2 ta faol filtr · «Soha» tanlanmoqda', mode: 'filter' },
+  { id: 'H', title: 'Ommaviy tanlash', note: '3 ta kechikkan kompaniya tanlangan · eksport menyusi ochiq', mode: 'bulk' },
+  { id: 'I', title: '«⋯» menyusi ochiq', note: 'Sinov holatidagi kompaniya', mode: 'menu' },
+  { id: 'J', title: '«To‘lov kutilmoqda» tabi', note: '3 ta kechikkan kompaniya', mode: 'pending' },
+  { id: 'K', title: '«To‘xtatilgan» tabi', note: '2 ta kompaniya · sabab tooltip’da', mode: 'paused' },
+  { id: 'M', title: '«Ustunlar» menyusi', note: '«Soha» standart holatda yashirin', mode: 'data', cols: true },
+  { id: 'L', title: 'Sotuv roli · «⋯»', note: 'Sinov kompaniyasi: uzaytirish bor, to‘xtatish yo‘q', mode: 'menu', role: 'sales' },
+  { id: 'L2', title: 'Buxgalter roli · «⋯»', note: 'Nomidan kirish (faqat ko‘rish) va to‘xtatish bor, uzaytirish yo‘q', mode: 'menu', role: 'acc' }
+];
+
+class Component extends DCLogic {
+  state = { col: {} };
+  componentDidMount() {
+    const run = () => {
+      if (window.lucide && document.querySelector('i[data-lucide]')) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+    };
+    run();
+    this._t = setInterval(run, 400);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const frames = FRAMES.map(fr => {
+      const m = fr.mode;
+      const collapsed = !!this.state.col[fr.id];
+      const support = m === 'support', empty = m === 'empty';
+      let data = DATA.map((d, i) => [d, i]);
+      const role = fr.role || (support ? 'sup' : 'own');
+      let o = { support, role };
+      let tabKey = 'all', counts = null, chips = [], pageText = '1–25 / 55', query = '';
+      if (m === 'filter') {
+        data = data.filter(([d]) => d[0].startsWith('Barakali') || d[0].startsWith('Sog‘lom'));
+        chips = [{ k: 'Tarif:', v: 'Biznes' }, { k: 'Limitdan oshgan:', v: 'Ha' }];
+        counts = [2, 0, 2, 0, 0, 0]; pageText = '1–2 / 2';
+      }
+      if (m === 'pending') { data = data.slice(0, 3); tabKey = 'pending'; pageText = '1–3 / 3'; }
+      if (m === 'paused') { data = PAUSED.map((d, i) => [d, i]); tabKey = 'paused'; pageText = '1–2 / 2'; o.tip = true; }
+      if (m === 'noresult') { data = []; chips = [{ k: 'Soha:', v: 'Avtoehtiyot' }]; counts = [0, 0, 0, 0, 0, 0]; query = 'Ipak'; }
+      if (m === 'loading' || m === 'error') data = [];
+      if (m === 'bulk') o.sel = [0, 1, 2];
+      if (m === 'menu') o.menuAt = 4;
+      if (support) o.menuAt = 1;
+      const rows = data.map(([d, i]) => row(d, i, o));
+      const loading = m === 'loading';
+      return {
+        ...fr, code: fr.id,
+        expanded: !collapsed, collapsed,
+        toggle: () => this.setState(s => ({ col: { ...s.col, [fr.id]: !collapsed } })),
+        nav: nav(!support, empty ? null : '5', role === 'own' || role === 'sup', role === 'own'),
+        user: { sup: SUPPORT, sales: SALES, acc: ACC }[role] || OWNER,
+        bell: !empty,
+        hasTitleCount: !loading && m !== 'error', titleCount: empty ? '0' : '55',
+        canExport: !support && !empty, exportOpen: m === 'bulk',
+        exportItems: [{ icon: 'list', label: 'Joriy ro‘yxat', n: '55' }, { icon: 'list-checks', label: 'Faqat tanlanganlar', n: '3' }],
+        colsOpen: !!fr.cols,
+        headerBtn: (role === 'own' || role === 'sales') && !empty,
+        platformEmpty: empty, showList: !empty,
+        tabs: tabs(tabKey, counts, loading || m === 'error'),
+        bulk: m === 'bulk', toolbar: m !== 'bulk',
+        query, chips, hasChips: chips.length > 0,
+        filterOpen: m === 'filter', filterBtnBg: m === 'filter' ? '#F5F7F8' : '#FFFFFF',
+        showTable: m !== 'noresult' && m !== 'error', noResult: m === 'noresult', error: m === 'error',
+        loading, rows,
+        headSome: m === 'bulk', headNone: m !== 'bulk',
+        pageText: loading ? '—' : pageText, nextColor: pageText === '1–25 / 55' ? '#172B2A' : '#94A3A1'
+      };
+    });
+    return {
+      frames,
+      colOpts: [['Nomi', 1, 1], ['STIR', 1], ['Soha', 0], ['Tarif', 1], ['Holat', 1, 1], ['Filiallar', 1], ['Foydalanuvchilar', 1], ['Oxirgi faollik', 1], ['Keyingi to‘lov', 1], ['Shahar', 0], ['Mas’ul xodim', 0], ['Ro‘yxatdan o‘tgan', 0]].map(([t, on, fixed]) => ({ t, on: !!on, off: !on, fixed: !!fixed, boxBg: fixed ? '#94A3A1' : '#0F766E', fg: '#172B2A' })),
+      sk12: Array.from({ length: 12 }, (_, i) => i),
+      sohaOpts: [
+        ['Farmatsevtika', 0], ['Tibbiy buyumlar', 1, true], ['Oziq-ovqat', 1], ['Qurilish mollari', 0], ['Avtoehtiyot', 0]
+      ].map(([label, n, on]) => ({ label, n: String(n), on: !!on, off: !on }))
+    };
+  }
+}
+</script>
+</body>
+</html>

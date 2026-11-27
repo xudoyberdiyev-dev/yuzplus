@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+body{margin:0;background:#E2E8F0;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+button,input,textarea{font-family:inherit}
+:focus-visible{outline:2px solid #0D9488;outline-offset:2px}
+svg.lucide{display:block;flex:none}
+</style>
+</helmet>
+<div style="padding:64px;display:flex;flex-direction:column;gap:48px;width:max-content">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:24px;line-height:32px;font-weight:600">100+ · Super admin paneli — 7-bosqich: Qo‘llab-quvvatlash</div>
+<div style="font-size:14px;line-height:20px;color:#5B6B6A">Desktop 1440 × 960px · 25.11.2026, 16:40 holatiga (Chorshanba) · ochiq murojaatlar 5 · M — avvalgi ekranlar tuzatishlari</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;max-width:2944px;font-size:14px;line-height:20px"><sc-for list="{{ frames }}" as="f"><a href="#frame-{{ f.id }}">{{ f.id }} · {{ f.title }}</a></sc-for></div>
+</div>
+<div style="display:grid;grid-template-columns:1440px 1440px;gap:64px;align-items:start">
+<sc-for list="{{ frames }}" as="f" hint-placeholder-count="2">
+<div id="frame-{{ f.id }}" data-screen-label="{{ f.id }} {{ f.title }}" style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px"><span style="padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600">{{ f.id }}</span><span style="font-size:15px;line-height:22px;font-weight:600">{{ f.title }}</span><span style="font-size:14px;line-height:20px;color:#5B6B6A">{{ f.note }}</span></div>
+<sc-if value="{{ f.doc }}"><div style="width:1440px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:32px;display:flex;flex-direction:column;gap:16px">
+<h2 style="margin:0;font-size:18px;line-height:26px;font-weight:600">Avvalgi ekranlar tuzatishlari (1–8)</h2>
+<div style="display:flex;flex-direction:column"><sc-for list="{{ fixes }}" as="x"><div style="display:grid;grid-template-columns:32px 260px minmax(0,1fr) 280px;gap:16px;align-items:start;padding:12px 0;border-top:1px solid #E2E8F0;font-size:14px;line-height:20px">
+<span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:#5B6B6A">{{ x.n }}</span>
+<span style="font-weight:600">{{ x.t }}</span>
+<span style="color:#172B2A;text-wrap:pretty">{{ x.d }}</span>
+<a href="{{ x.href }}" style="display:flex;align-items:center;gap:4px;font-weight:600">{{ x.link }}<span style="display:flex"><i data-lucide="arrow-up-right" width="16" height="16"></i></span></a>
+</div></sc-for></div>
+</div></sc-if>
+<sc-if value="{{ f.app }}"><div style="position:relative;width:1440px;height:960px;display:flex;background:#F5F7F8;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<aside style="width:240px;flex:none;background:#123C3A;display:flex;flex-direction:column">
+<div style="height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="font-size:15px;line-height:22px;font-weight:600;color:#FFFFFF">100+</span><span style="font-size:14px;line-height:20px;color:#A9C7C3">· Platforma</span></div>
+<nav style="flex:1;padding:12px 8px;display:flex;flex-direction:column;gap:4px"><sc-for list="{{ f.nav }}" as="g"><div style="display:flex;flex-direction:column;gap:4px">
+<sc-if value="{{ g.hasTitle }}"><div style="padding:12px 12px 4px;font-size:12px;line-height:16px;color:#A9C7C3">{{ g.title }}</div></sc-if>
+<sc-for list="{{ g.items }}" as="it">
+<sc-if value="{{ it.active }}"><a href="#" style="position:relative;min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,0.08);color:#FFFFFF;font-size:14px;line-height:20px;text-decoration:none"><span style="position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2DD4BF"></span><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span><sc-if value="{{ it.hasBadge }}"><span style="min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;background:#DDF5EE;color:#123C3A">{{ it.badge }}</span></sc-if></a></sc-if>
+<sc-if value="{{ it.idle }}"><a href="#" style="min-height:36px;display:flex;align-items:center;gap:12px;padding:8px 12px;box-sizing:border-box;border-radius:6px;color:#A9C7C3;font-size:14px;line-height:20px;text-decoration:none" style-hover="background:rgba(255,255,255,0.08);color:#FFFFFF;text-decoration:none"><span style="display:flex"><i data-lucide="{{ it.icon }}" width="20" height="20"></i></span><span style="flex:1">{{ it.label }}</span></a></sc-if>
+</sc-for></div></sc-for></nav>
+<div style="padding:12px 8px;border-top:1px solid rgba(255,255,255,0.08)"><div style="display:flex;align-items:center;gap:12px;padding:8px 12px"><span style="width:32px;height:32px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span><div style="display:flex;flex-direction:column"><span style="font-size:14px;line-height:20px;color:#FFFFFF">{{ f.user.name }}</span><span style="display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#A9C7C3">{{ f.user.role }}<span style="display:flex;align-items:center;gap:4px"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>2FA yoqilgan</span></span></div></div></div>
+</aside>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<header style="height:56px;flex:none;box-sizing:border-box;background:#FFFFFF;border-bottom:1px solid #E2E8F0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,400px) minmax(0,1fr);align-items:center;gap:24px;padding:0 24px">
+<div style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;white-space:nowrap"><a href="#" style="color:#5B6B6A">Platforma</a><span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span><a href="#" style="color:#5B6B6A">Mijozlar</a><span style="display:flex;color:#94A3A1"><i data-lucide="chevron-right" width="16" height="16"></i></span><span>Qo‘llab-quvvatlash</span></div>
+<label style="height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;font-size:14px;line-height:20px;padding:0 8px 0 12px"><span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span><span style="flex:1;color:#94A3A1;white-space:nowrap;overflow:hidden">Kompaniya, STIR yoki tiket raqami</span><span style="padding:0 4px;border:1px solid #E2E8F0;border-radius:6px;color:#5B6B6A;font-size:12px;line-height:16px">Ctrl K</span></label>
+<div style="justify-self:end;display:flex;align-items:center;gap:12px"><span style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex;color:#2DD4BF"><i data-lucide="shield-check" width="16" height="16"></i></span>Platforma boshqaruvi</span><span style="position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#5B6B6A"><span style="display:flex"><i data-lucide="bell" width="16" height="16"></i></span><span style="position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600;background:#FEF2F2;color:#B91C1C">3</span></span><span style="width:32px;height:32px;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ f.user.initials }}</span></div>
+</header>
+<div style="flex:1;min-height:0;display:grid;grid-template-columns:360px minmax(0,1fr) 320px">
+<section style="min-height:0;display:flex;flex-direction:column;background:#FFFFFF;border-right:1px solid #E2E8F0">
+<div style="padding:16px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid #E2E8F0">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><h1 style="margin:0;font-size:18px;line-height:26px;font-weight:600">Murojaatlar</h1><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="plus" width="16" height="16"></i></span>Murojaat yaratish</button></div>
+<div role="tablist" style="display:grid;grid-template-columns:auto auto auto;gap:4px;padding:2px;border-radius:6px;background:#F5F7F8"><sc-for list="{{ f.segs }}" as="s"><sc-if value="{{ s.on }}"><span role="tab" aria-selected="true" style="height:32px;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 8px;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 1px #E2E8F0;font-size:13px;line-height:18px;font-weight:600;white-space:nowrap">{{ s.t }}<span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:#0F766E">{{ s.n }}</span></span></sc-if><sc-if value="{{ s.off }}"><span role="tab" style="height:32px;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 8px;border-radius:6px;font-size:13px;line-height:18px;color:#5B6B6A;white-space:nowrap">{{ s.t }}<span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ s.n }}</span></span></sc-if></sc-for></div>
+<label style="height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;font-size:14px;line-height:20px"><span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span><span style="color:#94A3A1;white-space:nowrap;overflow:hidden">Raqam, kompaniya yoki mavzu</span></label>
+<div style="display:flex;gap:8px"><sc-for list="{{ filters }}" as="x"><button style="height:32px;display:flex;align-items:center;gap:4px;padding:0 8px 0 12px;border-radius:6px;font-size:13px;line-height:18px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A">{{ x }}<span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></button></sc-for></div>
+</div>
+<div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column">
+<sc-if value="{{ f.listOn }}">
+<sc-for list="{{ f.groups }}" as="gr"><div style="display:flex;flex-direction:column">
+<div style="padding:8px 16px;background:#F8FAFA;border-bottom:1px solid #E2E8F0;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">{{ gr.t }} · <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ gr.n }}</span></div>
+<sc-for list="{{ gr.items }}" as="t"><div style="position:relative;display:flex;flex-direction:column;gap:4px;padding:12px 16px;border-bottom:1px solid #E2E8F0;background:{{ t.bg }};cursor:pointer" style-hover="background:#F8FAFA">
+<sc-if value="{{ t.sel }}"><span style="position:absolute;left:0;top:0;bottom:0;width:3px;background:#0D9488"></span></sc-if>
+<div style="display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#5B6B6A"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:#172B2A">{{ t.no }}</span><span style="display:flex;align-items:center;gap:4px"><span style="display:flex"><i data-lucide="{{ t.chI }}" width="16" height="16"></i></span>{{ t.chN }}</span><span style="flex:1"></span><sc-if value="{{ t.unread }}"><span style="height:20px;box-sizing:border-box;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;font-size:12px;line-height:16px;font-weight:600;background:#DDF5EE;color:#0F766E;white-space:nowrap"><span style="font-family:'JetBrains Mono',monospace">{{ t.nNew }}</span><span>yangi xabar</span></span></sc-if><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ t.time }}</span></div>
+<sc-if value="{{ t.unread }}"><span style="font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.subj }}</span></sc-if>
+<sc-if value="{{ t.read }}"><span style="font-size:14px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.subj }}</span></sc-if>
+<span style="font-size:13px;line-height:18px;color:{{ t.coFg }}">{{ t.co }}</span>
+<div style="display:flex;align-items:center;gap:4px;margin-top:4px">
+<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:{{ t.pri.bg }};color:{{ t.pri.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ t.pri.icon }}" width="16" height="16"></i></span>{{ t.pri.text }}</span>
+<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:{{ t.st.bg }};color:{{ t.st.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ t.st.icon }}" width="16" height="16"></i></span>{{ t.st.text }}</span>
+<sc-if value="{{ t.hasSla }}"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:{{ t.sla.bg }};color:{{ t.sla.fg }};font-size:12px;line-height:16px;font-weight:600;white-space:nowrap"><span style="display:flex"><i data-lucide="{{ t.sla.icon }}" width="16" height="16"></i></span>{{ t.sla.text }}</span></sc-if>
+<span style="flex:1"></span>
+<sc-if value="{{ t.hasAv }}"><span title="{{ t.avName }}" style="width:24px;height:24px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ t.av }}</span></sc-if>
+<sc-if value="{{ t.noAv }}"><span title="Mas’ul tayinlanmagan" style="width:24px;height:24px;flex:none;box-sizing:border-box;border:1px dashed #94A3A1;border-radius:6px;color:#5B6B6A;display:flex;align-items:center;justify-content:center"><i data-lucide="user-round" width="16" height="16"></i></span></sc-if>
+</div>
+</div></sc-for>
+</div></sc-for>
+</sc-if>
+<sc-if value="{{ f.listEmpty }}"><div style="padding:48px 24px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center"><span style="width:40px;height:40px;border-radius:8px;background:#F5F7F8;color:#5B6B6A;display:flex;align-items:center;justify-content:center"><i data-lucide="inbox" width="20" height="20"></i></span><span style="font-size:15px;line-height:22px;font-weight:600">Sizga biriktirilgan murojaat yo‘q</span><span style="font-size:13px;line-height:18px;color:#5B6B6A;text-wrap:pretty">Yangi murojaatlar «Mas’ulsiz» bo‘limida turadi. Mas’ulni Egasi yoki Qo‘llab-quvvatlash xodimi tayinlaydi.</span><a href="#" style="font-size:14px;line-height:20px;font-weight:600">Barcha murojaatlarni ko‘rish</a></div></sc-if>
+<sc-if value="{{ f.listSk }}"><sc-for list="{{ sk6 }}" as="s"><div style="display:flex;flex-direction:column;gap:8px;padding:12px 16px;border-bottom:1px solid #E2E8F0"><span style="width:40%;height:12px;border-radius:6px;background:#E2E8F0"></span><span style="width:85%;height:14px;border-radius:6px;background:#E2E8F0"></span><span style="width:55%;height:12px;border-radius:6px;background:#F5F7F8"></span><span style="width:70%;height:20px;border-radius:6px;background:#F5F7F8"></span></div></sc-for></sc-if>
+<sc-if value="{{ f.listErr }}"><div style="padding:24px 16px"><div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:16px;border-radius:6px;background:#FEF2F2"><span style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:600;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span>Murojaatlar yuklanmadi</span><span style="font-size:13px;line-height:18px;text-wrap:pretty">Murojaatlar xizmatidan javob kelmadi. Bir daqiqadan so‘ng qayta urinib ko‘ring; xato takrorlansa, «Platforma holati» sahifasini tekshiring.</span><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="rotate-cw" width="16" height="16"></i></span>Qayta urinish</button></div></div></sc-if>
+</div>
+</section>
+<section style="min-width:0;min-height:0;display:flex;flex-direction:column;background:#FFFFFF">
+<sc-if value="{{ f.conv }}">
+<div style="padding:16px 24px;border-bottom:1px solid #E2E8F0;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:baseline;gap:8px;min-width:0"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:15px;line-height:22px;color:#5B6B6A">{{ f.d.no }}</span><h2 style="margin:0;font-size:18px;line-height:26px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.d.subj }}</h2></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<button aria-haspopup="menu" style="height:28px;display:flex;align-items:center;gap:4px;padding:0 4px 0 8px;border:0;border-radius:6px;background:{{ f.d.st.bg }};color:{{ f.d.st.fg }};font-size:12px;line-height:16px;font-weight:600;cursor:pointer"><span style="display:flex"><i data-lucide="{{ f.d.st.icon }}" width="16" height="16"></i></span>{{ f.d.st.text }}<span style="display:flex"><i data-lucide="chevron-down" width="16" height="16"></i></span></button>
+<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ f.d.pri.bg }};color:{{ f.d.pri.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ f.d.pri.icon }}" width="16" height="16"></i></span>{{ f.d.pri.text }}</span>
+<sc-if value="{{ f.d.hasSla }}"><span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;background:{{ f.d.sla.bg }};color:{{ f.d.sla.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ f.d.sla.icon }}" width="16" height="16"></i></span>{{ f.d.sla.text }}</span></sc-if>
+<span style="display:flex;align-items:center;gap:4px;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:flex"><i data-lucide="{{ f.d.chI }}" width="16" height="16"></i></span>{{ f.d.via }}</span>
+</div></div>
+<div style="flex:1;min-height:0;overflow:hidden;padding:20px 24px;display:flex;flex-direction:column;justify-content:flex-end;gap:16px;background:#FFFFFF">
+<sc-if value="{{ f.unknown }}"><div style="display:flex;align-items:flex-start;gap:8px;padding:12px;border-radius:6px;background:#FFFBEB;font-size:13px;line-height:18px"><span style="display:flex;color:#B45309"><i data-lucide="building-2" width="16" height="16"></i></span><div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:flex-start"><span><span style="font-weight:600;color:#B45309">Kompaniya aniqlanmagan.</span> Xat shaxsiy pochtadan keldi, kompaniya kontaktlarida bu email yo‘q. Tizim taklifi: Poydevor Qurilish Mollari (xat imzosidagi nom bo‘yicha).</span><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="link" width="16" height="16"></i></span>Kompaniyaga biriktirish</button></div></div></sc-if>
+<sc-for list="{{ f.d.msgs }}" as="m">
+<sc-if value="{{ m.sys }}"><div style="align-self:center;max-width:440px;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;line-height:16px;color:#5B6B6A;text-align:center"><span style="display:flex"><i data-lucide="{{ m.icon }}" width="16" height="16"></i></span><span>{{ m.t }} · <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ m.time }}</span></span></div></sc-if>
+<sc-if value="{{ m.msg }}"><div style="display:flex;gap:12px;align-items:flex-start">
+<span style="width:32px;height:32px;flex:none;border-radius:6px;background:{{ m.avBg }};color:{{ m.avFg }};display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ m.av }}</span>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start">
+<div style="display:flex;align-items:baseline;gap:8px;font-size:13px;line-height:18px;flex-wrap:wrap"><span style="font-weight:600">{{ m.name }}</span><span style="color:#5B6B6A">{{ m.role }}</span><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:#5B6B6A">{{ m.time }}</span></div>
+<sc-if value="{{ m.isNote }}"><div style="max-width:560px;display:flex;flex-direction:column;gap:4px;padding:8px 12px;border:1px solid #E2E8F0;border-radius:8px;background:#F8FAFA"><span style="display:flex;align-items:center;gap:4px;font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A"><span style="display:flex"><i data-lucide="lock" width="16" height="16"></i></span>Ichki eslatma · mijoz ko‘rmaydi</span><span style="font-size:14px;line-height:20px;text-wrap:pretty">{{ m.t }}</span></div></sc-if>
+<sc-if value="{{ m.isText }}"><div style="max-width:560px;padding:8px 12px;border-radius:8px;background:{{ m.bg }};font-size:14px;line-height:20px;text-wrap:pretty">{{ m.t }}</div></sc-if>
+<sc-if value="{{ m.hasFile }}"><div style="display:flex;align-items:center;gap:12px;padding:8px;border:1px solid #E2E8F0;border-radius:8px"><span style="width:80px;height:56px;border-radius:6px;background:#E2E8F0;color:#5B6B6A;display:flex;align-items:center;justify-content:center"><i data-lucide="image" width="20" height="20"></i></span><span style="display:flex;flex-direction:column;gap:2px;font-size:13px;line-height:18px"><a href="#" style="font-weight:600">{{ m.file }}</a><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:#5B6B6A">{{ m.size }}</span></span></div></sc-if>
+<sc-if value="{{ m.failed }}"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;line-height:18px;color:#B91C1C"><span style="display:flex"><i data-lucide="circle-alert" width="16" height="16"></i></span><span style="font-weight:600">Yuborilmadi: Telegram javob bermadi. Qayta urinib ko‘ring.</span><button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="rotate-cw" width="16" height="16"></i></span>Qayta yuborish</button></div></sc-if>
+</div></div></sc-if>
+</sc-for>
+</div>
+<div style="position:relative;border-top:1px solid #E2E8F0;padding:12px 24px 16px;display:flex;flex-direction:column;gap:8px;background:{{ f.c.bg }}">
+<div role="tablist" style="display:flex;gap:16px;border-bottom:1px solid #E2E8F0">
+<sc-if value="{{ f.c.reply }}"><span role="tab" aria-selected="true" style="height:32px;display:flex;align-items:center;gap:4px;border-bottom:2px solid #0D9488;font-size:13px;line-height:18px;font-weight:600"><span style="display:flex"><i data-lucide="reply" width="16" height="16"></i></span>Javob</span><span role="tab" style="height:32px;display:flex;align-items:center;gap:4px;border-bottom:2px solid transparent;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:flex"><i data-lucide="lock" width="16" height="16"></i></span>Ichki eslatma</span></sc-if>
+<sc-if value="{{ f.c.note }}"><span role="tab" style="height:32px;display:flex;align-items:center;gap:4px;border-bottom:2px solid transparent;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:flex"><i data-lucide="reply" width="16" height="16"></i></span>Javob</span><span role="tab" aria-selected="true" style="height:32px;display:flex;align-items:center;gap:4px;border-bottom:2px solid #0D9488;font-size:13px;line-height:18px;font-weight:600"><span style="display:flex"><i data-lucide="lock" width="16" height="16"></i></span>Ichki eslatma</span></sc-if>
+</div>
+<sc-if value="{{ f.c.resolve }}"><div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-radius:6px;background:#EFF6FF;font-size:13px;line-height:18px"><span style="display:flex;color:#1D4ED8"><i data-lucide="sparkles" width="16" height="16"></i></span><span><span style="font-weight:600;color:#1D4ED8">Yakuniy xabar taklifi qo‘shildi.</span> Tahrirlab yuboring. Mijoz keyin yozsa, murojaat avtomatik «Jarayonda»ga qaytadi.</span></div></sc-if>
+<div style="min-height:72px;box-sizing:border-box;padding:8px 12px;border:1px solid {{ f.c.bd }};border-radius:6px;background:#FFFFFF;font-size:14px;line-height:20px;outline:{{ f.c.ring }};outline-offset:2px">
+<sc-if value="{{ f.c.hasText }}"><span style="text-wrap:pretty">{{ f.c.text }}</span></sc-if>
+<sc-if value="{{ f.c.noText }}"><span style="color:#94A3A1">{{ f.c.ph }}</span></sc-if>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+<span style="display:flex;align-items:center;gap:4px;font-size:12px;line-height:16px;color:#5B6B6A;min-width:0"><span style="display:flex"><i data-lucide="{{ f.c.hintI }}" width="16" height="16"></i></span>{{ f.c.hint }}</span>
+<sc-if value="{{ f.c.afterOn }}"><span style="display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#5B6B6A;white-space:nowrap">Yuborgandan keyin<button style="height:32px;display:flex;align-items:center;gap:4px;padding:0 8px 0 12px;border-radius:6px;font-size:13px;line-height:18px;font-weight:600;cursor:pointer;border:1px solid {{ f.c.afterBd }};background:#FFFFFF;color:#172B2A;white-space:nowrap">{{ f.c.after }}<span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></button></span></sc-if>
+</div>
+<div style="display:flex;align-items:center;gap:4px">
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:6px;background:{{ f.c.tplBg }};color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;white-space:nowrap"><span style="display:flex"><i data-lucide="file-text" width="16" height="16"></i></span>Shablon qo‘shish</button>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;white-space:nowrap"><span style="display:flex"><i data-lucide="paperclip" width="16" height="16"></i></span>Fayl biriktirish</button>
+<span style="flex:1"></span>
+<sc-if value="{{ f.c.priOn }}"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF" style-hover="background:#115E59"><span style="display:flex"><i data-lucide="{{ f.c.priI }}" width="16" height="16"></i></span>{{ f.c.pri }}</button></sc-if>
+<sc-if value="{{ f.c.priOff }}"><button disabled="{{ true }}" style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;border:0;background:#E2E8F0;color:#5B6B6A;cursor:not-allowed"><span style="display:flex"><i data-lucide="{{ f.c.priI }}" width="16" height="16"></i></span>{{ f.c.pri }}</button></sc-if>
+</div>
+<sc-if value="{{ f.c.tpl }}"><div role="menu" style="position:absolute;left:24px;bottom:56px;width:360px;z-index:20;padding:4px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="padding:4px 4px 8px"><label style="height:32px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 8px;border:1px solid #0D9488;border-radius:6px;outline:2px solid #0D9488;outline-offset:2px;font-size:13px;line-height:18px;color:#94A3A1"><span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span>Shablonni qidirish</label></div>
+<sc-for list="{{ tpls }}" as="x"><div role="menuitem" style="display:flex;flex-direction:column;gap:2px;padding:8px 12px;border-radius:6px;background:{{ x.bg }};cursor:pointer" style-hover="background:#F5F7F8"><span style="font-size:14px;line-height:20px;font-weight:600">{{ x.t }}</span><span style="font-size:12px;line-height:16px;color:#5B6B6A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ x.d }}</span></div></sc-for>
+</div></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ f.noSel }}"><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;text-align:center"><span style="width:40px;height:40px;border-radius:8px;background:#F5F7F8;color:#5B6B6A;display:flex;align-items:center;justify-content:center"><i data-lucide="messages-square" width="20" height="20"></i></span><span style="font-size:15px;line-height:22px;font-weight:600">Murojaat tanlanmagan</span><span style="max-width:360px;font-size:13px;line-height:18px;color:#5B6B6A">Suhbatni ochish uchun chapdagi ro‘yxatdan murojaatni tanlang.</span></div></sc-if>
+<sc-if value="{{ f.convSk }}"><div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px"><span style="width:60%;height:20px;border-radius:6px;background:#E2E8F0"></span><span style="width:30%;height:16px;border-radius:6px;background:#F5F7F8"></span><sc-for list="{{ sk3 }}" as="s"><div style="display:flex;gap:12px"><span style="width:32px;height:32px;border-radius:6px;background:#E2E8F0"></span><div style="flex:1;display:flex;flex-direction:column;gap:8px"><span style="width:30%;height:12px;border-radius:6px;background:#E2E8F0"></span><span style="width:80%;height:48px;border-radius:8px;background:#F5F7F8"></span></div></div></sc-for></div></sc-if>
+</section>
+<aside style="min-height:0;display:flex;flex-direction:column;gap:0;background:#FFFFFF;border-left:1px solid #E2E8F0;overflow:hidden">
+<sc-if value="{{ f.conv }}">
+<div style="padding:16px;display:flex;flex-direction:column;gap:4px">
+<h3 style="margin:0 0 4px;font-size:15px;line-height:22px;font-weight:600">Murojaat</h3>
+<sc-for list="{{ f.d.tRows }}" as="r"><div style="display:grid;grid-template-columns:104px minmax(0,1fr);gap:8px;align-items:center;min-height:32px;border-top:1px solid #E2E8F0;padding:4px 0;font-size:13px;line-height:18px">
+<span style="color:#5B6B6A">{{ r.k }}</span>
+<sc-if value="{{ r.isPill }}"><span style="justify-self:start;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:{{ r.b.bg }};color:{{ r.b.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ r.b.icon }}" width="16" height="16"></i></span>{{ r.b.text }}</span></sc-if>
+<sc-if value="{{ r.isText }}"><span style="display:flex;align-items:center;gap:4px;color:{{ r.fg }}"><sc-if value="{{ r.hasIcon }}"><span style="display:flex"><i data-lucide="{{ r.icon }}" width="16" height="16"></i></span></sc-if><span><sc-for list="{{ r.v }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></span></sc-if>
+<sc-if value="{{ r.isWho }}"><button style="grid-column:1 / -1;height:32px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 8px 0 4px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;font-size:13px;line-height:18px;color:#172B2A;cursor:pointer"><span style="width:24px;height:24px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">{{ r.av }}</span><span style="flex:1;text-align:left;white-space:nowrap">{{ r.name }}</span><span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></button></sc-if>
+<sc-if value="{{ r.isNone }}"><button style="height:32px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 8px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;font-size:13px;line-height:18px;color:#B45309;font-weight:600;cursor:pointer"><span style="display:flex"><i data-lucide="user-x" width="16" height="16"></i></span><span style="flex:1;text-align:left">Tayinlanmagan</span><span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></button></sc-if>
+</div></sc-for>
+</div>
+<div style="padding:16px;border-top:1px solid #E2E8F0;display:flex;flex-direction:column;gap:4px">
+<h3 style="margin:0 0 4px;font-size:15px;line-height:22px;font-weight:600">Kompaniya</h3>
+<sc-if value="{{ f.d.coOn }}">
+<a href="#" style="font-size:14px;line-height:20px;font-weight:600;margin-bottom:4px">{{ f.d.coName }}</a>
+<sc-for list="{{ f.d.cRows }}" as="r"><div style="display:grid;grid-template-columns:104px minmax(0,1fr);gap:8px;align-items:center;min-height:32px;border-top:1px solid #E2E8F0;padding:4px 0;font-size:13px;line-height:18px">
+<span style="color:#5B6B6A">{{ r.k }}</span>
+<sc-if value="{{ r.isPill }}"><span style="justify-self:start;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;background:{{ r.b.bg }};color:{{ r.b.fg }};font-size:12px;line-height:16px;font-weight:600"><span style="display:flex"><i data-lucide="{{ r.b.icon }}" width="16" height="16"></i></span>{{ r.b.text }}</span></sc-if>
+<sc-if value="{{ r.isText }}"><span style="display:flex;align-items:flex-start;gap:4px;color:{{ r.fg }}"><sc-if value="{{ r.hasIcon }}"><span style="display:flex"><i data-lucide="{{ r.icon }}" width="16" height="16"></i></span></sc-if><span><sc-for list="{{ r.v }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></span></sc-if>
+</div></sc-for>
+<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding-top:12px">
+<button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A"><span style="display:flex"><i data-lucide="log-in" width="16" height="16"></i></span>Kompaniya nomidan kirish</button>
+<button style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;margin-left:-8px;border:0;border-radius:6px;background:transparent;color:#0F766E;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;white-space:nowrap"><span style="display:flex"><i data-lucide="building-2" width="16" height="16"></i></span>Kompaniya kartasini ochish</button>
+</div>
+</sc-if>
+<sc-if value="{{ f.d.coOff }}"><span style="font-size:13px;line-height:18px;color:#5B6B6A;text-wrap:pretty">Murojaat hali kompaniyaga biriktirilmagan. Biriktirilgach, holat, tarif va integratsiyalar shu yerda ko‘rinadi.</span></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ f.ctxSk }}"><div style="padding:16px;display:flex;flex-direction:column;gap:12px"><span style="width:40%;height:16px;border-radius:6px;background:#E2E8F0"></span><sc-for list="{{ sk6 }}" as="s"><span style="height:12px;border-radius:6px;background:#F5F7F8"></span></sc-for></div></sc-if>
+</aside>
+</div>
+</div>
+<sc-if value="{{ f.mCreate }}"><div style="position:absolute;inset:0;z-index:40;background:rgba(18,60,58,0.4);display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box"><div role="dialog" aria-modal="true" aria-labelledby="mC" style="width:640px;max-height:100%;background:#FFFFFF;border-radius:12px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:flex-start;gap:12px;padding:24px 24px 16px"><div style="flex:1;display:flex;flex-direction:column;gap:4px"><h2 id="mC" style="margin:0;font-size:18px;line-height:26px;font-weight:600">Murojaat yaratish</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">Telefon qo‘ng‘irog‘i yoki boshqa kanaldan kelgan so‘rov uchun</span></div><button title="Yopish (Esc)" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><span style="display:flex"><i data-lucide="x" width="16" height="16"></i></span></button></div>
+<div style="padding:0 24px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Kompaniya</span><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px;line-height:20px"><span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span><span style="flex:1">Dasturxon Ulgurji Savdo · STIR <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">302775164</span></span><span style="display:flex;color:#5B6B6A"><i data-lucide="x" width="16" height="16"></i></span></label></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Kanal</span><div style="display:flex;gap:4px;padding:2px;border-radius:6px;background:#F5F7F8;align-self:flex-start"><span style="height:32px;display:flex;align-items:center;gap:4px;padding:0 12px;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 1px #E2E8F0;font-size:13px;line-height:18px;font-weight:600"><span style="display:flex"><i data-lucide="phone" width="16" height="16"></i></span>Telefon</span><span style="height:32px;display:flex;align-items:center;gap:4px;padding:0 12px;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:flex"><i data-lucide="mail" width="16" height="16"></i></span>Email</span><span style="height:32px;display:flex;align-items:center;gap:4px;padding:0 12px;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:flex"><i data-lucide="ellipsis" width="16" height="16"></i></span>Boshqa</span></div></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Murojaatchi</span><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px;line-height:20px">Aziz Saidov</label></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Telefon</span><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">+998 90 318 44 27</label></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Mavzu</span><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;padding:0 12px;border:1px solid #0D9488;outline:2px solid #0D9488;outline-offset:2px;border-radius:6px;font-size:14px;line-height:20px">Kassa cheki printerga chiqmayapti</label></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Tavsif</span><div style="min-height:72px;box-sizing:border-box;padding:8px 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px;line-height:20px;color:#94A3A1">Mijoz nima deganini qisqacha yozing</div></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Ustuvorlik</span><div style="display:flex;gap:4px;padding:2px;border-radius:6px;background:#F5F7F8;align-self:flex-start"><span style="height:32px;display:flex;align-items:center;gap:4px;padding:0 12px;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:flex"><i data-lucide="chevrons-up" width="16" height="16"></i></span>Yuqori</span><span style="height:32px;display:flex;align-items:center;gap:4px;padding:0 12px;border-radius:6px;background:#FFFFFF;box-shadow:0 0 0 1px #E2E8F0;font-size:13px;line-height:18px;font-weight:600"><span style="display:flex"><i data-lucide="chevron-up" width="16" height="16"></i></span>O‘rta</span><span style="height:32px;display:flex;align-items:center;gap:4px;padding:0 12px;font-size:13px;line-height:18px;color:#5B6B6A"><span style="display:flex"><i data-lucide="chevron-down" width="16" height="16"></i></span>Past</span></div><span style="font-size:12px;line-height:16px;color:#5B6B6A">Birinchi javob — <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">4</span> soat ichida (<span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">20:40</span> gacha)</span></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Mas’ul</span><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 8px 0 4px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px;line-height:20px"><span style="width:24px;height:24px;flex:none;border-radius:6px;background:#DDF5EE;color:#0F766E;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;font-weight:600">ME</span><span style="flex:1">Madina Ergasheva (siz)</span><span style="display:flex;color:#5B6B6A"><i data-lucide="chevron-down" width="16" height="16"></i></span></label></div>
+</div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A">Ortga</button><button disabled="{{ true }}" style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;border:0;background:#E2E8F0;color:#5B6B6A;cursor:not-allowed">Murojaat yaratish</button></div>
+</div></div></sc-if>
+<sc-if value="{{ f.mAttach }}"><div style="position:absolute;inset:0;z-index:40;background:rgba(18,60,58,0.4);display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box"><div role="dialog" aria-modal="true" aria-labelledby="mA" style="width:480px;background:#FFFFFF;border-radius:12px;box-shadow:0 4px 16px rgba(18,60,58,0.08);display:flex;flex-direction:column">
+<div style="display:flex;align-items:flex-start;gap:12px;padding:24px 24px 16px"><div style="flex:1;display:flex;flex-direction:column;gap:4px"><h2 id="mA" style="margin:0;font-size:18px;line-height:26px;font-weight:600">Kompaniyaga biriktirish</h2><span style="font-size:13px;line-height:18px;color:#5B6B6A">Murojaat <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">#1055</span></span></div><button title="Yopish (Esc)" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:transparent;color:#5B6B6A"><span style="display:flex"><i data-lucide="x" width="16" height="16"></i></span></button></div>
+<div style="padding:0 24px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;padding:12px;border-radius:6px;background:#F8FAFA;font-size:13px;line-height:18px"><span style="color:#5B6B6A">Yuboruvchi</span><span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">akbar.shermatov@gmail.com</span><span style="color:#5B6B6A">Imzodagi nom</span><span>Akbar Shermatov, «Poydevor Qurilish Mollari» MChJ direktori</span></div>
+<div style="display:flex;align-items:flex-start;gap:8px;padding:12px;border-radius:6px;background:#EFF6FF;font-size:13px;line-height:18px"><span style="display:flex;color:#1D4ED8"><i data-lucide="sparkles" width="16" height="16"></i></span><span><span style="font-weight:600;color:#1D4ED8">Tizim taklifi:</span> Poydevor Qurilish Mollari — imzodagi kompaniya nomi va direktor ismi kompaniya kartasidagi bilan mos.</span></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;line-height:18px;font-weight:600">Kompaniya</span><label style="height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px;line-height:20px"><span style="display:flex;color:#5B6B6A"><i data-lucide="search" width="16" height="16"></i></span><span style="flex:1">Poydevor Qurilish Mollari · STIR <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px">311208459</span></span></label><span style="font-size:12px;line-height:16px;color:#5B6B6A">Sinov · Biznes · sinov <span style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">27.11.2026</span> da tugaydi</span></div>
+<label style="display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:20px;cursor:pointer"><span style="padding-top:2px;display:flex"><span style="width:16px;height:16px;flex:none;box-sizing:border-box;border-radius:4px;background:#0F766E;color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i data-lucide="check" width="16" height="16"></i></span></span><span style="display:flex;flex-direction:column;gap:2px"><span>Bu email’ni kompaniya kontaktlariga qo‘shish</span><span style="font-size:12px;line-height:16px;color:#5B6B6A">Keyingi xatlar avtomatik shu kompaniyaga biriktiriladi.</span></span></label>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 24px 24px;border-top:1px solid #E2E8F0"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:1px solid #E2E8F0;background:#FFFFFF;color:#172B2A">Ortga</button><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:6px;font-size:14px;line-height:20px;font-weight:600;cursor:pointer;border:0;background:#0F766E;color:#FFFFFF">Kompaniyaga biriktirish</button></div>
+</div></div></sc-if>
+</div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const T = { danger: { bg: '#FEF2F2', fg: '#B91C1C' }, warning: { bg: '#FFFBEB', fg: '#B45309' }, success: { bg: '#F0FDF4', fg: '#15803D' }, info: { bg: '#EFF6FF', fg: '#1D4ED8' }, neutral: { bg: '#F5F7F8', fg: '#5B6B6A' }, primary: { bg: '#DDF5EE', fg: '#0F766E' } };
+const B = (tone, icon, text) => ({ ...T[tone], icon, text });
+const sp = s => String(s).split(/(\d[\d.,/:]*\d|\d)/).filter(x => x !== '').map(t => { const m = /^\d/.test(t); return { t: m ? t : t.replace(/^ (so‘m|сум)/, '\u00A0$1').replace(/ (so‘m|сум)/g, '\u00A0$1'), m, n: !m }; });
+const CH = { tg: ['send', 'Telegram', 'Telegram orqali'], erp: ['circle-help', 'ERP «Yordam»', 'ERP «Yordam» orqali'], tel: ['phone', 'Telefon', 'Telefon orqali'], mail: ['mail', 'Email', 'Email orqali'] };
+const PRI = { h: B('danger', 'chevrons-up', 'Yuqori'), m: B('warning', 'chevron-up', 'O‘rta'), l: B('neutral', 'chevron-down', 'Past') };
+const STS = { new: B('info', 'circle-dot', 'Yangi'), work: B('primary', 'loader', 'Jarayonda'), wait: B('neutral', 'hourglass', 'Mijoz javobi kutilmoqda'), done: B('success', 'circle-check', 'Hal qilindi'), closed: B('neutral', 'archive', 'Yopilgan') };
+const STAFF = { ME: ['Madina Ergasheva', 'Qo‘llab-quvvatlash'], DK: ['Dilshod Karimov', 'Egasi'], NR: ['Nilufar Rahimova', 'Sotuv'], GQ: ['Gulnora Qodirova', 'Buxgalter'] };
+const SLA = { over: B('danger', 'alarm-clock', '25 daq. o‘tdi'), soon: B('warning', 'timer', '15 daq. qoldi') };
+// ochiq — SLA bo‘yicha saralangan
+const OPEN = [
+  { id: '1053', co: 'Malham Farm Logistika', subj: 'Markirovka kodlari yuborilmayapti', pri: 'h', st: 'new', ch: 'tg', who: null, time: '15:15', unread: 1, sla: 'over' },
+  { id: '1055', co: null, subj: 'Sinov muddatini uzaytirish mumkinmi?', pri: 'l', st: 'new', ch: 'mail', who: null, time: '24.11', unread: 1, sla: 'soon' },
+  { id: '1051', co: 'Shifo-Nur Farm Distribyutsiya', subj: 'Ombordagi qoldiq noto‘g‘ri ko‘rinmoqda', pri: 'm', st: 'work', ch: 'tg', who: 'ME', time: '15:58' },
+  { id: '1048', co: 'Dasturxon Ulgurji Savdo', subj: 'Hisobotda kunlik savdo ikki marta hisoblanmoqda', pri: 'm', st: 'work', ch: 'erp', who: 'DK', time: '16:35' },
+  { id: '1054', co: 'Tezkor Avtodetal', subj: 'To‘lov o‘tmadi, Payme rad etdi', pri: 'l', st: 'wait', ch: 'tel', who: 'GQ', time: '25.11' }
+];
+const DONE = [
+  ['1052', 'Barakali Oziq-ovqat Savdo', 'Yangi foydalanuvchi qo‘shib bo‘lmayapti', 'm', 'done', 'erp', 'ME', '25.11'],
+  ['1050', 'Najot Farm Ombor', 'Seriya bo‘yicha qidiruv ishlamayapti', 'l', 'closed', 'mail', 'ME', '24.11'],
+  ['1049', 'Motor Ehtiyot Markazi', 'E-faktura imzo kaliti muddati tugagan', 'm', 'done', 'tel', 'DK', '24.11'],
+  ['1047', 'Sog‘lom Medtexnika Ta’minot', 'Yangi filial qo‘shish', 'l', 'closed', 'erp', 'ME', '23.11'],
+  ['1046', 'Davo Plyus Distribyutsiya', 'Haydovchi ilovasiga kirish kodi kelmayapti', 'h', 'closed', 'tg', 'ME', '21.11'],
+  ['1044', 'Malham Farm Logistika', 'Asl belgisi ulanishi uzildi', 'h', 'closed', 'tg', 'DK', '21.11'],
+  ['1045', 'Rizq Ulgurji Savdo', 'Hisobot Excelda ochilmayapti', 'm', 'closed', 'erp', 'DK', '20.11']
+].map(([id, co, subj, pri, st, ch, who, time]) => ({ id, co, subj, pri, st, ch, who, time }));
+
+const sys = (icon, t, time) => ({ sys: true, msg: false, icon, t, time });
+const msg = (o) => ({ sys: false, msg: true, isNote: false, isText: true, hasFile: false, failed: false, file: '', size: '', ...o });
+const cli = (av, name, role, time, t, file) => msg({ av, name, role, time, t, avBg: '#EFF6FF', avFg: '#1D4ED8', bg: '#F5F7F8', hasFile: !!file, file: file ? file[0] : '', size: file ? file[1] : '' });
+const stf = (k, time, t, failed) => msg({ av: k, name: STAFF[k][0], role: STAFF[k][1], time, t, avBg: '#DDF5EE', avFg: '#0F766E', bg: '#DDF5EE', failed: !!failed });
+const note = (k, time, t) => msg({ av: k, name: STAFF[k][0], role: STAFF[k][1], time, t, avBg: '#DDF5EE', avFg: '#0F766E', isNote: true, isText: false });
+const RK = ['RX', 'Rustam Xolmatov', 'Omborchi · Shifo-Nur Farm Distribyutsiya'];
+
+const row = (k, v, o = {}) => ({ k, v: sp(v), isText: true, isPill: false, isWho: false, isNone: false, fg: '#172B2A', hasIcon: false, icon: '', ...o });
+const pill = (k, b) => ({ k, b, isPill: true, isText: false, isWho: false, isNone: false });
+const who = k => k ? { k: 'Mas’ul', isWho: true, isPill: false, isText: false, isNone: false, av: k, name: STAFF[k][0] } : { k: 'Mas’ul', isNone: true, isWho: false, isPill: false, isText: false };
+const tone = (k, v, t, icon) => row(k, v, { fg: T[t].fg, hasIcon: true, icon });
+
+const DET = {
+  '1051': {
+    msgs: [
+      sys('send', 'Murojaat Telegram orqali yaratildi', '13:20'),
+      cli(...RK, '13:20', 'Assalomu alaykum. Toshkent markaziy omborida «Paratsetamol 500 mg» PR-2611 seriyasining qoldig‘i 120 quti ko‘rinmoqda, aslida 96 ta. Kechagi inventarizatsiyadan keyin shunday bo‘ldi.', ['qoldiq-skrinshot.png', '284 KB']),
+      stf('DK', '13:52', 'Assalomu alaykum, Rustam. Ma’lumot uchun rahmat. Tekshirib, natijasini shu yerga yozamiz.'),
+      sys('user-check', 'Madina Ergasheva mas’ul etib tayinlandi', '14:02'),
+      sys('log-in', 'Dilshod Karimov kompaniya nomidan kirdi · faqat ko‘rish, 22 daqiqa', '14:05'),
+      note('DK', '14:31', 'Inventarizatsiya hujjati INV-2611-04 ikki marta o‘tkazilgan. Tuzatish uchun tahrirlash ruxsati kerak.'),
+      cli(...RK, '15:58', 'Bugun hal bo‘ladimi? Ertaga ertalab dorixonalarga yetkazib berish bor.')
+    ],
+    t: (st) => [pill('Holat', STS[st]), pill('Ustuvorlik', PRI.m), who('ME'), tone('Kanal', 'Telegram', 'neutral', 'send'), row('Yaratilgan', '25.11.2026, 13:20'), tone('Birinchi javob', 'Berildi 13:52 · 32 daq.', 'success', 'circle-check')],
+    co: 'Shifo-Nur Farm Distribyutsiya',
+    c: own => [pill('Holat', B('danger', 'circle-alert', 'To‘lov kutilmoqda')), row('Tarif', 'Biznes'), row('Sotuv xodimi', 'Nilufar Rahimova'), row('Ochiq murojaatlar', '1 ta'), tone('Integratsiyalar', 'Asl belgisi, E-faktura ishlayapti', 'success', 'circle-check'), ...(own ? [tone('Qarz', '1.200.000,00 so‘m · 12 kun', 'danger', 'circle-alert')] : [])]
+  },
+  '1053': {
+    msgs: [
+      sys('send', 'Murojaat Telegram orqali yaratildi', '15:15'),
+      cli('BY', 'Bahodir Yo‘ldoshev', 'Ombor mudiri · Malham Farm Logistika', '15:15', 'Markirovka kodlari soat 13:40 dan beri «Asl belgisi»ga yuborilmayapti, 37 ta hujjat navbatda turibdi. Dorixonalarga jo‘natmani rasmiylashtira olmayapmiz.'),
+      sys('alarm-clock', 'Birinchi javob muddati o‘tdi (Yuqori · 1 soat)', '16:15')
+    ],
+    t: () => [pill('Holat', STS.new), pill('Ustuvorlik', PRI.h), who(null), tone('Kanal', 'Telegram', 'neutral', 'send'), row('Yaratilgan', '25.11.2026, 15:15'), tone('Birinchi javob', '16:15 gacha edi · 25 daq. o‘tdi', 'danger', 'alarm-clock')],
+    co: 'Malham Farm Logistika',
+    c: own => [pill('Holat', B('success', 'circle-check', 'Faol')), row('Tarif', 'Korporativ'), row('Sotuv xodimi', 'Nilufar Rahimova'), row('Ochiq murojaatlar', '1 ta'), tone('Integratsiyalar', 'Asl belgisi: 13:40 dan beri ulanish yo‘q · 37 hujjat navbatda', 'danger', 'unplug'), ...(own ? [row('Qarz', 'Yo‘q')] : [])]
+  },
+  '1055': {
+    msgs: [
+      sys('mail', 'Murojaat email orqali yaratildi', '24.11, 16:55'),
+      cli('AS', 'Akbar Shermatov', 'akbar.shermatov@gmail.com', '24.11, 16:55', 'Assalomu alaykum. Sinov muddatimiz 27-noyabrda tugaydi. Yana 14 kunga uzaytirish mumkinmi? Hurmat bilan, Akbar Shermatov, «Poydevor Qurilish Mollari» MChJ direktori.')
+    ],
+    t: () => [pill('Holat', STS.new), pill('Ustuvorlik', PRI.l), who(null), tone('Kanal', 'Email', 'neutral', 'mail'), row('Yaratilgan', '24.11.2026, 16:55'), tone('Birinchi javob', '25.11, 16:55 gacha · 15 daq. qoldi', 'warning', 'timer')],
+    co: null
+  },
+  '1054': {
+    msgs: [
+      sys('phone', 'Qo‘ng‘iroq qayd etildi · Gulnora Qodirova', '23.11, 09:40'),
+      cli('OR', 'Oybek Rahimov', 'Direktor · Tezkor Avtodetal', '23.11, 09:40', 'Qo‘ng‘iroq: 22-noyabrda Payme orqali to‘lamoqchi bo‘ldik, rad etildi. Pul yechilmadi. Qanday to‘lasak bo‘ladi?'),
+      stf('GQ', '23.11, 10:15', 'Oybek aka, Payme kartada mablag‘ yetarli emasligini qaytardi. Boshqa karta, Click yoki bank o‘tkazmasi orqali to‘lashingiz mumkin. Rekvizitlarni SMS orqali yubordik.'),
+      sys('send', 'To‘lov eslatmasi yuborildi · SMS', '25.11, 10:00'),
+      sys('hourglass', 'Holat «Mijoz javobi kutilmoqda»ga o‘zgardi · 3 kundan keyin eslatma, 7 kundan keyin avtomatik «Hal qilindi»', '25.11, 10:02')
+    ],
+    t: () => [pill('Holat', STS.wait), pill('Ustuvorlik', PRI.l), who('GQ'), tone('Kanal', 'Telefon', 'neutral', 'phone'), row('Yaratilgan', '23.11.2026, 09:40'), tone('Birinchi javob', 'Berildi 10:15 · 35 daq.', 'success', 'circle-check'), tone('Mijoz javob bermasa', '28.11.2026 eslatma · 02.12.2026 avtomatik hal qilinadi', 'neutral', 'calendar-clock')],
+    co: 'Tezkor Avtodetal',
+    c: own => [pill('Holat', B('danger', 'circle-alert', 'To‘lov kutilmoqda')), row('Tarif', 'Start'), row('Sotuv xodimi', 'Nilufar Rahimova'), row('Ochiq murojaatlar', '1 ta'), tone('Integratsiyalar', 'Ishlayapti', 'success', 'circle-check'), ...(own ? [tone('Qarz', '750.000,00 so‘m · 3 kun', 'danger', 'circle-alert'), tone('Oxirgi urinish', '22.11.2026 · Payme · Muvaffaqiyatsiz', 'danger', 'circle-x')] : [])]
+  }
+};
+
+const nav = role => [
+  { title: null, items: [{ label: 'Bosh sahifa', icon: 'house' }] },
+  { title: 'Mijozlar', items: [{ label: 'Kompaniyalar', icon: 'building-2' }, { label: 'Qo‘llab-quvvatlash', icon: 'life-buoy', badge: '5', active: true }] },
+  role !== 'sup' && { title: 'Moliya', items: [{ label: 'Tariflar va modullar', icon: 'layers' }, { label: 'To‘lovlar va hisob-fakturalar', icon: 'receipt' }] },
+  role !== 'sales' && { title: 'Tizim', items: role === 'own' ? [{ label: 'Platforma holati', icon: 'activity' }, { label: 'Audit jurnali', icon: 'scroll-text' }] : [{ label: 'Platforma holati', icon: 'activity' }] },
+  (!role || role === 'own') && { title: 'Boshqaruv', items: [{ label: 'Xodimlar va rollar', icon: 'user-cog' }, { label: 'Sozlamalar', icon: 'settings' }] }
+].filter(Boolean).map(x => ({ ...x, hasTitle: !!x.title, items: x.items.map(i => ({ ...i, active: !!i.active, idle: !i.active, hasBadge: !!i.badge })) }));
+const USERS = { sup: { name: 'Madina Ergasheva', role: 'Qo‘llab-quvvatlash', initials: 'ME' }, own: { name: 'Dilshod Karimov', role: 'Egasi', initials: 'DK' }, sales: { name: 'Nilufar Rahimova', role: 'Sotuv', initials: 'NR' } };
+
+const FR = [
+  { id: 'A', title: '#1051 ochiq', note: 'Qo‘llab-quvvatlash · «Barchasi» · javob maydoni bo‘sh', role: 'sup', sel: '1051' },
+  { id: 'B', title: 'Ichki eslatma rejimi', note: 'Matn kiritilmoqda', role: 'sup', sel: '1051', cmp: 'note' },
+  { id: 'C', title: '«Shablon qo‘shish» menyusi', note: '3 ta shablon', role: 'sup', sel: '1051', tpl: true },
+  { id: 'D', title: '#1053 · SLA o‘tgan', note: 'Mas’ulsiz · Asl belgisi xatosi', role: 'sup', sel: '1053' },
+  { id: 'E', title: '#1055 · kompaniya aniqlanmagan', note: 'Shaxsiy email · SLA 15 daq. qoldi', role: 'sup', sel: '1055' },
+  { id: 'E2', title: 'Kompaniyaga biriktirish', note: 'Oyna 480px', role: 'sup', sel: '1055', m: 'attach' },
+  { id: 'F', title: 'Murojaat yaratish', note: 'Oyna 640px · telefon · tavsif bo‘sh', role: 'sup', sel: '1051', m: 'create' },
+  { id: 'G', title: 'Hal qilish', note: '«Hal qilindi» tanlangan · yakuniy xabar taklifi', role: 'sup', sel: '1051', cmp: 'resolve' },
+  { id: 'G2', title: 'Qayta ochilgan', note: 'Mijoz yozdi → avtomatik «Jarayonda»', role: 'sup', sel: '1051', reopen: true },
+  { id: 'H', title: 'Xabar yuborilmadi', note: 'Telegram javob bermadi', role: 'sup', sel: '1051', fail: true },
+  { id: 'I', title: '«Menga biriktirilgan» bo‘sh', note: 'Sotuv roli · Nilufar Rahimova', role: 'sales', seg: 'mine', empty: true },
+  { id: 'I2', title: 'Murojaat tanlanmagan', note: 'Qo‘llab-quvvatlash', role: 'sup' },
+  { id: 'J', title: 'Yuklanmoqda', note: 'Uch ustun skeleton', role: 'sup', loading: true },
+  { id: 'K', title: 'Ro‘yxat yuklanmadi', note: 'Xato', role: 'sup', error: true },
+  { id: 'L', title: 'Egasi roli · #1054', note: 'Qarz summasi va oxirgi urinish ko‘rinadi', role: 'own', sel: '1054' },
+  { id: 'M', title: 'Avvalgi ekranlar tuzatishlari', note: '1–8', doc: true }
+];
+const HINT = { tg: 'Javob mijozga Telegram orqali yuboriladi', mail: 'Javob email orqali yuboriladi: akbar.shermatov@gmail.com', tel: 'Javob mijozga SMS orqali yuboriladi: +998 93 617 25 40', erp: 'Javob mijozga ERP «Yordam» oynasida ko‘rinadi' };
+
+class Component extends DCLogic {
+  componentDidMount() { window.__setOnly = v => { window.__only = v; this.forceUpdate(); }; const run = () => { if (window.lucide && document.querySelector('i[data-lucide]')) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }); }; run(); let n = 0; this._t = setInterval(() => { run(); if (++n > 10) clearInterval(this._t); }, 500); }
+  componentDidUpdate() { requestAnimationFrame(() => { if (window.lucide && document.querySelector('i[data-lucide]')) window.lucide.createIcons({ attrs: { 'stroke-width': 1.5 } }); }); }
+  componentWillUnmount() { clearInterval(this._t); }
+  renderVals() {
+    const only = (window.__only || (location.search.match(/only=([\w,]+)/) || [])[1] || '').split(',').filter(Boolean);
+    const frames = FR.filter(fr => !only.length || only.includes(fr.id)).map(fr => {
+      if (fr.doc) return { ...fr, doc: true, app: false };
+      const role = fr.role, sel = fr.sel, own = role === 'own';
+      const item = t => {
+        const isSel = t.id === sel;
+        let st = t.st, time = t.time;
+        if (isSel && fr.reopen) time = '16:33';
+        if (isSel && fr.fail) time = '16:39';
+        const unread = !!t.unread && !isSel;
+        return { no: '#' + t.id, chI: CH[t.ch][0], chN: CH[t.ch][1], subj: t.subj, co: t.co || 'Kompaniya aniqlanmagan', coFg: t.co ? '#5B6B6A' : '#B45309',
+          pri: PRI[t.pri], st: STS[st], hasSla: !!t.sla, sla: t.sla ? SLA[t.sla] : {}, unread, read: !unread, nNew: String(t.unread || ''), time,
+          hasAv: !!t.who, noAv: !t.who, av: t.who || '', avName: t.who ? STAFF[t.who][0] : '', sel: isSel, bg: isSel ? '#DDF5EE' : '#FFFFFF' };
+      };
+      const busy = fr.loading || fr.error;
+      const conv = !!sel && !busy;
+      let d = {}, c = {};
+      if (conv) {
+        const t = OPEN.find(x => x.id === sel), D = DET[sel];
+        let msgs = [...D.msgs];
+        if (fr.reopen) msgs = [...msgs,
+          stf('ME', '16:21', 'Rustam, PR-2611 seriyasining qoldig‘i tuzatildi: endi 96 quti ko‘rinadi. Takroriy inventarizatsiya hujjati bekor qilindi. Savol bo‘lsa, shu yerga yozing.'),
+          sys('circle-check', 'Madina Ergasheva murojaatni «Hal qilindi» deb belgiladi', '16:21'),
+          cli(...RK, '16:33', 'Rahmat! Lekin PR-2612 seriyasida ham 4 quti farq bor.'),
+          sys('rotate-ccw', 'Mijoz yangi xabar yozdi — murojaat avtomatik «Jarayonda»ga qaytdi', '16:33')];
+        if (fr.fail) msgs = [...msgs, stf('ME', '16:39', 'Rustam, tuzatish uchun ruxsat so‘raldi, 30 daqiqa ichida yakunlaymiz.', true)];
+        const cut = fr.reopen ? msgs.slice(2) : msgs;
+        d = { no: '#' + t.id, subj: t.subj, st: STS[t.st], pri: PRI[t.pri], hasSla: !!t.sla, sla: t.sla ? SLA[t.sla] : {}, chI: CH[t.ch][0], via: CH[t.ch][2],
+          msgs: cut, tRows: D.t(t.st), coOn: !!D.co, coOff: !D.co, coName: D.co || '', cRows: D.co ? D.c(own) : [] };
+        const note = fr.cmp === 'note', resolve = fr.cmp === 'resolve';
+        const text = note ? 'Ombor bo‘limiga yozdim: INV-2611-04 bekor qilinadi, keyin qoldiqni qayta tekshiraman.'
+          : resolve ? 'Rustam, PR-2611 seriyasining qoldig‘i tuzatildi: endi 96 quti ko‘rinadi. Takroriy inventarizatsiya hujjati bekor qilindi. Savol bo‘lsa, shu yerga yozing.' : '';
+        c = { reply: !note, note, resolve, bg: note ? '#F8FAFA' : '#FFFFFF', hasText: !!text, noText: !text, text,
+          ph: note ? 'Hamkasblar uchun eslatma yozing' : 'Javob yozing yoki shablon qo‘shing',
+          bd: note ? '#0D9488' : '#E2E8F0', ring: note ? '2px solid #0D9488' : 'none',
+          hintI: note ? 'lock' : CH[t.ch][0], hint: note ? 'Ichki eslatma · mijoz ko‘rmaydi, faqat platforma xodimlari' : HINT[t.ch],
+          tpl: !!fr.tpl, tplBg: fr.tpl ? '#F5F7F8' : 'transparent',
+          afterOn: !note, after: resolve ? 'Hal qilindi' : (t.st === 'new' ? 'Jarayonda' : STS[t.st].text), afterBd: resolve ? '#0D9488' : '#E2E8F0',
+          pri: note ? 'Eslatmani saqlash' : 'Javob yuborish', priI: note ? 'save' : 'send', priOn: !!text, priOff: !text };
+      }
+      const groups = fr.empty || busy ? [] : [{ t: 'Ochiq', n: '5', items: OPEN.map(item) }, { t: 'Oxirgi 7 kunda hal qilingan', n: '7', items: DONE.map(item) }];
+      const seg = fr.seg || 'all';
+      const segN = role === 'sales' ? ['0', '2', '5'] : role === 'own' ? ['1', '2', '5'] : ['1', '2', '5'];
+      return { ...fr, doc: false, app: true, user: USERS[role], nav: nav(role),
+        segs: [['Menga biriktirilgan', 'mine'], ['Mas’ulsiz', 'none'], ['Barchasi', 'all']].map(([t, k], i) => ({ t, n: segN[i], on: k === seg, off: k !== seg })),
+        listOn: !fr.empty && !busy, listEmpty: !!fr.empty, listSk: !!fr.loading, listErr: !!fr.error, groups,
+        conv, noSel: !sel && !fr.loading, convSk: !!fr.loading, ctxSk: !!fr.loading,
+        unknown: conv && sel === '1055', d, c, mCreate: fr.m === 'create', mAttach: fr.m === 'attach' };
+    });
+    return { frames, sk3: [0, 1, 2], sk6: [0, 1, 2, 3, 4, 5], filters: ['Holat', 'Ustuvorlik', 'Kanal'],
+      tpls: [['Salomlashish', 'Assalomu alaykum! Murojaatingizni oldik, hozir ko‘rib chiqamiz.'], ['Ma’lumot so‘rash', 'Muammoni aniqlash uchun ekran rasmi va hujjat raqamini yuboring.'], ['Muammo hal qilindi', 'Muammo hal qilindi. Savol bo‘lsa, shu suhbatga yozing.']].map(([t, d], i) => ({ t, d, bg: i === 0 ? '#F5F7F8' : '#FFFFFF' })),
+      fixes: [
+        ['1', 'To‘lovlar J · bo‘sh holat', 'Davr «Fevral 2026», to‘rt KPI ham 0,00, «Hisob-fakturalar» tabi 0, aniqlanmagan to‘lov bloki yo‘q.', 'To‘lovlar · J', 'To%E2%80%99lovlar%20va%20hisob-fakturalar.dc.html#frame-J'],
+        ['2', '12 ta kompaniya 55 ta ichida', 'Bog‘ishamol, Sarbon, Qal’a, Nur Medika, Sharq, Yashil Vodiy, Zamin, Lola, Bunyod, Dilkash, Pishiq, Saodat — 28–39-qatorlar.', 'Namuna ma’lumotlar', 'Namuna%20ma%E2%80%99lumotlar.dc.html'],
+        ['3', 'Hisob-faktura yaratilish sanasi', 'Shifo-Nur HF-2026-0412: yaratildi va yuborildi 08.11.2026, 00:05 (13.11 − 5 kun). Medlayn HF-2026-0404: 01.11.2026 (06.11 − 5).', 'Kompaniya kartasi 3b · faollik', 'Kompaniya%20kartasi%203b.dc.html'],
+        ['4', '«Qisman to‘langan» + D3', 'Holat belgisining warning varianti. D3: 750.000,00 → 1.200.000,00, qoldiq 450.000,00; to‘xtatish sanasi o‘zgarmaydi.', 'To‘lovlar · D3', 'To%E2%80%99lovlar%20va%20hisob-fakturalar.dc.html#frame-D3'],
+        ['5', 'Qarzdorlar · «Oxirgi urinish»', 'Tezkor Avtodetal: 22.11.2026 · Payme · Muvaffaqiyatsiz (ikonka + danger matn), qolganlarida «—».', 'To‘lovlar · H', 'To%E2%80%99lovlar%20va%20hisob-fakturalar.dc.html#frame-H'],
+        ['6', 'Tariflar · narx kamaytirildi', 'C3: 1.100.000,00 — «Keyingi to‘lov davridan kuchga kiradi», xabar checkbox’i ixtiyoriy va belgilanmagan, MRR −2.900.000,00.', 'Tariflar · C3', 'Tariflar%20va%20modullar.dc.html'],
+        ['7', 'Qayta tekshiruv', 'Tariflar E, To‘lovlar H va K qayta ochildi: kesilish va ustma-ust tushish yo‘q (hisobotda).', 'To‘lovlar · K', 'To%E2%80%99lovlar%20va%20hisob-fakturalar.dc.html#frame-K'],
+        ['8', 'KPI ikonka ranglari', 'Tushgan #15803D (success) · Kechikkan #B91C1C (danger) · Kutilmoqda #1D4ED8 (info) · Qaytarilgan #5B6B6A (matn-2). Hammasi tizim ranglari.', 'To‘lovlar · A', 'To%E2%80%99lovlar%20va%20hisob-fakturalar.dc.html#frame-A']
+      ].map(([n, t, d, link, href]) => ({ n, t, d, link, href }))
+    };
+  }
+}
+</script>
+</body>
+</html>

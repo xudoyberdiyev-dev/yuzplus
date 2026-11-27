@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F7F8;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+</style>
+</helmet>
+<div style="max-width:1120px;margin:0 auto;padding:48px 32px;display:flex;flex-direction:column;gap:24px">
+<header style="display:flex;flex-direction:column;gap:8px"><a href="Mundarija.dc.html" style="font-size:13px;font-weight:600">← Mundarija</a><h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Dizayn tizimi</h1><p style="margin:0;font-size:14px;line-height:20px;color:#5B6B6A">Yakuniy qiymatlar. Ro‘yxatda yo‘q rang, o‘lcham yoki radius ishlatilmaydi.</p></header>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:16px"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600">1 · Ranglar</h2>
+<sc-for list="{{ colors }}" as="g"><div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;line-height:16px;font-weight:600;color:#5B6B6A">{{ g.t }}</span><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px"><sc-for list="{{ g.items }}" as="c"><div style="display:flex;align-items:center;gap:12px;padding:8px;border:1px solid #E2E8F0;border-radius:8px"><span style="width:40px;height:40px;flex:none;border-radius:6px;background:{{ c.hex }};box-shadow:inset 0 0 0 1px #E2E8F0"></span><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:13px;line-height:18px;font-weight:600">{{ c.name }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:16px">{{ c.hex }}</span><span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ c.use }}</span></span></div></sc-for></div></div></sc-for>
+<div style="display:flex;flex-wrap:wrap;gap:16px;font-size:13px;line-height:18px;color:#5B6B6A"><span>Overlay: <span style="font-family:'JetBrains Mono',monospace;color:#172B2A">rgba(18,60,58,0.4)</span></span><span>Soya (menyu, panel, oyna): <span style="font-family:'JetBrains Mono',monospace;color:#172B2A">0 4px 16px rgba(18,60,58,0.08)</span></span><span>Aylanish ishorasi: <span style="font-family:'JetBrains Mono',monospace;color:#172B2A">#F5F7F8</span> ga xiralashuv, 48px</span></div></section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden"><h2 style="margin:0;padding:16px 20px;font-size:15px;line-height:22px;font-weight:600">2 · Shrift</h2><div style="padding:0 20px 12px;font-size:13px;line-height:18px;color:#5B6B6A">Inter 400/600 — barcha matn. JetBrains Mono 400/600 — faqat ma’lumot raqamlari (summa, sana, vaqt, STIR, ID, kod, IP); «so‘m», «kun», birliklar va son belgilari — Inter (son belgisi 12/16 600, tabular-nums).</div>
+<sc-for list="{{ type }}" as="r"><div style="display:grid;grid-template-columns:96px 72px minmax(0,1fr) minmax(0,1.2fr);gap:16px;align-items:center;padding:10px 20px;border-top:1px solid #E2E8F0"><span style="font-family:'JetBrains Mono',monospace;font-size:12px">{{ r.s }}</span><span style="font-size:12px;color:#5B6B6A">{{ r.w }}</span><span style="font-family:{{ r.ff }};font-size:{{ r.px }};line-height:{{ r.lh }};font-weight:{{ r.fw }};white-space:nowrap;overflow:hidden">{{ r.ex }}</span><span style="font-size:12px;line-height:16px;color:#5B6B6A">{{ r.use }}</span></div></sc-for></section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden"><h2 style="margin:0;padding:16px 20px;font-size:15px;line-height:22px;font-weight:600">3 · O‘lchamlar, oraliqlar, radiuslar</h2>
+<sc-for list="{{ sizes }}" as="r"><div style="display:grid;grid-template-columns:240px minmax(0,1fr);gap:16px;padding:10px 20px;border-top:1px solid #E2E8F0;font-size:13px;line-height:18px"><span style="font-weight:600">{{ r.k }}</span><span><sc-for list="{{ r.v }}" as="p"><sc-if value="{{ p.m }}"><span style="font-family:'JetBrains Mono',monospace">{{ p.t }}</span></sc-if><sc-if value="{{ p.n }}"><span style="white-space:pre-wrap">{{ p.t }}</span></sc-if></sc-for></span></div></sc-for>
+<div style="display:flex;flex-wrap:wrap;gap:16px;padding:16px 20px;border-top:1px solid #E2E8F0"><sc-for list="{{ radii }}" as="r"><span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:#5B6B6A"><span style="width:56px;height:40px;border:2px solid #0D9488;border-radius:{{ r.r }};background:#F0FDFA"></span><span style="font-family:'JetBrains Mono',monospace;color:#172B2A">{{ r.k }}</span>{{ r.use }}</span></sc-for><span style="display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:#5B6B6A"><span style="width:120px;height:4px;margin:18px 0;border-radius:4px;background:#E2E8F0;overflow:hidden"><span style="display:block;width:45%;height:4px;border-radius:4px;background:#0D9488"></span></span><span style="font-family:'JetBrains Mono',monospace;color:#172B2A">4px</span>progress</span></div></section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden"><h2 style="margin:0;padding:16px 20px;font-size:15px;line-height:22px;font-weight:600">4 · Qoidalar</h2><sc-for list="{{ rules }}" as="r"><div style="display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;padding:10px 20px;border-top:1px solid #E2E8F0;font-size:14px;line-height:20px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#5B6B6A">{{ r.n }}</span><span style="text-wrap:pretty">{{ r.t }}</span></div></sc-for></section>
+<section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden"><h2 style="margin:0;padding:16px 20px;font-size:15px;line-height:22px;font-weight:600">5 · Planshet (1024px)</h2><sc-for list="{{ tablet }}" as="r"><div style="display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;padding:10px 20px;border-top:1px solid #E2E8F0;font-size:14px;line-height:20px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#5B6B6A">{{ r.n }}</span><span style="text-wrap:pretty">{{ r.t }}</span></div></sc-for></section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const sp = s => String(s).split(/(\d[\d.,/:×]*\d|\d)/).filter(x => x !== '').map(t => { const m = /^\d/.test(t); return { t, m, n: !m }; });
+const C = [
+  ['Brend', [['primary', '#0F766E', 'Asosiy tugma, havola, tanlangan matn'], ['primary-hover', '#115E59', 'Asosiy tugma va havola hover'], ['accent', '#0D9488', 'Fokus halqasi, faol tab chizig‘i, progress, tanlangan chegara'], ['primary-soft', '#DDF5EE', 'Tanlangan qator/element foni, son belgisi, avatar'], ['primary-tint', '#F0FDFA', 'Tanlangan kanal/karta foni'], ['brand-900', '#123C3A', 'Sidebar, tooltip foni, «Platforma boshqaruvi» yorlig‘i'], ['sidebar-active', '#2DD4BF', 'Faqat brand-900 fonida: faol band chizig‘i, yorliq ikonkasi'], ['sidebar-text', '#A9C7C3', 'Faqat brand-900 fonida: band matni']]],
+  ['Neytral', [['text', '#172B2A', 'Asosiy matn'], ['text-muted', '#5B6B6A', 'Ikkinchi darajali matn, eski qiymat, tizim hodisasi'], ['text-disabled', '#94A3A1', 'Placeholder, disabled matn, checkbox chegarasi'], ['border', '#E2E8F0', 'Chegara, ajratuvchi; disabled tugma foni'], ['surface-muted', '#F5F7F8', 'Sahifa foni, neytral belgi, hover'], ['table-header', '#F8FAFA', 'Jadval sarlavhasi, guruh qatori, ichki eslatma'], ['surface', '#FFFFFF', 'Karta, panel, oyna']]],
+  ['Holat', [['danger', '#B91C1C', 'Xato matni, danger tugma foni'], ['danger-hover', '#991B1B', 'Danger tugma hover'], ['danger-bg', '#FEF2F2', 'Danger belgi/blok foni'], ['warning', '#B45309', 'Ogohlantirish matni'], ['warning-bg', '#FFFBEB', 'Warning belgi/blok foni'], ['success', '#15803D', 'Muvaffaqiyat matni'], ['success-bg', '#F0FDF4', 'Success belgi/blok foni'], ['info', '#1D4ED8', 'Ma’lumot matni'], ['info-bg', '#EFF6FF', 'Info belgi/blok foni']]]
+];
+const TY = [
+  ['32 / 40', '600', 'mono', '0:58', 'Seans tugashi hisoblagichi'],
+  ['28 / 36', '600', 'mono', '48.600.000,00', 'Desktop KPI qiymati'],
+  ['24 / 32', '600', 'sans', 'Kompaniyalar', 'Sahifa sarlavhasi (H1)'],
+  ['20 / 28', '600', 'sans', 'Platformaga kirish', 'Kirish kartasi sarlavhasi; planshet KPI (mono); kod katagi'],
+  ['18 / 26', '600', 'sans', 'Biznes tarifini tahrirlash', 'Oyna va yon panel sarlavhasi; ixcham KPI (mono)'],
+  ['15 / 22', '600', 'sans', 'Diqqat talab qiladi', 'Bo‘lim/karta sarlavhasi; 44px tugma matni'],
+  ['14 / 20', '400·600', 'sans', 'Asosiy matn va tugma', 'Tana matni, tugma, maydon, menyu bandi'],
+  ['13 / 18', '400·600', 'sans', 'Jadval katagi', 'Jadval, yordamchi matn, maydon nomi; mono qiymatlar'],
+  ['12 / 16', '400·600', 'sans', 'Holat belgisi', 'Belgi, izoh, ustun sarlavhasi; mono vaqt, ID, IP']
+].map(([s, w, f, ex, use]) => { const [px, lh] = s.split(' / '); return { s, w, ex, use, px: px + 'px', lh: lh + 'px', fw: w.includes('600') && !w.includes('400') ? '600' : '400', ff: f === 'mono' ? "'JetBrains Mono', monospace" : 'Inter, sans-serif' }; });
+const SZ = [
+  ['Tugma balandligi', '32 (ixcham ish ekranlari: desktop jadval va panel ichida) · 36 (asosiy) · 44 (kirish, usta)'],
+  ['Maydon balandligi', '36 (forma) · 44 (kirish, usta)'],
+  ['Jadval qatori', '40 (asosiy) · 36 (zich: matritsa, guruh sarlavhasi, ustun sarlavhasi)'],
+  ['Belgilar', 'Holat 24 (standart, 4px 8px) va 20 (zich: murojaatlar ro‘yxati elementi, planshet; 2px 6px), ikonka 16 · son belgisi 20 (Inter 12/16 600, tabular-nums)'],
+  ['Ikonkalar', '16 (matn ichida) · 20 (sidebar, topbar, katta blok)'],
+  ['Avatar', '24 (ro‘yxat, jurnal) · 32 (jadval, profil)'],
+  ['Karkas', 'Topbar 56 · sidebar 240 / 64 · kontent padding 24'],
+  ['Panellar', 'Yon panel 560 · kontekst 320 · ko‘rinish namunasi 400 · murojaatlar ro‘yxati 360 (planshet 320)'],
+  ['Oynalar', '480 (tasdiqlash, xavfli harakat) · 640 (forma); kirish kartasi 400'],
+  ['Oraliqlar', '4 · 8 · 12 · 16 · 20 · 24 · 32 · 48 · 64'],
+  ['Soya', 'Faqat menyu, yon panel, oyna, tooltip: 0 4px 16px rgba(18,60,58,0.08)'],
+  ['Progress', '4px balandlik, uchlari dumaloq (radius 4), fon #E2E8F0, to‘ldirish #0D9488']
+].map(([k, v]) => ({ k, v: sp(v) }));
+const RD = [['4px', 'checkbox, progress', '4px'], ['6px', 'tugma, maydon, belgi', '6px'], ['8px', 'karta, panel', '8px'], ['12px', 'oyna', '12px'], ['aylana', 'radio, spinner, almashtirgich', '999px']].map(([k, use, r]) => ({ k, use, r }));
+const RU = [
+  'Har ekranda (yoki har bo‘limda) bitta asosiy tugma; qolganlari secondary yoki tertiary.',
+  'Holat hech qachon faqat rang bilan emas: ikonka + so‘z + rang.',
+  'Xavfli harakat oynasi: oqibatlar raqamlar bilan, sabab (kerak bo‘lsa) majburiy, «Ortga» + danger tugma.',
+  'Xato xabari = nima bo‘ldi + nima qilish kerak; texnik tafsilot faqat yig‘ilgan blokda.',
+  'Har ma’lumot bloki 4 holatga ega: bo‘sh, yuklanmoqda (skeleton, animatsiyasiz), xato, ruxsat yo‘q.',
+  'Ismlar, kompaniya nomlari va summalar qisqartirilmaydi va so‘z o‘rtasidan bo‘linmaydi; summa va «so‘m» bir qatorda. Qisqartirish faqat erkin matnda (mavzu, tafsilot), tooltip bilan.',
+  'Ruxsati yo‘q tugma va menyu bandlari yashiriladi (disabled emas). Disabled — faqat shart bajarilmaganda, haqiqatan bosilmaydi va fokus olmaydi.',
+  'Raqamlar mono va o‘ngga tekislangan; grafiklar o‘rniga raqamlar.',
+  'Faqat hover bilan ochiladigan narsa yo‘q — tooltip bosilganda ham ochiladi.',
+  'Imlo: o‘, g‘, ’ (to‘g‘ri belgilar).'
+].map((t, i) => ({ n: String(i + 1), t }));
+const TB = [
+  'Freym 1024 × 768; kontent freym ichida aylanadi.',
+  'Sidebar standart holatda 64px (ikonkalar, nom tooltip’da, son belgisi burchakda); menyu tugmasi bilan 240px overlay sidebar.',
+  'Kontent kengligi 912px (1024 − 64 − 2×24); qidiruv 240px; «Platforma» yorlig‘i matn bilan qoladi.',
+  'Bosiladigan elementlar kamida 36px.',
+  'Ikkinchi darajali ustunlar qator tafsilotiga yoki yon panelga ko‘chadi; jadvalda gorizontal aylanish faqat atayin (tablar, taqqoslash jadvali yopishqoq birinchi ustun bilan).',
+  'Yon panel 560px, oynalar 480/640px — desktopdagidek.',
+  'Ichki menyu sahifa tablariga, ko‘rinish namunasi va kontekst ustuni ochiladigan panelga aylanadi.',
+  'Ma’lumotlar desktop freymlari bilan aynan bir xil.'
+].map((t, i) => ({ n: String(i + 1), t }));
+class Component extends DCLogic {
+  renderVals() { return { colors: C.map(([t, items]) => ({ t, items: items.map(([name, hex, use]) => ({ name, hex, use })) })), type: TY, sizes: SZ, radii: RD, rules: RU, tablet: TB }; }
+}
+</script>
+</body>
+</html>

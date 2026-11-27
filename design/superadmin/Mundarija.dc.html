@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F7F8;font-family:Inter,system-ui,sans-serif;color:#172B2A;-webkit-font-smoothing:antialiased}
+a{color:#0F766E;text-decoration:none}
+a:hover{color:#115E59;text-decoration:underline}
+:focus-visible{outline:2px solid #0D9488;outline-offset:2px}
+</style>
+</helmet>
+<div style="max-width:1040px;margin:0 auto;padding:48px 32px;display:flex;flex-direction:column;gap:32px">
+<header style="display:flex;flex-direction:column;gap:12px">
+<span style="align-self:flex-start;padding:4px 8px;border-radius:6px;background:#123C3A;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600">100+ · Platforma boshqaruvi</span>
+<h1 style="margin:0;font-size:24px;line-height:32px;font-weight:600">Mundarija — dasturchiga topshirish</h1>
+<p style="margin:0;max-width:760px;font-size:14px;line-height:20px;color:#5B6B6A;text-wrap:pretty">Super admin panelining barcha ekranlari sayt xaritasi tartibida. Namuna ma’lumotlar 25.11.2026, 16:40 holatiga; yagona manba — «Namuna ma’lumotlar». Desktop freymlari 1440px, planshet 1024 × 768.</p>
+<nav style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ docs }}" as="d"><a href="{{ d.href }}" style="min-height:36px;display:flex;align-items:center;gap:6px;padding:0 12px;border:1px solid #E2E8F0;border-radius:6px;background:#FFFFFF;font-size:14px;font-weight:600">{{ d.t }}</a></sc-for></nav>
+</header>
+<sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}"><span style="font-size:14px;color:#5B6B6A">Ro‘yxat yuklanmoqda…</span></sc-if>
+<sc-for list="{{ sections }}" as="s"><section style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid #E2E8F0"><h2 style="margin:0;font-size:15px;line-height:22px;font-weight:600"><span style="font-family:'JetBrains Mono',monospace;color:#5B6B6A">{{ s.n }}</span> · <a href="{{ s.href }}">{{ s.name }}</a></h2><span style="font-size:13px;color:#5B6B6A"><span style="font-family:'JetBrains Mono',monospace">{{ s.count }}</span> freym</span></div>
+<sc-for list="{{ s.frames }}" as="r"><a href="{{ r.href }}" style="display:grid;grid-template-columns:64px minmax(0,280px) minmax(0,1fr);gap:16px;align-items:baseline;padding:8px 20px;border-bottom:1px solid #E2E8F0;font-size:13px;line-height:18px;color:#172B2A;text-decoration:none" style-hover="background:#F8FAFA;text-decoration:none"><span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:#0F766E">{{ r.id }}</span><span style="font-weight:600">{{ r.t }}</span><span style="color:#5B6B6A">{{ r.note }}</span></a></sc-for>
+</section></sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const NAMES = { 'Bosh sahifa.dc.html': 'Bosh sahifa', 'Kompaniyalar.dc.html': 'Kompaniyalar ro‘yxati', 'Kompaniya kartasi.dc.html': 'Kompaniya kartasi', 'Kompaniya kartasi 3b.dc.html': 'Kompaniya kartasi · tablar (3b)', 'Kompaniya kartasi 3c.dc.html': 'Kompaniya kartasi · nomidan kirish va integratsiyalar (3c)', 'Yangi kompaniya ustasi.dc.html': 'Yangi kompaniya ustasi', 'Tariflar va modullar.dc.html': 'Tariflar va modullar', "To'lovlar va hisob-fakturalar.dc.html": 'To‘lovlar va hisob-fakturalar', "Qo'llab-quvvatlash.dc.html": 'Qo‘llab-quvvatlash', 'Platforma holati.dc.html': 'Platforma holati', 'Audit jurnali.dc.html': 'Audit jurnali', 'Xodimlar va rollar.dc.html': 'Xodimlar va rollar', 'Sozlamalar.dc.html': 'Sozlamalar · E’lonlar va Texnik ishlar', 'Sozlamalar 12b.dc.html': 'Sozlamalar · Shablonlar va Hujjatlar', 'Kirish va 2FA.dc.html': 'Kirish va ikki bosqichli tasdiqlash', 'Planshet 1.dc.html': 'Planshet 1 · Bosh sahifa, Kompaniyalar, Karta, Usta', 'Planshet 2.dc.html': 'Planshet 2 · Tariflar, To‘lovlar, Murojaatlar, Platforma holati', 'Planshet 3.dc.html': 'Planshet 3 · Audit, Xodimlar, Sozlamalar, Kirish' };
+class Component extends DCLogic {
+  state = { data: null };
+  componentDidMount() { fetch('mundarija-data.json').then(r => r.json()).then(data => this.setState({ data })).catch(() => this.setState({ data: [] })); }
+  renderVals() {
+    const d = this.state.data || [];
+    const sections = d.map((x, i) => ({ n: String(i + 1).padStart(2, '0'), name: NAMES[x.f] || x.f, href: x.href, count: String(x.frames.length), frames: x.frames.map(([id, t, note]) => ({ id, t, note, href: x.href + '#' + x.pre + id })) }));
+    const docs = [['Dizayn tizimi', 'Dizayn%20tizimi.dc.html'], ['Komponentlar', 'Komponentlar.dc.html'], ['Qoidalar', 'Qoidalar.dc.html'], ['Namuna ma’lumotlar', 'Namuna%20ma%27lumotlar.dc.html']].map(([t, href]) => ({ t, href }));
+    return { sections, docs, loading: !this.state.data };
+  }
+}
+</script>
+</body>
+</html>
