@@ -18,6 +18,7 @@ import { describeError } from "@/features/setup/form-error";
 import { api, unwrap } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { formatDateTime } from "@/lib/format";
+import { useLivePoll } from "@/lib/live";
 
 export type OrderIssueItem = components["schemas"]["OrderIssueItem"];
 export type IssueReason = OrderIssueItem["reason"];
@@ -100,10 +101,11 @@ export function IssuesList({ onOpenOrder }: { onOpenOrder: (id: number) => void 
   const t = useTranslations("orders");
   const qc = useQueryClient();
   const branchId = useScopeBranchId();
+  const issuesPoll = useLivePoll(15_000);
   const issues = useQuery({
     queryKey: ["orders", "issues", branchId ?? "all"],
     queryFn: () => unwrap(api.GET("/api/orders/issues", { params: { query: { open: true, branchId: branchId ?? undefined } } })),
-    refetchInterval: 15_000,
+    refetchInterval: issuesPoll,
   });
   const [resolving, setResolving] = useState<OrderIssueItem | null>(null);
   const [resolution, setResolution] = useState("");
