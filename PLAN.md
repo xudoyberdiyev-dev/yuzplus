@@ -48,6 +48,24 @@ Biznes qoidalari: `design/superadmin/Qoidalar.dc.html` (tariflar Start/Biznes/Ko
 - [ ] SA6 Platforma holati, audit jurnali (yaxlitlik zanjiri), xodimlar va rollar, sozlamalar (eʼlonlar, texnik ishlar, hujjat versiyalari).
 - [ ] SA7 Planshet moslashuvi; manzil `admin.100plus.uz` (domendan keyin).
 
+## ⏸ NQ — BUYURTMA NAVBATI TARTIBI (egasi kuzatuvi 28.11.2026: koʻp buyurtmada oxirgisi birinchi boʻladi, ayrimlari 4–10 kun qoladi) — V1, TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
+- [ ] NQ1 Qatʼiy navbat (FIFO): yigʻuvchi/omborchi buyurtmani oʻzi tanlamaydi — «Keyingisi» eng eskisini beradi; navbatdan sakrash faqat rahbar ruxsati + sabab (audit).
+- [ ] NQ2 SLA taymer va rang: < 24 soat oddiy, 24 soat — sariq, 48 soat — qizil (ikonka + soʻz); roʻyxatda «Kutmoqda: N kun».
+- [ ] NQ3 Eskalatsiya: 48 soatdan oshgan buyurtma — direktorga bildirishnoma + Telegram; «Diqqat talab qiladi» blokida.
+- [ ] NQ4 Toʻxtatish sababi majburiy (tovar yoʻq / qarz limiti / tasdiq kutilmoqda / boshqa) — sabablar boʻyicha hisobot.
+- (DB4 voronka bilan bogʻliq.)
+
+## ⏸ AI — AI MODULI (egasi 28.11.2026) — VERSIYASI ANIQLANMOQDA, TASDIQ KUTMOQDA, QILMANG
+Qoʻshimcha pullik modul sifatida (super admin «qoʻshimcha modullar»). AI faqat maslahat beradi, qaror — odamda; har kompaniya maʼlumoti faqat oʻzida.
+- [ ] AI1 Kirimni rasm/Excel’dan kiritish (OCR: nom, seriya, muddat, soni, narx → kirim qoralamasi).
+- [ ] AI2 Qarz va pul nazorati: toʻlamaslik xavfi, gʻayrioddiy holatlar (topshirilmagan naqd, notoʻgʻri narx, katta chegirma) — V2-M4 bilan.
+- [ ] AI3 Buyurtma (zakaz) tavsiyasi: sotuv tarixi, mavsum, muddat boʻyicha nima/qancha olish.
+- [ ] AI4 Muddat xavfi: «60 kunda eskiradi, N donasi qoladi — chegirma/qaytarish».
+- [ ] AI5 Savol bilan hisobot (direktor oddiy soʻz bilan soʻraydi, javob + grafik).
+- [ ] AI6 Ketayotgan mijozni aniqlash.
+- [ ] AI7 Haydovchi marshruti optimallashtirish.
+- [ ] AI8 Buyurtma navbati: aqlli ustuvorlik, ertangi tiqilish prognozi, kechikish ildiz sababi, mijozga avtomatik ETA xabari (NQ ustiga).
+
 ## ⏸ V2 — MIJOZ TALABLARI (25.11.2026, egasi orqali) — TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
 Manba: `docs/notes/v2/mijoz-talablari-25-11.docx`. Egasi qarorlari: 25.11 23:50 soʻrovnoma. Egasi 25.11 23:56: M1–M6 tasdiq kutayotgan rejalarga qoʻshildi; **qaysi versiyada va qachon qilinishi keyin egasi bilan aniqlanadi**. M7 va M5 dagi «5 ta izoh» — mijozdan soʻraladi (javob kelguncha rejaga kiritilmaydi).
 - [ ] **V2-M1 Inventar (korxona mol-mulki)** — oddiy roʻyxat (egasi qarori): nomi, inventar raqami, toifa, qiymati, sotib olingan sana, joyi (filial/xona), mas'ul xodim, holati (ishlayapti/taʼmirda/hisobdan chiqarilgan); xodimga topshirish/qaytarish tarixi (jurnal), xodim ishdan ketsa — undagi buyumlar roʻyxati. Amortizatsiya yoʻq.
