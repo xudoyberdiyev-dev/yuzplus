@@ -55,16 +55,16 @@ Biznes qoidalari: `design/superadmin/Qoidalar.dc.html` (tariflar Start/Biznes/Ko
 - [ ] NQ4 Toʻxtatish sababi majburiy (tovar yoʻq / qarz limiti / tasdiq kutilmoqda / boshqa) — sabablar boʻyicha hisobot.
 - (DB4 voronka bilan bogʻliq.)
 
-## ⏸ AI — AI MODULI (egasi 28.11.2026) — VERSIYASI ANIQLANMOQDA, TASDIQ KUTMOQDA, QILMANG
+## ⏸ AI — AI MODULI (egasi 28.11.2026) — **V2: AI1 + AI2; V3: AI3–AI8** (egasi 28.11 12:33) — TASDIQ KUTMOQDA, QILMANG
 Qoʻshimcha pullik modul sifatida (super admin «qoʻshimcha modullar»). AI faqat maslahat beradi, qaror — odamda; har kompaniya maʼlumoti faqat oʻzida.
-- [ ] AI1 Kirimni rasm/Excel’dan kiritish (OCR: nom, seriya, muddat, soni, narx → kirim qoralamasi).
-- [ ] AI2 Qarz va pul nazorati: toʻlamaslik xavfi, gʻayrioddiy holatlar (topshirilmagan naqd, notoʻgʻri narx, katta chegirma) — V2-M4 bilan.
-- [ ] AI3 Buyurtma (zakaz) tavsiyasi: sotuv tarixi, mavsum, muddat boʻyicha nima/qancha olish.
-- [ ] AI4 Muddat xavfi: «60 kunda eskiradi, N donasi qoladi — chegirma/qaytarish».
-- [ ] AI5 Savol bilan hisobot (direktor oddiy soʻz bilan soʻraydi, javob + grafik).
-- [ ] AI6 Ketayotgan mijozni aniqlash.
-- [ ] AI7 Haydovchi marshruti optimallashtirish.
-- [ ] AI8 Buyurtma navbati: aqlli ustuvorlik, ertangi tiqilish prognozi, kechikish ildiz sababi, mijozga avtomatik ETA xabari (NQ ustiga).
+- [ ] **(V2)** AI1 Kirimni rasm/Excel’dan kiritish (OCR: nom, seriya, muddat, soni, narx → kirim qoralamasi).
+- [ ] **(V2)** AI2 Qarz va pul nazorati: toʻlamaslik xavfi, gʻayrioddiy holatlar (topshirilmagan naqd, notoʻgʻri narx, katta chegirma) — V2-M4 bilan.
+- [ ] **(V3)** AI3 Buyurtma (zakaz) tavsiyasi: sotuv tarixi, mavsum, muddat boʻyicha nima/qancha olish.
+- [ ] **(V3)** AI4 Muddat xavfi: «60 kunda eskiradi, N donasi qoladi — chegirma/qaytarish».
+- [ ] **(V3)** AI5 Savol bilan hisobot (direktor oddiy soʻz bilan soʻraydi, javob + grafik).
+- [ ] **(V3)** AI6 Ketayotgan mijozni aniqlash.
+- [ ] **(V3)** AI7 Haydovchi marshruti optimallashtirish.
+- [ ] **(V3)** AI8 Buyurtma navbati: aqlli ustuvorlik, ertangi tiqilish prognozi, kechikish ildiz sababi, mijozga avtomatik ETA xabari (NQ ustiga).
 
 ## ⏸ V2 — MIJOZ TALABLARI (25.11.2026, egasi orqali) — TASDIQ KUTMOQDA, EGASI «BOSHLA» DEMAGUNCHA QILMANG
 Manba: `docs/notes/v2/mijoz-talablari-25-11.docx`. Egasi qarorlari: 25.11 23:50 soʻrovnoma. Egasi 25.11 23:56: M1–M6 tasdiq kutayotgan rejalarga qoʻshildi; **qaysi versiyada va qachon qilinishi keyin egasi bilan aniqlanadi**. M7 va M5 dagi «5 ta izoh» — mijozdan soʻraladi (javob kelguncha rejaga kiritilmaydi).
